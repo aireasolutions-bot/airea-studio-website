@@ -1,0 +1,132 @@
+-- ============================================================
+-- AIREA Studio — Admin portal schema
+-- Tables: admin_users, content_blocks, comments, assets, publish_log
+-- Security: RLS — only allow-listed admins (is_admin) can access.
+-- ============================================================
+
+create extension if not exists pgcrypto;
+
+-- ---------- allow-list ----------
+create table if not exists public.admin_users (
+  id         uuid primary key default gen_random_uuid(),
+  email      text unique not null,
+  role       text not null default 'editor',   -- owner | editor | viewer
+  full_name  text,
+  created_at timestamptz not null default now()
+);
+
+-- ---------- editable content blocks (draft + published) ----------
+create table if not exists public.content_blocks (
+  key             text primary key,            -- e.g. home.hero.headline
+  page            text not null default 'home',
+  section         text,
+  label           text,
+  type            text not null default 'text',-- text | richtext | url | image | list
+  draft_value     jsonb,
+  published_value jsonb,
+  sort            int  not null default 0,
+  updated_at      timestamptz not null default now(),
+  updated_by      text
+);
+
+-- ---------- review comments (click-to-comment on preview) ----------
+create table if not exists public.comments (
+  id           uuid primary key default gen_random_uuid(),
+  page         text not null default '/',
+  target_label text,
+  anchor       text,
+  pos_x        real,
+  pos_y        real,
+  body         text not null,
+  status       text not null default 'open'
+               check (status in ('open','in_progress','confirmed','rejected')),
+  author_email text,
+  author_name  text,
+  created_at   timestamptz not null default now(),
+  updated_at   timestamptz not null default now(),
+  resolved_by  text
+);
+
+-- ---------- asset registry (mirrors Cloudflare R2) ----------
+create table if not exists public.assets (
+  id           uuid primary key default gen_random_uuid(),
+  key          text unique not null,           -- R2 object key, e.g. assets/robot/head.png
+  filename     text not null,
+  url          text not null,                  -- public URL
+  type         text,                           -- image | video
+  content_type text,
+  folder       text,
+  size_bytes   bigint,
+  width        int,
+  height       int,
+  alt          text,
+  uploaded_by  text,
+  created_at   timestamptz not null default now()
+);
+
+-- ---------- publish audit log ----------
+create table if not exists public.publish_log (
+  id           uuid primary key default gen_random_uuid(),
+  summary      text,
+  changed_keys text[],
+  commit_sha   text,
+  commit_url   text,
+  status       text not null default 'success',
+  published_by text,
+  created_at   timestamptz not null default now()
+);
+
+-- ---------- helper: is the current user an allow-listed admin? ----------
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.admin_users a
+    where lower(a.email) = lower(coalesce(auth.jwt() ->> 'email', ''))
+  );
+$$;
+grant execute on function public.is_admin() to anon, authenticated;
+
+-- ---------- updated_at triggers ----------
+create or replace function public.touch_updated_at()
+returns trigger language plpgsql as $$
+begin new.updated_at = now(); return new; end; $$;
+
+drop trigger if exists t_cb_updated on public.content_blocks;
+create trigger t_cb_updated before update on public.content_blocks
+  for each row execute function public.touch_updated_at();
+
+drop trigger if exists t_cm_updated on public.comments;
+create trigger t_cm_updated before update on public.comments
+  for each row execute function public.touch_updated_at();
+
+-- ---------- Row Level Security ----------
+alter table public.admin_users    enable row level security;
+alter table public.content_blocks enable row level security;
+alter table public.comments       enable row level security;
+alter table public.assets         enable row level security;
+alter table public.publish_log    enable row level security;
+
+drop policy if exists p_admin_users on public.admin_users;
+create policy p_admin_users on public.admin_users
+  for select using (public.is_admin());
+
+drop policy if exists p_content on public.content_blocks;
+create policy p_content on public.content_blocks
+  for all using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists p_comments on public.comments;
+create policy p_comments on public.comments
+  for all using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists p_assets on public.assets;
+create policy p_assets on public.assets
+  for all using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists p_publish on public.publish_log;
+create policy p_publish on public.publish_log
+  for select using (public.is_admin());
