@@ -8,6 +8,7 @@ import { Reveal } from "@/components/Reveal";
 import { FinalCTA } from "@/sections/FinalCTA";
 import { cn } from "@/lib/cn";
 import { SIGN_UP_URL } from "@/lib/site";
+import { useC } from "@/content/ContentProvider";
 
 const EASE = [0.22, 0.61, 0.36, 1] as const;
 
@@ -160,6 +161,7 @@ function StepExplorer() {
 }
 
 export function HowItWorksPage() {
+  const c = useC();
   return (
     <>
       {/* hero */}
@@ -171,24 +173,25 @@ export function HowItWorksPage() {
             <RobotHead size={104} />
           </div>
           <div className="flex justify-center">
-            <Eyebrow>How it works</Eyebrow>
+            <Eyebrow>{c("howitworks.hero.eyebrow")}</Eyebrow>
           </div>
           <h1 className="mx-auto mt-6 max-w-4xl font-display text-[clamp(40px,6.5vw,76px)] leading-[1.0] tracking-[-0.02em] text-ink">
-            Easy tools for <span className="italic-blue">every marketing channel</span>.
+            {c("howitworks.hero.title_lead")}
+            <span className="italic-blue">{c("howitworks.hero.title_accent")}</span>
+            {c("howitworks.hero.title_tail")}
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-[clamp(15px,1.5vw,18px)] text-ink-2">
-            Orchestrate a multi-channel campaign from a single workflow — created and
-            refined with AI-driven precision.
+            {c("howitworks.hero.sub")}
           </p>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
             <Button href={SIGN_UP_URL} variant="primary" size="lg" magnetic arrow>
-              Start your free trial
+              {c("howitworks.hero.cta_primary")}
             </Button>
             <Button to="/pricing" variant="ghost" size="lg">
-              See pricing
+              {c("howitworks.hero.cta_secondary")}
             </Button>
           </div>
-          <p className="mt-4 text-[13px] text-ink-3">No credit card required · 14-day free trial</p>
+          <p className="mt-4 text-[13px] text-ink-3">{c("howitworks.hero.note")}</p>
         </div>
       </section>
 

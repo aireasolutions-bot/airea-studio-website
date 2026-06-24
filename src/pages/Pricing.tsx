@@ -5,6 +5,7 @@ import { Faq } from "@/components/Faq";
 import { Reveal } from "@/components/Reveal";
 import { FinalCTA } from "@/sections/FinalCTA";
 import { PLANS } from "@/lib/site";
+import { useC } from "@/content/ContentProvider";
 
 const COMPARE: { label: string; values: (boolean | string)[] }[] = [
   { label: "Brand workspaces", values: ["1", "3", "10"] },
@@ -26,6 +27,7 @@ function Cell({ v }: { v: boolean | string }) {
 }
 
 export function Pricing() {
+  const c = useC();
   return (
     <>
       <section className="relative overflow-hidden pb-12 pt-36 text-center md:pt-44">
@@ -36,11 +38,12 @@ export function Pricing() {
             <Eyebrow>Pricing</Eyebrow>
           </div>
           <h1 className="mx-auto mt-6 max-w-3xl font-display text-[clamp(40px,6.5vw,76px)] leading-[1] tracking-[-0.02em] text-ink">
-            Pricing that scales <span className="italic-blue">with you</span>.
+            {c("pricing.hero.title_lead")}
+            <span className="italic-blue">{c("pricing.hero.title_accent")}</span>
+            {c("pricing.hero.title_tail")}
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-[clamp(15px,1.5vw,18px)] text-ink-2">
-            Every plan starts with a 14-day free trial — no credit card required.
-            Upgrade, downgrade, or cancel anytime.
+            {c("pricing.hero.sub")}
           </p>
         </div>
       </section>

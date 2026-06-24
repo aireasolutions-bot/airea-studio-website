@@ -8,6 +8,7 @@ import { Reveal } from "@/components/Reveal";
 import { BrandDNA } from "@/sections/BrandDNA";
 import { Channels } from "@/sections/Channels";
 import { FinalCTA } from "@/sections/FinalCTA";
+import { useC, resolveAsset } from "@/content/ContentProvider";
 
 const BENEFITS = [
   {
@@ -34,16 +35,18 @@ const TAILORED = [
 ];
 
 export function SmallBusiness() {
+  const c = useC();
   return (
     <>
       <SubHero
-        eyebrow="For small business"
+        eyebrow={c("sb.hero.eyebrow")}
         title={
           <>
-            Small teams. <span className="italic-blue">Big presence.</span>
+            {c("sb.hero.title_lead")}
+            <span className="italic-blue">{c("sb.hero.title_accent")}</span>
           </>
         }
-        sub="Create professional marketing across every channel without hiring an agency or becoming a marketing expert. AIREA Studio adapts your campaigns for each platform and bakes in best practices at every step."
+        sub={c("sb.hero.sub")}
         note="No credit card required · Cancel anytime"
         visual={
           <div className="relative mx-auto w-fit">
@@ -51,7 +54,7 @@ export function SmallBusiness() {
               className="absolute inset-0 -z-10 rounded-[3rem] blur-3xl"
               style={{ background: "radial-gradient(circle at 50% 40%, rgba(0,71,255,0.22), transparent 65%)" }}
             />
-            <PhoneFrame src="/assets/product/home-agent.png" width={290} />
+            <PhoneFrame src={resolveAsset(c("sb.hero.image"))} width={290} />
             <div className="absolute -right-3 -top-6">
               <RobotHead size={96} />
             </div>

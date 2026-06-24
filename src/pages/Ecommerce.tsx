@@ -5,6 +5,7 @@ import { SectionHeading } from "@/components/ui";
 import { OnePhotoCampaign } from "@/sections/OnePhotoCampaign";
 import { Testimonials } from "@/sections/Testimonials";
 import { FinalCTA } from "@/sections/FinalCTA";
+import { useC, resolveAsset } from "@/content/ContentProvider";
 
 const BENEFITS = [
   {
@@ -25,16 +26,18 @@ const BENEFITS = [
 ];
 
 export function Ecommerce() {
+  const c = useC();
   return (
     <>
       <SubHero
-        eyebrow="For e-commerce"
+        eyebrow={c("ec.hero.eyebrow")}
         title={
           <>
-            One product photo. <span className="italic-blue">Every ad.</span>
+            {c("ec.hero.title_lead")}
+            <span className="italic-blue">{c("ec.hero.title_accent")}</span>
           </>
         }
-        sub="Turn a single product shot into a full, on-brand funnel — paid social, organic, email, and marketplace creative — sized and written for every channel automatically."
+        sub={c("ec.hero.sub")}
         note="No credit card required · Cancel anytime"
         visual={
           <div className="relative mx-auto w-fit">
@@ -44,7 +47,7 @@ export function Ecommerce() {
             />
             <div className="overflow-hidden rounded-[28px] border border-line bg-white shadow-card">
               <img
-                src="/assets/campaigns/robot-cover.jpg"
+                src={resolveAsset(c("ec.hero.image"))}
                 alt="One photo, a full campaign"
                 className="w-[360px]"
                 draggable={false}

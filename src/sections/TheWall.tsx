@@ -3,23 +3,27 @@ import { Activity, BarChart3, Eye } from "lucide-react";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { SectionHeading } from "@/components/ui";
 import { Reveal } from "@/components/Reveal";
+import { useC } from "@/content/ContentProvider";
 
 const EASE = [0.22, 0.61, 0.36, 1] as const;
 
 export function TheWall() {
+  const c = useC();
   return (
     <section id="wall" className="relative overflow-hidden bg-paper py-24 md:py-32">
       <div className="bg-blue-radial pointer-events-none absolute inset-0" />
       <div className="wrap-wide relative grid items-center gap-16 lg:grid-cols-[1.05fr_0.95fr]">
         <div>
           <SectionHeading
-            tag="The Wall"
+            tag={c("home.wall.tag")}
             title={
               <>
-                Every post and result, <span className="italic-blue">one wall</span>.
+                {c("home.wall.title_lead")}
+                <span className="italic-blue">{c("home.wall.title_accent")}</span>
+                {c("home.wall.title_tail")}
               </>
             }
-            sub="Preview how a campaign performs across every social platform before and after it ships. Switch on God Mode to see it all at a glance."
+            sub={c("home.wall.sub")}
           />
           <Reveal className="mt-8 flex flex-col gap-3" delay={0.1}>
             {[

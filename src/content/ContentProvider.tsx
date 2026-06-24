@@ -10,6 +10,15 @@ const DEFAULTS: Dict = Object.fromEntries(
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const ASSETS_BASE = (import.meta.env.VITE_ASSETS_BASE_URL || "").replace(/\/+$/, "");
+
+/** Resolve an image content value (R2 key, /assets path, or full URL) to a usable src. */
+export function resolveAsset(v?: string): string {
+  if (!v) return "";
+  if (/^https?:\/\//.test(v)) return v;
+  const path = v.startsWith("/") ? v : `/${v}`;
+  return ASSETS_BASE ? `${ASSETS_BASE}${path}` : path;
+}
 
 const ContentCtx = createContext<(key: string) => string>((k) => DEFAULTS[k] ?? "");
 

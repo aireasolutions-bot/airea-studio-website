@@ -9,7 +9,7 @@ import { PhoneFrame } from "@/components/PhoneFrame";
 import { RobotHead } from "@/components/RobotHead";
 import { Button, Eyebrow } from "@/components/ui";
 import { PLATFORMS, SIGN_UP_URL } from "@/lib/site";
-import { useC } from "@/content/ContentProvider";
+import { useC, resolveAsset } from "@/content/ContentProvider";
 import { prefersReducedMotion } from "@/lib/gsap";
 
 const EASE = [0.22, 0.61, 0.36, 1] as const;
@@ -143,7 +143,7 @@ export function Hero() {
             animate={{ opacity: 1, y: 0, rotateY: 0 }}
             transition={{ duration: 1, ease: EASE, delay: 0.35 }}
           >
-            <PhoneFrame src="/assets/product/home-agent.png" width={272} />
+            <PhoneFrame src={resolveAsset(c("home.hero.phone"))} width={272} />
           </motion.div>
 
           {/* floating: 9-up grid card */}

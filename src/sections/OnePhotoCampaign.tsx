@@ -4,6 +4,7 @@ import { Sparkles } from "lucide-react";
 import { Button, Tag } from "@/components/ui";
 import { RobotHead } from "@/components/RobotHead";
 import { SIGN_UP_URL } from "@/lib/site";
+import { useC } from "@/content/ContentProvider";
 
 const WORLDS = [
   { src: "/assets/campaigns/worlds/w1.jpg", n: "01", label: "Track" },
@@ -60,6 +61,7 @@ function WorldCard({
 }
 
 export function OnePhotoCampaign() {
+  const c = useC();
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -81,16 +83,14 @@ export function OnePhotoCampaign() {
           {/* left: source */}
           <div>
             <motion.div style={{ opacity: titleO, y: titleY }}>
-              <Tag className="mb-5 text-ink-3">One photo, a full campaign</Tag>
+              <Tag className="mb-5 text-ink-3">{c("home.onephoto.tag")}</Tag>
               <h2 className="font-display text-[clamp(34px,5vw,62px)] leading-[1.0] tracking-[-0.01em] text-ink">
-                One photo.
+                {c("home.onephoto.title_lead")}
                 <br />
-                <span className="italic-blue">Nine worlds.</span>
+                <span className="italic-blue">{c("home.onephoto.title_accent")}</span>
               </h2>
               <p className="mt-5 max-w-md text-[clamp(15px,1.5vw,18px)] text-ink-2">
-                Upload a single product shot. Studio restages it into a full set of
-                on-brand ads — every scene, every channel, every ratio — in about
-                ninety seconds. No studio. No re-shoots.
+                {c("home.onephoto.sub")}
               </p>
             </motion.div>
 
