@@ -3,8 +3,10 @@ import { Button } from "@/components/ui";
 import { RobotHead } from "@/components/RobotHead";
 import { Reveal } from "@/components/Reveal";
 import { SIGN_UP_URL } from "@/lib/site";
+import { useC } from "@/content/ContentProvider";
 
 export function FinalCTA() {
+  const c = useC();
   return (
     <section id="cta" className="px-4 py-16 md:py-24">
       <div className="wrap-wide">
@@ -23,15 +25,14 @@ export function FinalCTA() {
                 <RobotHead size={120} />
               </div>
               <h2 className="font-display text-[clamp(34px,6vw,68px)] leading-[1.02] tracking-[-0.01em] text-white">
-                Ship like a 30-person team
+                {c("home.cta.line1")}
                 <br />
                 <span className="font-display italic text-white/90">
-                  with the headcount of three.
+                  {c("home.cta.line2")}
                 </span>
               </h2>
               <p className="mx-auto mt-6 max-w-xl text-[clamp(15px,1.6vw,18px)] text-white/75">
-                Train your Brand DNA and launch your first on-brand campaign today.
-                It takes about twenty minutes to your first real output.
+                {c("home.cta.sub")}
               </p>
 
               <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
@@ -43,7 +44,7 @@ export function FinalCTA() {
                   arrow
                   className="border-transparent bg-white text-ink shadow-lift hover:bg-white"
                 >
-                  Start 14-day free trial
+                  {c("home.cta.primary")}
                 </Button>
                 <Button
                   to="/how-it-works"
@@ -57,7 +58,7 @@ export function FinalCTA() {
 
               <p className="mt-5 flex items-center justify-center gap-2 text-[13px] text-white/70">
                 <Check className="h-4 w-4" />
-                No credit card required · Cancel anytime
+                {c("home.cta.note")}
               </p>
             </div>
           </div>

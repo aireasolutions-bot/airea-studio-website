@@ -8,12 +8,14 @@ const GradientCanvas = lazy(() =>
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { RobotHead } from "@/components/RobotHead";
 import { Button, Eyebrow } from "@/components/ui";
-import { HERO, PLATFORMS, SIGN_UP_URL } from "@/lib/site";
+import { PLATFORMS, SIGN_UP_URL } from "@/lib/site";
+import { useC } from "@/content/ContentProvider";
 import { prefersReducedMotion } from "@/lib/gsap";
 
 const EASE = [0.22, 0.61, 0.36, 1] as const;
 
 export function Hero() {
+  const c = useC();
   const visualRef = useRef<HTMLDivElement>(null);
 
   // light mouse parallax on the hero composition
@@ -52,7 +54,7 @@ export function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: EASE }}
           >
-            <Eyebrow>{HERO.eyebrow}</Eyebrow>
+            <Eyebrow>{c("home.hero.eyebrow")}</Eyebrow>
           </motion.div>
 
           <h1 className="mt-6 font-display text-[clamp(44px,7vw,84px)] leading-[0.98] tracking-[-0.02em] text-ink">
@@ -62,7 +64,7 @@ export function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: EASE, delay: 0.08 }}
             >
-              {HERO.line1}
+              {c("home.hero.line1")}
             </motion.span>
             <motion.span
               className="block"
@@ -70,9 +72,9 @@ export function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: EASE, delay: 0.18 }}
             >
-              {HERO.line2a}
-              <span className="italic-blue">{HERO.line2b}</span>
-              {HERO.line2c}
+              {c("home.hero.line2_lead")}
+              <span className="italic-blue">{c("home.hero.line2_accent")}</span>
+              {c("home.hero.line2_tail")}
             </motion.span>
           </h1>
 
@@ -82,7 +84,7 @@ export function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: EASE, delay: 0.3 }}
           >
-            {HERO.sub}
+            {c("home.hero.sub")}
           </motion.p>
 
           <motion.div
@@ -92,10 +94,10 @@ export function Hero() {
             transition={{ duration: 0.8, ease: EASE, delay: 0.42 }}
           >
             <Button href={SIGN_UP_URL} variant="primary" size="lg" magnetic arrow>
-              Start 14-day free trial
+              {c("home.hero.cta_primary")}
             </Button>
             <Button to="/#campaign" variant="ghost" size="lg" iconLeft={<Play className="h-4 w-4 fill-current" />}>
-              Watch it work
+              {c("home.hero.cta_secondary")}
             </Button>
           </motion.div>
 
@@ -106,7 +108,7 @@ export function Hero() {
             transition={{ duration: 0.8, delay: 0.6 }}
           >
             <Check className="h-4 w-4 text-blue" />
-            No credit card required · Cancel anytime
+            {c("home.hero.note")}
           </motion.p>
 
           {/* trust strip */}

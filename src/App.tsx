@@ -7,6 +7,7 @@ import { SmallBusiness } from "@/pages/SmallBusiness";
 import { Ecommerce } from "@/pages/Ecommerce";
 import { HowItWorksPage } from "@/pages/HowItWorksPage";
 import { FaqPage } from "@/pages/FaqPage";
+import { ContentProvider } from "@/content/ContentProvider";
 
 // Admin portal is a separate, lazy-loaded bundle — never weighs down the public site.
 const AdminApp = lazy(() =>
@@ -15,17 +16,19 @@ const AdminApp = lazy(() =>
 
 function PublicApp() {
   return (
-    <Layout>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/pricing" element={<Pricing />} />
-        <Route path="/small-business" element={<SmallBusiness />} />
-        <Route path="/ecommerce" element={<Ecommerce />} />
-        <Route path="/how-it-works" element={<HowItWorksPage />} />
-        <Route path="/faq" element={<FaqPage />} />
-        <Route path="*" element={<Home />} />
-      </Routes>
-    </Layout>
+    <ContentProvider>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/small-business" element={<SmallBusiness />} />
+          <Route path="/ecommerce" element={<Ecommerce />} />
+          <Route path="/how-it-works" element={<HowItWorksPage />} />
+          <Route path="/faq" element={<FaqPage />} />
+          <Route path="*" element={<Home />} />
+        </Routes>
+      </Layout>
+    </ContentProvider>
   );
 }
 

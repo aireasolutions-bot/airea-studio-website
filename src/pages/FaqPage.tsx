@@ -4,10 +4,12 @@ import { Button, Eyebrow } from "@/components/ui";
 import { RobotHead } from "@/components/RobotHead";
 import { cn } from "@/lib/cn";
 import { scrollToTarget } from "@/hooks/useSmoothScroll";
-import { FAQ_CATEGORIES, FAQ_HEADER } from "@/lib/faq";
+import { FAQ_CATEGORIES } from "@/lib/faq";
 import { SIGN_UP_URL } from "@/lib/site";
+import { useC } from "@/content/ContentProvider";
 
 export function FaqPage() {
+  const c = useC();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState<string | null>(null);
   const [active, setActive] = useState(FAQ_CATEGORIES[0].id);
@@ -50,13 +52,13 @@ export function FaqPage() {
             <RobotHead size={96} />
           </div>
           <div className="flex justify-center">
-            <Eyebrow>{FAQ_HEADER.eyebrow}</Eyebrow>
+            <Eyebrow>{c("faq.eyebrow")}</Eyebrow>
           </div>
           <h1 className="mx-auto mt-6 max-w-3xl font-display text-[clamp(40px,6.5vw,72px)] leading-[1.02] tracking-[-0.02em] text-ink">
-            {FAQ_HEADER.title}
+            {c("faq.title")}
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-[clamp(15px,1.5vw,18px)] text-ink-2">
-            {FAQ_HEADER.intro}
+            {c("faq.intro")}
           </p>
 
           <div className="mx-auto mt-8 flex max-w-md items-center gap-2.5 rounded-full border border-line-2 bg-white px-5 py-3.5 shadow-soft focus-within:border-blue">

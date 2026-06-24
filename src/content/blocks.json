@@ -1,0 +1,21 @@
+[
+  { "key": "home.hero.eyebrow", "page": "home", "section": "Hero", "label": "Eyebrow", "type": "text", "value": "The AI marketing OS" },
+  { "key": "home.hero.line1", "page": "home", "section": "Hero", "label": "Headline — line 1", "type": "text", "value": "One source in." },
+  { "key": "home.hero.line2_lead", "page": "home", "section": "Hero", "label": "Headline — line 2 lead", "type": "text", "value": "A " },
+  { "key": "home.hero.line2_accent", "page": "home", "section": "Hero", "label": "Headline — line 2 accent (blue italic)", "type": "text", "value": "full campaign" },
+  { "key": "home.hero.line2_tail", "page": "home", "section": "Hero", "label": "Headline — line 2 tail", "type": "text", "value": " out." },
+  { "key": "home.hero.sub", "page": "home", "section": "Hero", "label": "Subheadline", "type": "richtext", "value": "AIREA Studio learns your brand, then plans, designs, and ships on-brand campaigns across every channel — in minutes, not weeks. Ship like a 30-person team with the headcount of three." },
+  { "key": "home.hero.cta_primary", "page": "home", "section": "Hero", "label": "Primary button", "type": "text", "value": "Start 14-day free trial" },
+  { "key": "home.hero.cta_secondary", "page": "home", "section": "Hero", "label": "Secondary button", "type": "text", "value": "Watch it work" },
+  { "key": "home.hero.note", "page": "home", "section": "Hero", "label": "Reassurance note", "type": "text", "value": "No credit card required · Cancel anytime" },
+
+  { "key": "home.cta.line1", "page": "home", "section": "Final CTA", "label": "Headline — line 1", "type": "text", "value": "Ship like a 30-person team" },
+  { "key": "home.cta.line2", "page": "home", "section": "Final CTA", "label": "Headline — line 2 (italic)", "type": "text", "value": "with the headcount of three." },
+  { "key": "home.cta.sub", "page": "home", "section": "Final CTA", "label": "Subtext", "type": "richtext", "value": "Train your Brand DNA and launch your first on-brand campaign today. It takes about twenty minutes to your first real output." },
+  { "key": "home.cta.primary", "page": "home", "section": "Final CTA", "label": "Primary button", "type": "text", "value": "Start 14-day free trial" },
+  { "key": "home.cta.note", "page": "home", "section": "Final CTA", "label": "Reassurance note", "type": "text", "value": "No credit card required · Cancel anytime" },
+
+  { "key": "faq.eyebrow", "page": "faq", "section": "Header", "label": "Eyebrow", "type": "text", "value": "The Chief Marketing Agent for small businesses" },
+  { "key": "faq.title", "page": "faq", "section": "Header", "label": "Title", "type": "text", "value": "Questions, answered." },
+  { "key": "faq.intro", "page": "faq", "section": "Header", "label": "Intro paragraph", "type": "richtext", "value": "AIREA Studio is an AI-powered, multi-channel marketing platform built for small business owners who want professional marketing — copy and visuals — without needing marketing experience." }
+]
