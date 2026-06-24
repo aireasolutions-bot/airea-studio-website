@@ -1,0 +1,26 @@
+# ─── dependencies / build ───────────────────────────────
+node_modules
+dist
+dist-ssr
+.vite
+
+# ─── editor / OS ─────────────────────────────────────────
+*.local
+.DS_Store
+.idea
+.vscode/*
+!.vscode/extensions.json
+
+# ─── logs ────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ─── SECRETS — NEVER COMMIT ──────────────────────────────
+.env
+.env.*
+!.env.example
+*.local.md
+CREDENTIALS.local.md
+.secrets/
