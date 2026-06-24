@@ -7,7 +7,7 @@ export function Testimonials() {
     <section className="border-y border-line bg-white py-24 md:py-32">
       <div className="wrap-wide">
         <SectionHeading
-          tag="Nº 008 · In the field"
+          tag="In the field"
           title={
             <>
               The work looks like <span className="italic-blue">you</span> — at

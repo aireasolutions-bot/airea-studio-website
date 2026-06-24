@@ -1,7 +1,7 @@
 import { Check } from "lucide-react";
 import { Button } from "./ui";
 import { cn } from "@/lib/cn";
-import { PLANS } from "@/lib/site";
+import { PLANS, SIGN_UP_URL } from "@/lib/site";
 
 export function PricingCards() {
   return (
@@ -45,7 +45,7 @@ export function PricingCards() {
           </ul>
           <div className="mt-7">
             <Button
-              to="/#cta"
+              href={SIGN_UP_URL}
               variant={plan.featured ? "primary" : "ghost"}
               className="w-full"
               arrow

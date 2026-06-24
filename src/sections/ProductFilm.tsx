@@ -7,7 +7,7 @@ export function ProductFilm() {
       <div className="wrap-wide">
         <SectionHeading
           align="center"
-          tag="Nº 00X · In motion"
+          tag="In motion"
           title={
             <>
               Watch one idea become a{" "}

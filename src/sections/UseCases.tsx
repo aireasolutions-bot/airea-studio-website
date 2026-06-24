@@ -8,7 +8,7 @@ export function UseCases() {
     <section className="py-24 md:py-32">
       <div className="wrap-wide">
         <SectionHeading
-          tag="Nº 007 · Who it's for"
+          tag="Who it's for"
           title={
             <>
               Built for teams that <span className="italic-blue">punch above</span>{" "}

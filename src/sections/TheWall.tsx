@@ -13,7 +13,7 @@ export function TheWall() {
       <div className="wrap-wide relative grid items-center gap-16 lg:grid-cols-[1.05fr_0.95fr]">
         <div>
           <SectionHeading
-            tag="Nº 006 · The Wall"
+            tag="The Wall"
             title={
               <>
                 Every post and result, <span className="italic-blue">one wall</span>.

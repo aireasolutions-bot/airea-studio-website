@@ -29,7 +29,7 @@ export function HowItWorks() {
     <section id="how" className="relative py-24 md:py-32">
       <div className="wrap-wide">
         <SectionHeading
-          tag="Nº 003 · How it works"
+          tag="How it works"
           title={
             <>
               From brand to{" "}

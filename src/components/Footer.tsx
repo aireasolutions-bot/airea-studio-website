@@ -6,9 +6,10 @@ const COLS = [
   {
     title: "Product",
     links: [
-      { label: "How it works", to: "/#how" },
+      { label: "How it works", to: "/how-it-works" },
       { label: "One photo → campaign", to: "/#campaign" },
       { label: "The Wall", to: "/#wall" },
+      { label: "FAQ", to: "/faq" },
       { label: "Pricing", to: "/pricing" },
     ],
   },
@@ -50,7 +51,7 @@ export function Footer() {
             The AI marketing OS. One source in, a full on-brand campaign out —
             across every channel.
           </p>
-          <p className="tag mt-6">Nº 001 · {SITE.domain}</p>
+          <p className="tag mt-6">{SITE.domain}</p>
         </div>
         {COLS.map((col) => (
           <div key={col.title}>

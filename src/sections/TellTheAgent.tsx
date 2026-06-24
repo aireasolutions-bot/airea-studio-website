@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { RotateCcw } from "lucide-react";
 import { Button, SectionHeading } from "@/components/ui";
+import { SIGN_UP_URL } from "@/lib/site";
 
 const EASE = [0.22, 0.61, 0.36, 1] as const;
 const PROMPT = "Launch our summer sneaker sale";
@@ -53,7 +54,7 @@ export function TellTheAgent() {
       <div className="wrap-wide grid items-center gap-12 lg:grid-cols-[0.85fr_1.15fr]">
         <div>
           <SectionHeading
-            tag="Nº 00X · The agent"
+            tag="The agent"
             title={
               <>
                 Tell the agent.
@@ -64,7 +65,7 @@ export function TellTheAgent() {
             sub="No briefs to write, no templates to wrangle. Describe what you want in a sentence — Studio plans it, writes it, designs it, and hands it back ready to ship."
           />
           <div className="mt-8">
-            <Button href="https://app.aireastudio.ai/signup" variant="primary" size="lg" magnetic arrow>
+            <Button href={SIGN_UP_URL} variant="primary" size="lg" magnetic arrow>
               Start free
             </Button>
           </div>

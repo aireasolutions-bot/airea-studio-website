@@ -105,7 +105,7 @@ export function DeployEverywhere() {
       <div className="wrap-wide">
         <SectionHeading
           align="center"
-          tag="Nº 00X · Deploy"
+          tag="Deploy"
           title={
             <>
               One click. <span className="italic-blue">Live everywhere.</span>

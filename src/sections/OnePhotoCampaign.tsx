@@ -3,6 +3,7 @@ import { motion, useScroll, useTransform, type MotionValue } from "framer-motion
 import { Sparkles } from "lucide-react";
 import { Button, Tag } from "@/components/ui";
 import { RobotHead } from "@/components/RobotHead";
+import { SIGN_UP_URL } from "@/lib/site";
 
 const WORLDS = [
   { src: "/assets/campaigns/worlds/w1.jpg", n: "01", label: "Track" },
@@ -48,7 +49,7 @@ function WorldCard({
         alt={`Sneaker — ${label}`}
         className="aspect-square w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
         draggable={false}
-        loading="lazy"
+        decoding="async"
       />
       <div className="absolute bottom-1.5 left-1.5 flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 backdrop-blur">
         <span className="font-mono text-[9px] font-semibold text-blue">{n}</span>
@@ -80,7 +81,7 @@ export function OnePhotoCampaign() {
           {/* left: source */}
           <div>
             <motion.div style={{ opacity: titleO, y: titleY }}>
-              <Tag className="mb-5 text-ink-3">Nº 002 · One photo, a full campaign</Tag>
+              <Tag className="mb-5 text-ink-3">One photo, a full campaign</Tag>
               <h2 className="font-display text-[clamp(34px,5vw,62px)] leading-[1.0] tracking-[-0.01em] text-ink">
                 One photo.
                 <br />
@@ -129,7 +130,7 @@ export function OnePhotoCampaign() {
               style={{ opacity: payoffO, y: payoffY }}
               className="mt-8 flex flex-wrap items-center gap-4"
             >
-              <Button to="/#cta" variant="primary" magnetic arrow>
+              <Button href={SIGN_UP_URL} variant="primary" magnetic arrow>
                 Turn a photo into a campaign
               </Button>
               <span className="font-mono text-[12px] uppercase tracking-wider text-ink-3">

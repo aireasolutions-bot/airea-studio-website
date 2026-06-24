@@ -2,6 +2,7 @@ import { Check } from "lucide-react";
 import { Button } from "@/components/ui";
 import { RobotHead } from "@/components/RobotHead";
 import { Reveal } from "@/components/Reveal";
+import { SIGN_UP_URL } from "@/lib/site";
 
 export function FinalCTA() {
   return (
@@ -35,8 +36,7 @@ export function FinalCTA() {
 
               <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
                 <Button
-                  to="/#"
-                  href="https://app.aireastudio.ai/signup"
+                  href={SIGN_UP_URL}
                   variant="ghost"
                   size="lg"
                   magnetic
@@ -46,12 +46,12 @@ export function FinalCTA() {
                   Start 14-day free trial
                 </Button>
                 <Button
-                  href="https://app.aireastudio.ai/demo"
+                  to="/how-it-works"
                   variant="ghost"
                   size="lg"
                   className="border-white/40 bg-transparent text-white hover:border-white hover:bg-white/10"
                 >
-                  Book a demo
+                  See how it works
                 </Button>
               </div>
 

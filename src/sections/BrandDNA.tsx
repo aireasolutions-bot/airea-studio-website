@@ -24,7 +24,7 @@ export function BrandDNA() {
         {/* copy */}
         <div>
           <SectionHeading
-            tag="Nº 004 · Brand DNA"
+            tag="Brand DNA"
             title={
               <>
                 Everything flows from your{" "}

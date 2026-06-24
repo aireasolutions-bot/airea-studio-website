@@ -9,6 +9,9 @@ export const SITE = {
   trialNote: "No credit card required · Cancel anytime",
 };
 
+export const SIGN_UP_URL = "https://app.aireastudio.ai/sign-up";
+export const SIGN_IN_URL = "https://app.aireastudio.ai/sign-in";
+
 export type NavLink = { label: string; to: string };
 
 export const NAV: NavLink[] = [

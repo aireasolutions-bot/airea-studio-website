@@ -9,7 +9,7 @@ export function PricingPreview() {
     <section className="py-24 md:py-32">
       <div className="wrap-wide">
         <SectionHeading
-          tag="Nº 009 · Pricing"
+          tag="Pricing"
           align="center"
           title={
             <>

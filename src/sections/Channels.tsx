@@ -19,7 +19,7 @@ export function Channels() {
     <section className="py-24 md:py-32">
       <div className="wrap-wide">
         <SectionHeading
-          tag="Nº 005 · Every channel"
+          tag="Every channel"
           title={
             <>
               One brief. Built for <span className="italic-blue">every surface</span>.

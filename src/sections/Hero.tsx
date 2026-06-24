@@ -8,7 +8,7 @@ const GradientCanvas = lazy(() =>
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { RobotHead } from "@/components/RobotHead";
 import { Button, Eyebrow } from "@/components/ui";
-import { HERO, PLATFORMS } from "@/lib/site";
+import { HERO, PLATFORMS, SIGN_UP_URL } from "@/lib/site";
 import { prefersReducedMotion } from "@/lib/gsap";
 
 const EASE = [0.22, 0.61, 0.36, 1] as const;
@@ -91,7 +91,7 @@ export function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: EASE, delay: 0.42 }}
           >
-            <Button to="/#cta" variant="primary" size="lg" magnetic arrow>
+            <Button href={SIGN_UP_URL} variant="primary" size="lg" magnetic arrow>
               Start 14-day free trial
             </Button>
             <Button to="/#campaign" variant="ghost" size="lg" iconLeft={<Play className="h-4 w-4 fill-current" />}>

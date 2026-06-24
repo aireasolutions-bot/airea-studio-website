@@ -4,11 +4,15 @@ import { ChevronDown, Menu, X } from "lucide-react";
 import { Logo } from "./Logo";
 import { Button } from "./ui";
 import { cn } from "@/lib/cn";
-import { SOLUTIONS } from "@/lib/site";
+import { SOLUTIONS, SIGN_UP_URL, SIGN_IN_URL } from "@/lib/site";
 import { scrollToTarget } from "@/hooks/useSmoothScroll";
 
+const ROUTE_LINKS = [
+  { label: "How it works", to: "/how-it-works" },
+  { label: "FAQ", to: "/faq" },
+];
+
 const HASH_LINKS = [
-  { label: "How it works", hash: "#how" },
   { label: "One photo", hash: "#campaign" },
   { label: "The Wall", hash: "#wall" },
 ];
@@ -73,6 +77,15 @@ export function Nav() {
 
           {/* desktop nav */}
           <nav className="hidden items-center gap-1 lg:flex">
+            {ROUTE_LINKS.map((l) => (
+              <Link
+                key={l.to}
+                to={l.to}
+                className="rounded-lg px-3 py-2 text-[13.5px] font-medium text-ink-2 transition-colors hover:bg-ink/5 hover:text-ink"
+              >
+                {l.label}
+              </Link>
+            ))}
             {HASH_LINKS.map((l) => (
               <button
                 key={l.hash}
@@ -125,12 +138,12 @@ export function Nav() {
 
           <div className="hidden items-center gap-2 lg:flex">
             <a
-              href="https://app.aireastudio.ai"
+              href={SIGN_IN_URL}
               className="px-3 py-2 text-[13.5px] font-medium text-ink-2 transition-colors hover:text-ink"
             >
               Log in
             </a>
-            <Button to="/#cta" variant="primary" magnetic arrow>
+            <Button href={SIGN_UP_URL} variant="primary" magnetic arrow>
               Start free
             </Button>
           </div>
@@ -155,6 +168,15 @@ export function Nav() {
       >
         <div className="flex h-full flex-col px-6 pb-8 pt-24">
           <div className="flex flex-col gap-1">
+            {ROUTE_LINKS.map((l) => (
+              <Link
+                key={l.to}
+                to={l.to}
+                className="border-b border-line py-4 font-display text-3xl text-ink"
+              >
+                {l.label}
+              </Link>
+            ))}
             {HASH_LINKS.map((l) => (
               <button
                 key={l.hash}
@@ -181,11 +203,11 @@ export function Nav() {
             </Link>
           </div>
           <div className="mt-auto flex flex-col gap-3">
-            <Button to="/#cta" variant="primary" size="lg" arrow>
+            <Button href={SIGN_UP_URL} variant="primary" size="lg" arrow>
               Start 14-day free trial
             </Button>
             <a
-              href="https://app.aireastudio.ai"
+              href={SIGN_IN_URL}
               className="text-center text-sm font-medium text-ink-2"
             >
               Log in

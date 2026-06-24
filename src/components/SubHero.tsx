@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { Button, Eyebrow } from "./ui";
+import { SIGN_UP_URL } from "@/lib/site";
 
 const EASE = [0.22, 0.61, 0.36, 1] as const;
 
@@ -53,11 +54,11 @@ export function SubHero({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: EASE, delay: 0.32 }}
           >
-            <Button href="https://app.aireastudio.ai/signup" variant="primary" size="lg" magnetic arrow>
+            <Button href={SIGN_UP_URL} variant="primary" size="lg" magnetic arrow>
               Start 14-day free trial
             </Button>
-            <Button href="https://app.aireastudio.ai/demo" variant="ghost" size="lg">
-              Book a demo
+            <Button to="/how-it-works" variant="ghost" size="lg">
+              See how it works
             </Button>
           </motion.div>
           {note && (
