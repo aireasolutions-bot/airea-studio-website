@@ -9,6 +9,7 @@ import {
   MessagesSquare,
   Rocket,
   Settings2,
+  Sparkles,
   X,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
@@ -17,6 +18,7 @@ import { useAdminAuth } from "./auth";
 
 const NAV = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
+  { to: "/admin/agent", label: "Build with AI", icon: Sparkles, accent: true },
   { to: "/admin/editor", label: "Site editor", icon: FilePenLine },
   { to: "/admin/assets", label: "Assets", icon: Images },
   { to: "/admin/comments", label: "Review", icon: MessagesSquare },
@@ -47,7 +49,11 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             className={({ isActive }) =>
               cn(
                 "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium transition-colors",
-                isActive ? "bg-blue text-white shadow-soft" : "text-ink-2 hover:bg-ink/5 hover:text-ink"
+                isActive
+                  ? "bg-blue text-white shadow-soft"
+                  : (item as { accent?: boolean }).accent
+                    ? "bg-blue-mist/60 text-blue-ink hover:bg-blue-mist"
+                    : "text-ink-2 hover:bg-ink/5 hover:text-ink"
               )
             }
           >
