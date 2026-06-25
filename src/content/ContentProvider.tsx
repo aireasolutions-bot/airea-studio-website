@@ -20,10 +20,20 @@ export function resolveAsset(v?: string): string {
   return ASSETS_BASE ? `${ASSETS_BASE}${path}` : path;
 }
 
-const ContentCtx = createContext<(key: string) => string>((k) => DEFAULTS[k] ?? "");
+const ContentCtx = createContext<(key: string, fallback?: string) => string>((k, f) => DEFAULTS[k] ?? f ?? "");
 
-/** Read editable copy by key, falling back to the baked-in default. */
+/** Read editable copy by key, falling back to a provided default or the baked-in one. */
 export const useC = () => useContext(ContentCtx);
+
+/** Spread onto an element to make it click-to-editable on the visual canvas (?edit=1). */
+export const editable = (key: string, type: "text" | "richtext" | "image" = "text") => ({
+  "data-edit-key": key,
+  "data-edit-type": type,
+});
+
+export function isEdit() {
+  return typeof window !== "undefined" && new URLSearchParams(window.location.search).get("edit") === "1";
+}
 
 export function isPreview() {
   return (
@@ -45,7 +55,8 @@ function previewToken(): string | null {
 
 export function ContentProvider({ children }: { children: ReactNode }) {
   const [overrides, setOverrides] = useState<Dict>({});
-  const preview = isPreview();
+  const editing = isEdit();
+  const preview = isPreview() || editing;
 
   useEffect(() => {
     if (!SUPABASE_URL || !SUPABASE_ANON) return;
@@ -91,7 +102,20 @@ export function ContentProvider({ children }: { children: ReactNode }) {
     };
   }, [preview]);
 
-  const get = (key: string) => overrides[key] ?? DEFAULTS[key] ?? "";
+  // Visual click-to-edit overlay — only on the canvas (?edit=1), lazy-loaded so it
+  // never weighs down the normal public bundle.
+  useEffect(() => {
+    if (!editing) return;
+    let cleanup: (() => void) | undefined;
+    import("./visualEdit")
+      .then((m) => {
+        cleanup = m.activate();
+      })
+      .catch(() => {});
+    return () => cleanup?.();
+  }, [editing]);
+
+  const get = (key: string, fallback?: string) => overrides[key] ?? DEFAULTS[key] ?? fallback ?? "";
 
   return (
     <ContentCtx.Provider value={get}>

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, ExternalLink, Film, ImageIcon, LayoutTemplate, Loader2, Monitor, RefreshCw, Rocket, Smartphone, Tablet } from "lucide-react";
+import { Check, ExternalLink, Film, ImageIcon, LayoutTemplate, Loader2, Monitor, MousePointerClick, RefreshCw, Rocket, Smartphone, Tablet, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/cn";
 import { resolveAsset } from "@/content/ContentProvider";
@@ -51,10 +51,14 @@ export function Editor() {
   const [publishing, setPublishing] = useState(false);
   const [toast, setToast] = useState("");
   const [picker, setPicker] = useState<{ key: string; kind: "image" | "video" } | null>(null);
+  const [editOnCanvas, setEditOnCanvas] = useState(true);
+  const [editing, setEditing] = useState<{ key: string; type: string; value: string; x: number; y: number } | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const paneRef = useRef<HTMLDivElement>(null);
   const [pane, setPane] = useState({ w: 0, h: 0 });
   const timers = useRef<Record<string, number>>({});
+  const draftRef = useRef<Record<string, string>>({});
+  const scaleRef = useRef(1);
 
   useEffect(() => {
     if (!supabase) return;
@@ -90,7 +94,8 @@ export function Editor() {
 
   const dirtyKeys = useMemo(() => Object.keys(draft).filter((k) => draft[k] !== published[k]), [draft, published]);
 
-  const previewSrc = page === "home" ? "/?preview=1" : `/${page}?preview=1`;
+  draftRef.current = draft;
+  const previewSrc = (page === "home" ? "/?preview=1" : `/${page}?preview=1`) + (editOnCanvas ? "&edit=1" : "");
   const refreshPreview = () => iframeRef.current?.contentWindow?.postMessage({ type: "airea-refresh-content" }, "*");
 
   const onEdit = (key: string, value: string) => {
@@ -105,6 +110,63 @@ export function Editor() {
       window.setTimeout(() => setStatus("idle"), 1200);
     }, 400);
   };
+
+  const blockExists = (key: string) => blocks.some((b) => b.key === key);
+
+  // Save from the visual canvas. Creates the content block on first edit (so any
+  // tagged element is editable without pre-seeding), otherwise updates the draft.
+  const saveBlock = async (key: string, value: string, type: string) => {
+    setDraft((d) => ({ ...d, [key]: value }));
+    setStatus("saving");
+    if (supabase) {
+      if (blockExists(key)) {
+        await supabase.from("content_blocks").update({ draft_value: value, updated_by: email }).eq("key", key);
+      } else {
+        const parts = key.split(".");
+        const pageMap: Record<string, string> = { home: "home", pricing: "pricing", sb: "small-business", ec: "ecommerce", howitworks: "how-it-works", faq: "faq", global: "home" };
+        const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+        const row: Block = {
+          key,
+          page: pageMap[parts[0]] ?? page,
+          section: parts[1] ? cap(parts[1]) : "General",
+          label: cap(parts.slice(1).join(" ").replace(/[._]/g, " ")) || key,
+          type,
+          draft_value: value,
+          published_value: null,
+          sort: 900,
+        };
+        await supabase.from("content_blocks").insert(row as any);
+        setBlocks((b) => [...b, row]);
+        setPublished((p) => ({ ...p, [key]: "" }));
+      }
+    }
+    setStatus("saved");
+    refreshPreview();
+    window.setTimeout(() => setStatus("idle"), 1200);
+  };
+
+  // Listen for clicks coming from the visual-edit overlay inside the preview.
+  useEffect(() => {
+    const onMsg = (e: MessageEvent) => {
+      if (e.data?.type !== "airea-edit-click") return;
+      const { key, editType, value, rect } = e.data;
+      if (editType === "image" || editType === "video") {
+        setEditing(null);
+        setPicker({ key, kind: editType === "video" ? "video" : "image" });
+        return;
+      }
+      const ib = iframeRef.current?.getBoundingClientRect();
+      setEditing({
+        key,
+        type: editType,
+        value: draftRef.current[key] ?? value ?? "",
+        x: (ib?.left ?? 0) + rect.left * scaleRef.current,
+        y: (ib?.top ?? 0) + (rect.top + rect.height) * scaleRef.current,
+      });
+    };
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
+  }, []);
 
   const publish = async () => {
     if (!supabase || dirtyKeys.length === 0) return;
@@ -144,6 +206,7 @@ export function Editor() {
   const innerH = Math.max(0, pane.h - 24);
   const scale = innerW ? Math.min(1, innerW / dw) : 0.5;
   const frameH = scale ? innerH / scale : 600;
+  scaleRef.current = scale;
 
   return (
     <div>
@@ -316,6 +379,16 @@ export function Editor() {
                     </button>
                   ))}
                 </div>
+                <button
+                  onClick={() => setEditOnCanvas((v) => !v)}
+                  title={editOnCanvas ? "Click-to-edit is on — click any element in the preview" : "Turn on click-to-edit"}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold transition-colors",
+                    editOnCanvas ? "bg-blue text-white shadow-soft" : "border border-line-2 text-ink-2 hover:text-ink"
+                  )}
+                >
+                  <MousePointerClick className="h-3.5 w-3.5" /> Edit
+                </button>
                 <button onClick={refreshPreview} title="Refresh" className="grid h-7 w-7 place-items-center rounded-lg text-ink-3 hover:bg-ink/5">
                   <RefreshCw className="h-3.5 w-3.5" />
                 </button>
@@ -346,8 +419,55 @@ export function Editor() {
         open={picker !== null}
         kind={picker?.kind ?? "image"}
         onClose={() => setPicker(null)}
-        onSelect={(key) => picker && onEdit(picker.key, key)}
+        onSelect={(assetKey) => picker && saveBlock(picker.key, assetKey, picker.kind === "video" ? "video" : "image")}
       />
+
+      {editing && (
+        <>
+          <div className="fixed inset-0 z-[59]" onClick={() => setEditing(null)} />
+          <div
+            className="fixed z-[60] w-[min(360px,92vw)] rounded-2xl border border-line bg-white p-3 shadow-card"
+            style={{ left: Math.max(8, Math.min(editing.x, window.innerWidth - 372)), top: Math.max(8, Math.min(editing.y + 8, window.innerHeight - 210)) }}
+          >
+            <div className="mb-1.5 flex items-center justify-between gap-2">
+              <span className="truncate font-mono text-[10.5px] uppercase tracking-wider text-ink-3">Edit · {editing.key.split(".").slice(-1)[0]}</span>
+              <button onClick={() => setEditing(null)} className="grid h-6 w-6 shrink-0 place-items-center rounded text-ink-3 hover:bg-ink/5">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <textarea
+              autoFocus
+              value={editing.value}
+              onChange={(e) => setEditing({ ...editing, value: e.target.value })}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                  saveBlock(editing.key, editing.value, editing.type);
+                  setEditing(null);
+                }
+              }}
+              rows={editing.type === "richtext" ? 4 : 2}
+              className="w-full resize-y rounded-xl border border-line-2 bg-canvas px-3 py-2 text-[14px] text-ink outline-none focus:border-blue"
+            />
+            <div className="mt-2 flex items-center justify-between">
+              <span className="text-[10.5px] text-ink-3">⌘↵ to save</span>
+              <div className="flex gap-2">
+                <button onClick={() => setEditing(null)} className="rounded-full border border-line-2 px-3 py-1.5 text-[12px] font-semibold text-ink hover:border-ink-3">
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    saveBlock(editing.key, editing.value, editing.type);
+                    setEditing(null);
+                  }}
+                  className="rounded-full bg-blue px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-blue-ink"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {toast && (
         <div className="fixed bottom-5 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full bg-ink px-5 py-3 text-[13.5px] font-semibold text-white shadow-card">

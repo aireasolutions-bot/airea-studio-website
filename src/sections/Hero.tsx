@@ -9,7 +9,7 @@ import { PhoneFrame } from "@/components/PhoneFrame";
 import { RobotHead } from "@/components/RobotHead";
 import { Button, Eyebrow } from "@/components/ui";
 import { PLATFORMS, SIGN_UP_URL } from "@/lib/site";
-import { useC, resolveAsset } from "@/content/ContentProvider";
+import { useC, resolveAsset, editable } from "@/content/ContentProvider";
 import { prefersReducedMotion } from "@/lib/gsap";
 
 const EASE = [0.22, 0.61, 0.36, 1] as const;
@@ -50,6 +50,7 @@ export function Hero() {
         {/* copy */}
         <div className="relative z-10 max-w-xl">
           <motion.div
+            {...editable("home.hero.eyebrow")}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: EASE }}
@@ -59,6 +60,7 @@ export function Hero() {
 
           <h1 className="mt-6 font-display text-[clamp(44px,7vw,84px)] leading-[0.98] tracking-[-0.02em] text-ink">
             <motion.span
+              {...editable("home.hero.line1")}
               className="block"
               initial={{ opacity: 0, y: 26 }}
               animate={{ opacity: 1, y: 0 }}
@@ -72,13 +74,14 @@ export function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: EASE, delay: 0.18 }}
             >
-              {c("home.hero.line2_lead")}
-              <span className="italic-blue">{c("home.hero.line2_accent")}</span>
-              {c("home.hero.line2_tail")}
+              <span {...editable("home.hero.line2_lead")}>{c("home.hero.line2_lead")}</span>
+              <span className="italic-blue" {...editable("home.hero.line2_accent")}>{c("home.hero.line2_accent")}</span>
+              <span {...editable("home.hero.line2_tail")}>{c("home.hero.line2_tail")}</span>
             </motion.span>
           </h1>
 
           <motion.p
+            {...editable("home.hero.sub", "richtext")}
             className="mt-6 max-w-lg text-[clamp(15px,1.5vw,18px)] text-ink-2"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -94,14 +97,15 @@ export function Hero() {
             transition={{ duration: 0.8, ease: EASE, delay: 0.42 }}
           >
             <Button href={SIGN_UP_URL} variant="primary" size="lg" magnetic arrow>
-              {c("home.hero.cta_primary")}
+              <span {...editable("home.hero.cta_primary")}>{c("home.hero.cta_primary")}</span>
             </Button>
             <Button to="/#campaign" variant="ghost" size="lg" iconLeft={<Play className="h-4 w-4 fill-current" />}>
-              {c("home.hero.cta_secondary")}
+              <span {...editable("home.hero.cta_secondary")}>{c("home.hero.cta_secondary")}</span>
             </Button>
           </motion.div>
 
           <motion.p
+            {...editable("home.hero.note")}
             className="mt-4 flex items-center gap-2 text-[13px] text-ink-3"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

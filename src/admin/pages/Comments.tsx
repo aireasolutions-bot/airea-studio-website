@@ -4,10 +4,14 @@ import {
   Check,
   CornerDownRight,
   Loader2,
+  Maximize2,
+  Minimize2,
+  Monitor,
   MapPin,
   MessageSquarePlus,
   RotateCcw,
   Send,
+  Smartphone,
   Trash2,
   X,
 } from "lucide-react";
@@ -78,6 +82,8 @@ export function Comments() {
   const [filter, setFilter] = useState<"open" | "resolved" | "all">("open");
   const [mineOnly, setMineOnly] = useState(false);
   const [commentMode, setCommentMode] = useState(false);
+  const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
+  const [fullscreen, setFullscreen] = useState(false);
   const [pending, setPending] = useState<{ x: number; y: number } | null>(null);
   const [composerOpen, setComposerOpen] = useState(false);
   const [draft, setDraft] = useState("");
@@ -320,40 +326,70 @@ export function Comments() {
 
       <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_390px]">
         {/* preview */}
-        <div className="lg:sticky lg:top-24 lg:h-[calc(100vh-8rem)]">
+        <div
+          className={cn(
+            fullscreen
+              ? "fixed inset-0 z-[70] bg-ink/50 p-3 backdrop-blur-sm md:p-6"
+              : "lg:sticky lg:top-24 lg:h-[calc(100vh-8rem)]"
+          )}
+        >
           <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-card">
-            <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
-              <span className="flex items-center gap-2 text-[12.5px] font-medium text-ink-2">
-                <span className="h-2 w-2 rounded-full bg-green-500" /> Draft preview · {pageMeta.label}
+            <div className="flex items-center justify-between gap-2 border-b border-line px-4 py-2.5">
+              <span className="flex min-w-0 items-center gap-2 text-[12.5px] font-medium text-ink-2">
+                <span className="h-2 w-2 shrink-0 rounded-full bg-green-500" />
+                <span className="truncate">Draft preview · {pageMeta.label}</span>
               </span>
-              <button
-                onClick={() => {
-                  setCommentMode((v) => !v);
-                  if (commentMode) resetComposer();
-                }}
-                className={cn(
-                  "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] font-semibold transition-colors",
-                  commentMode ? "bg-blue text-white shadow-soft" : "border border-line-2 text-ink hover:border-blue hover:text-blue"
-                )}
-              >
-                {commentMode ? <X className="h-3.5 w-3.5" /> : <MapPin className="h-3.5 w-3.5" />}
-                {commentMode ? "Done" : "Comment"}
-              </button>
+              <div className="flex shrink-0 items-center gap-2">
+                <div className="flex rounded-full border border-line-2 p-0.5">
+                  {([["desktop", Monitor], ["mobile", Smartphone]] as const).map(([d, Icon]) => (
+                    <button
+                      key={d}
+                      onClick={() => setDevice(d)}
+                      title={d}
+                      className={cn("grid h-7 w-7 place-items-center rounded-full capitalize", device === d ? "bg-blue text-white" : "text-ink-3 hover:text-ink")}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => {
+                    setCommentMode((v) => !v);
+                    if (commentMode) resetComposer();
+                  }}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] font-semibold transition-colors",
+                    commentMode ? "bg-blue text-white shadow-soft" : "border border-line-2 text-ink hover:border-blue hover:text-blue"
+                  )}
+                >
+                  {commentMode ? <X className="h-3.5 w-3.5" /> : <MapPin className="h-3.5 w-3.5" />}
+                  {commentMode ? "Done" : "Comment"}
+                </button>
+                <button
+                  onClick={() => setFullscreen((v) => !v)}
+                  title={fullscreen ? "Exit full screen" : "Full screen"}
+                  className="grid h-8 w-8 place-items-center rounded-lg text-ink-3 hover:bg-ink/5 hover:text-ink"
+                >
+                  {fullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
             {commentMode && (
               <div className="bg-blue-mist/60 px-4 py-1.5 text-center text-[12px] font-medium text-blue-ink">
                 Click anywhere on the page to pin a comment
               </div>
             )}
-            <div className="relative flex-1 overflow-hidden bg-paper">
-              <iframe
-                ref={iframeRef}
-                key={previewSrc}
-                src={previewSrc}
-                title="Preview"
-                onLoad={() => setDoc(iframeRef.current?.contentDocument ?? null)}
-                className="h-full w-full border-0"
-              />
+            <div className="relative flex flex-1 justify-center overflow-auto bg-paper">
+              <div className={cn("h-full", device === "mobile" ? "w-[390px] shrink-0 border-x border-line shadow-lg" : "w-full")}>
+                <iframe
+                  ref={iframeRef}
+                  key={previewSrc}
+                  src={previewSrc}
+                  title="Preview"
+                  onLoad={() => setDoc(iframeRef.current?.contentDocument ?? null)}
+                  className="h-full w-full border-0"
+                />
+              </div>
             </div>
           </div>
         </div>
