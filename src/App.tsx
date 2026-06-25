@@ -8,6 +8,7 @@ import { Ecommerce } from "@/pages/Ecommerce";
 import { HowItWorksPage } from "@/pages/HowItWorksPage";
 import { FaqPage } from "@/pages/FaqPage";
 import { Test } from "@/pages/Test";
+import { Test1 } from "@/pages/Test1";
 import { ContentProvider } from "@/content/ContentProvider";
 import { SITE_PAGES } from "@/lib/pages";
 
@@ -37,6 +38,7 @@ function PublicApp() {
             return C ? <Route key={p.slug} path={p.path} element={<C />} /> : null;
           })}
           <Route path="/test" element={<Test />} />
+          <Route path="/test-1" element={<Test1 />} />
           <Route path="*" element={<Home />} />
         </Routes>
       </Layout>
