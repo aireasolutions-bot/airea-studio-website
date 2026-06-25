@@ -8,8 +8,8 @@ import {
   Menu,
   MessagesSquare,
   Rocket,
-  Settings2,
   Sparkles,
+  Users,
   X,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
@@ -23,7 +23,7 @@ const NAV = [
   { to: "/admin/assets", label: "Assets", icon: Images },
   { to: "/admin/comments", label: "Review", icon: MessagesSquare },
   { to: "/admin/publish", label: "Publish", icon: Rocket },
-  { to: "/admin/settings", label: "Settings", icon: Settings2 },
+  { to: "/admin/settings", label: "Team", icon: Users },
 ];
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
