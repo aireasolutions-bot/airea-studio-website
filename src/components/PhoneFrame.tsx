@@ -4,8 +4,8 @@ type PhoneFrameProps = {
   src: string;
   alt?: string;
   className?: string;
-  /** screen width in px (frame scales around it) */
-  width?: number;
+  /** screen width — px number or any CSS width (e.g. "100%") */
+  width?: number | string;
   glare?: boolean;
 };
 

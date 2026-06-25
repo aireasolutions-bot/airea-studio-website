@@ -127,99 +127,74 @@ export function Hero() {
           </motion.div>
         </div>
 
-        {/* visual */}
+        {/* visual — anchored to the phone so it scales cleanly on every screen */}
         <div
           ref={visualRef}
-          className="relative z-10 mx-auto aspect-[4/5] w-full max-w-[460px] [perspective:1200px]"
+          className="relative z-10 mx-auto mt-10 w-fit [perspective:1200px] lg:mt-0"
         >
-          {/* central phone */}
+          <span
+            className="pointer-events-none absolute inset-0 -z-10 scale-[1.6] rounded-full"
+            style={{ background: "radial-gradient(circle, rgba(0,71,255,0.12), transparent 60%)" }}
+          />
+
           <motion.div
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-            style={{
-              transform:
-                "translate(calc(-50% + var(--px,0)*-14px), calc(-50% + var(--py,0)*-14px))",
-            }}
+            className="relative w-[230px] sm:w-[258px] lg:w-[272px]"
+            style={{ transform: "translate(calc(var(--px,0)*-10px), calc(var(--py,0)*-10px))" }}
             initial={{ opacity: 0, y: 40, rotateY: -8 }}
             animate={{ opacity: 1, y: 0, rotateY: 0 }}
             transition={{ duration: 1, ease: EASE, delay: 0.35 }}
           >
-            <PhoneFrame src={resolveAsset(c("home.hero.phone"))} width={272} />
-          </motion.div>
+            <PhoneFrame src={resolveAsset(c("home.hero.phone"))} width="100%" />
 
-          {/* floating: 9-up grid card */}
-          <FloatCard
-            className="left-0 top-6"
-            depth={26}
-            delay={0.6}
-          >
-            <img
-              src="/assets/campaigns/nine-grid.jpg"
-              alt="Nine ads from one source"
-              className="h-28 w-24 rounded-xl object-cover"
-            />
-            <Caption>9 ads · 1 source</Caption>
-          </FloatCard>
+            {/* robot — top-right, kept within horizontal bounds */}
+            <motion.div
+              className="absolute -top-9 right-0 z-30"
+              style={{ transform: "translate(calc(var(--px,0)*34px), calc(var(--py,0)*34px))" }}
+              initial={{ opacity: 0, scale: 0.6, rotate: -10 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              transition={{ duration: 0.9, ease: [0.34, 1.56, 0.64, 1], delay: 0.7 }}
+            >
+              <RobotHead size={96} />
+            </motion.div>
 
-          {/* floating: ratio story */}
-          <FloatCard className="right-0 top-24" depth={36} delay={0.78}>
-            <img
-              src="/assets/campaigns/ratio-story.jpg"
-              alt="Auto-sized story creative"
-              className="h-32 w-[72px] rounded-xl object-cover"
-            />
-            <Caption>Auto-sized · 9:16</Caption>
-          </FloatCard>
+            {/* brand DNA chip */}
+            <motion.div
+              className="absolute left-0 top-12 z-20"
+              style={{ transform: "translate(calc(var(--px,0)*-16px), calc(var(--py,0)*-16px))" }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7, ease: EASE, delay: 1.05 }}
+            >
+              <div className="flex items-center gap-1.5 rounded-full bg-ink px-3 py-1.5 text-white shadow-lift">
+                <Sparkles className="h-3.5 w-3.5 text-blue-sky" />
+                <span className="text-[11.5px] font-semibold">On Brand DNA</span>
+              </div>
+            </motion.div>
 
-          {/* floating: deployed pill */}
-          <motion.div
-            className="absolute bottom-12 left-2 z-20"
-            style={{
-              transform:
-                "translate(calc(var(--px,0)*30px), calc(var(--py,0)*30px))",
-            }}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: EASE, delay: 0.95 }}
-          >
-            <div className="flex items-center gap-2 rounded-full border border-line bg-white/90 px-3.5 py-2 shadow-card backdrop-blur">
-              <span className="grid h-5 w-5 place-items-center rounded-full bg-blue text-white">
-                <Check className="h-3 w-3" />
-              </span>
-              <span className="text-[12.5px] font-semibold text-ink">
-                Published to Meta &amp; Instagram
-              </span>
-            </div>
-          </motion.div>
+            {/* deployed pill — flex-centered under the phone */}
+            <motion.div
+              className="absolute -bottom-4 inset-x-0 z-20 flex justify-center"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, ease: EASE, delay: 0.95 }}
+            >
+              <div className="flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-white/95 px-3.5 py-2 shadow-card backdrop-blur">
+                <span className="grid h-5 w-5 place-items-center rounded-full bg-blue text-white">
+                  <Check className="h-3 w-3" />
+                </span>
+                <span className="text-[12px] font-semibold text-ink">Published to Meta &amp; Instagram</span>
+              </div>
+            </motion.div>
 
-          {/* floating: brand DNA chip */}
-          <motion.div
-            className="absolute bottom-2 right-6 z-20"
-            style={{
-              transform:
-                "translate(calc(var(--px,0)*-22px), calc(var(--py,0)*-22px))",
-            }}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.7, ease: EASE, delay: 1.05 }}
-          >
-            <div className="flex items-center gap-2 rounded-full bg-ink px-3.5 py-2 text-white shadow-lift">
-              <Sparkles className="h-3.5 w-3.5 text-blue-sky" />
-              <span className="text-[12.5px] font-semibold">On Brand DNA</span>
-            </div>
-          </motion.div>
-
-          {/* robot */}
-          <motion.div
-            className="absolute -right-2 -top-2 z-30"
-            style={{
-              transform:
-                "translate(calc(var(--px,0)*40px), calc(var(--py,0)*40px))",
-            }}
-            initial={{ opacity: 0, scale: 0.6, rotate: -10 }}
-            animate={{ opacity: 1, scale: 1, rotate: 0 }}
-            transition={{ duration: 0.9, ease: [0.34, 1.56, 0.64, 1], delay: 0.7 }}
-          >
-            <RobotHead size={108} />
+            {/* side image cards — desktop only (room in the 2-col layout) */}
+            <FloatCard className="-left-24 top-8 hidden lg:block" depth={26} delay={0.6}>
+              <img src="/assets/campaigns/nine-grid.jpg" alt="Nine ads from one source" className="h-28 w-24 rounded-xl object-cover" />
+              <Caption>9 ads · 1 source</Caption>
+            </FloatCard>
+            <FloatCard className="-right-20 top-1/3 hidden lg:block" depth={36} delay={0.78}>
+              <img src="/assets/campaigns/ratio-story.jpg" alt="Auto-sized story creative" className="h-32 w-[72px] rounded-xl object-cover" />
+              <Caption>Auto-sized · 9:16</Caption>
+            </FloatCard>
           </motion.div>
         </div>
       </div>

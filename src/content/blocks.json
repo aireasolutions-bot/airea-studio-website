@@ -55,5 +55,45 @@
   { "key": "pricing.hero.title_lead", "page": "pricing", "section": "Hero", "label": "Headline — lead", "type": "text", "value": "Pricing that scales " },
   { "key": "pricing.hero.title_accent", "page": "pricing", "section": "Hero", "label": "Headline — accent (blue italic)", "type": "text", "value": "with you" },
   { "key": "pricing.hero.title_tail", "page": "pricing", "section": "Hero", "label": "Headline — tail", "type": "text", "value": "." },
-  { "key": "pricing.hero.sub", "page": "pricing", "section": "Hero", "label": "Subheadline", "type": "richtext", "value": "Every plan starts with a 14-day free trial — no credit card required. Upgrade, downgrade, or cancel anytime." }
+  { "key": "pricing.hero.sub", "page": "pricing", "section": "Hero", "label": "Subheadline", "type": "richtext", "value": "Every plan starts with a 14-day free trial — no credit card required. Upgrade, downgrade, or cancel anytime." },
+
+  { "key": "home.film.tag", "page": "home", "section": "In motion", "label": "Eyebrow", "type": "text", "value": "In motion" },
+  { "key": "home.film.title_lead", "page": "home", "section": "In motion", "label": "Headline — lead", "type": "text", "value": "Watch one idea become a " },
+  { "key": "home.film.title_accent", "page": "home", "section": "In motion", "label": "Headline — accent (blue italic)", "type": "text", "value": "whole campaign" },
+  { "key": "home.film.title_tail", "page": "home", "section": "In motion", "label": "Headline — tail", "type": "text", "value": "." },
+  { "key": "home.film.video", "page": "home", "section": "In motion", "label": "Video", "type": "video", "value": "assets/video/airea-widescreen.mp4" },
+
+  { "key": "pricing.plan1.name", "page": "pricing", "section": "Plan 1 — Starter", "label": "Name", "type": "text", "value": "Starter" },
+  { "key": "pricing.plan1.price", "page": "pricing", "section": "Plan 1 — Starter", "label": "Price", "type": "text", "value": "$39" },
+  { "key": "pricing.plan1.cadence", "page": "pricing", "section": "Plan 1 — Starter", "label": "Cadence", "type": "text", "value": "/mo" },
+  { "key": "pricing.plan1.blurb", "page": "pricing", "section": "Plan 1 — Starter", "label": "Blurb", "type": "text", "value": "For solo operators getting consistent." },
+  { "key": "pricing.plan1.features", "page": "pricing", "section": "Plan 1 — Starter", "label": "Features (one per line)", "type": "richtext", "value": "1 brand workspace\nUp to 30 campaigns / mo\nSocial + email channels\nBrand DNA training" },
+  { "key": "pricing.plan1.cta", "page": "pricing", "section": "Plan 1 — Starter", "label": "Button", "type": "text", "value": "Start free" },
+
+  { "key": "pricing.plan2.name", "page": "pricing", "section": "Plan 2 — Studio (featured)", "label": "Name", "type": "text", "value": "Studio" },
+  { "key": "pricing.plan2.price", "page": "pricing", "section": "Plan 2 — Studio (featured)", "label": "Price", "type": "text", "value": "$99" },
+  { "key": "pricing.plan2.cadence", "page": "pricing", "section": "Plan 2 — Studio (featured)", "label": "Cadence", "type": "text", "value": "/mo" },
+  { "key": "pricing.plan2.blurb", "page": "pricing", "section": "Plan 2 — Studio (featured)", "label": "Blurb", "type": "text", "value": "For small teams shipping every week." },
+  { "key": "pricing.plan2.features", "page": "pricing", "section": "Plan 2 — Studio (featured)", "label": "Features (one per line)", "type": "richtext", "value": "3 brand workspaces\nUnlimited campaigns\nAll channels incl. paid ads\nAI review & editing\n1-click publish to Meta" },
+  { "key": "pricing.plan2.cta", "page": "pricing", "section": "Plan 2 — Studio (featured)", "label": "Button", "type": "text", "value": "Start free" },
+
+  { "key": "pricing.plan3.name", "page": "pricing", "section": "Plan 3 — Scale", "label": "Name", "type": "text", "value": "Scale" },
+  { "key": "pricing.plan3.price", "page": "pricing", "section": "Plan 3 — Scale", "label": "Price", "type": "text", "value": "$249" },
+  { "key": "pricing.plan3.cadence", "page": "pricing", "section": "Plan 3 — Scale", "label": "Cadence", "type": "text", "value": "/mo" },
+  { "key": "pricing.plan3.blurb", "page": "pricing", "section": "Plan 3 — Scale", "label": "Blurb", "type": "text", "value": "For growing marketing teams." },
+  { "key": "pricing.plan3.features", "page": "pricing", "section": "Plan 3 — Scale", "label": "Features (one per line)", "type": "richtext", "value": "10 workspaces & seats\nThe Wall analytics\nPriority models\nRoles & permissions\nShared brand library" },
+  { "key": "pricing.plan3.cta", "page": "pricing", "section": "Plan 3 — Scale", "label": "Button", "type": "text", "value": "Start free" },
+
+  { "key": "section.home.stats", "page": "home", "section": "Sections (show / hide)", "label": "Stats strip", "type": "section", "value": "true" },
+  { "key": "section.home.agent", "page": "home", "section": "Sections (show / hide)", "label": "Tell the agent", "type": "section", "value": "true" },
+  { "key": "section.home.onephoto", "page": "home", "section": "Sections (show / hide)", "label": "One photo · Nine worlds", "type": "section", "value": "true" },
+  { "key": "section.home.film", "page": "home", "section": "Sections (show / hide)", "label": "Product film", "type": "section", "value": "true" },
+  { "key": "section.home.howitworks", "page": "home", "section": "Sections (show / hide)", "label": "How it works", "type": "section", "value": "true" },
+  { "key": "section.home.branddna", "page": "home", "section": "Sections (show / hide)", "label": "Brand DNA", "type": "section", "value": "true" },
+  { "key": "section.home.channels", "page": "home", "section": "Sections (show / hide)", "label": "Channels", "type": "section", "value": "true" },
+  { "key": "section.home.deploy", "page": "home", "section": "Sections (show / hide)", "label": "Deploy everywhere", "type": "section", "value": "true" },
+  { "key": "section.home.wall", "page": "home", "section": "Sections (show / hide)", "label": "The Wall", "type": "section", "value": "true" },
+  { "key": "section.home.usecases", "page": "home", "section": "Sections (show / hide)", "label": "Use cases", "type": "section", "value": "true" },
+  { "key": "section.home.testimonials", "page": "home", "section": "Sections (show / hide)", "label": "Testimonials", "type": "section", "value": "true" },
+  { "key": "section.home.pricing", "page": "home", "section": "Sections (show / hide)", "label": "Pricing preview", "type": "section", "value": "true" }
 ]
