@@ -1,5 +1,5 @@
 // Version history — recent commits on the branch (each is a Vercel deploy).
-import { verifyAdmin } from "../_lib/admin.js";
+import { requireAdmin } from "../_lib/admin.js";
 import { listCommits, githubConfigured } from "../_lib/github.js";
 
 export const config = { maxDuration: 30 };
@@ -13,9 +13,9 @@ export default async function handler(req: any, res: any) {
     res.status(503).json({ error: "GitHub not configured. Set GITHUB_TOKEN, GITHUB_REPO in Vercel." });
     return;
   }
-  const email = await verifyAdmin(req);
-  if (!email) {
-    res.status(401).json({ error: "Unauthorized" });
+  const auth = await requireAdmin(req);
+  if ("error" in auth) {
+    res.status(auth.status).json({ error: auth.error });
     return;
   }
   try {

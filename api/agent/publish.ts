@@ -1,7 +1,7 @@
 // AIREA Agent — publish staged edits. Verifies the admin, blocks dangerous paths,
 // and commits all files in one atomic commit to the default branch, which triggers
 // a Vercel production deploy.
-import { verifyAdmin } from "../_lib/admin.js";
+import { requireAdmin } from "../_lib/admin.js";
 import { commitFiles, githubConfigured, REPO, BRANCH } from "../_lib/github.js";
 
 export const config = { maxDuration: 60 };
@@ -18,11 +18,12 @@ export default async function handler(req: any, res: any) {
     res.status(503).json({ error: "GitHub not configured. Set GITHUB_TOKEN, GITHUB_REPO in Vercel." });
     return;
   }
-  const email = await verifyAdmin(req);
-  if (!email) {
-    res.status(401).json({ error: "Unauthorized" });
+  const auth = await requireAdmin(req);
+  if ("error" in auth) {
+    res.status(auth.status).json({ error: auth.error });
     return;
   }
+  const email = auth.email;
 
   try {
     const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};

@@ -2,7 +2,7 @@
 // repo + tools to read it, runs a tool-calling loop, and returns the assistant's
 // reply, a transcript of what it did, and any staged file edits (with old content
 // for diffing). Stateless: the client re-sends the conversation + pending edits.
-import { verifyAdmin } from "../_lib/admin.js";
+import { requireAdmin } from "../_lib/admin.js";
 import { chat, openaiConfigured, getModel, getReasoningModel, getReasoningEffort } from "../_lib/openai.js";
 import { listTree, readFile, githubConfigured } from "../_lib/github.js";
 import { buildSystemPrompt, TOOLS } from "../_lib/knowledge.js";
@@ -24,9 +24,9 @@ export default async function handler(req: any, res: any) {
     });
     return;
   }
-  const email = await verifyAdmin(req);
-  if (!email) {
-    res.status(401).json({ error: "Unauthorized" });
+  const auth = await requireAdmin(req);
+  if ("error" in auth) {
+    res.status(auth.status).json({ error: auth.error });
     return;
   }
 
