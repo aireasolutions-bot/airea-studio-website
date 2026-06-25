@@ -7,6 +7,7 @@ import { SmallBusiness } from "@/pages/SmallBusiness";
 import { Ecommerce } from "@/pages/Ecommerce";
 import { HowItWorksPage } from "@/pages/HowItWorksPage";
 import { FaqPage } from "@/pages/FaqPage";
+import { Test } from "@/pages/Test";
 import { ContentProvider } from "@/content/ContentProvider";
 import { SITE_PAGES } from "@/lib/pages";
 
@@ -35,6 +36,7 @@ function PublicApp() {
             const C = PAGE_COMPONENTS[p.slug];
             return C ? <Route key={p.slug} path={p.path} element={<C />} /> : null;
           })}
+          <Route path="/test" element={<Test />} />
           <Route path="*" element={<Home />} />
         </Routes>
       </Layout>
