@@ -30,15 +30,15 @@ export function Ecommerce() {
   return (
     <>
       <SubHero
-        eyebrow={c("ec.hero.eyebrow", "For e-commerce")}
+        eyebrow={<span {...editable("ec.hero.eyebrow")}>{c("ec.hero.eyebrow", "For e-commerce")}</span>}
         title={
           <>
             <span {...editable("ec.hero.title_lead")}>{c("ec.hero.title_lead", "One product photo. ")}</span>
             <span className="italic-blue" {...editable("ec.hero.title_accent")}>{c("ec.hero.title_accent", "Every ad.")}</span>
           </>
         }
-        sub={c("ec.hero.sub", "Turn a single product shot into a full, on-brand funnel — paid social, organic, email, and marketplace creative — sized and written for every channel automatically.")}
-        note={c("ec.hero.note", "No credit card required · Cancel anytime")}
+        sub={<span {...editable("ec.hero.sub", "richtext")}>{c("ec.hero.sub", "Turn a single product shot into a full, on-brand funnel — paid social, organic, email, and marketplace creative — sized and written for every channel automatically.")}</span>}
+        note={<span {...editable("ec.hero.note")}>{c("ec.hero.note", "No credit card required · Cancel anytime")}</span>}
         visual={
           <div className="relative mx-auto w-fit">
             <span
@@ -64,7 +64,7 @@ export function Ecommerce() {
       <section className="py-20 md:py-28">
         <div className="wrap-wide">
           <SectionHeading
-            tag={c("ec.benefits.tag", "Why AIREA Studio")}
+            tag={<span {...editable("ec.benefits.tag")}>{c("ec.benefits.tag", "Why AIREA Studio")}</span>}
             title={<span {...editable("ec.benefits.title")}>{c("ec.benefits.title", "Your catalog, multiplied")}</span>}
             sub={<span {...editable("ec.benefits.sub", "richtext")}>{c("ec.benefits.sub", "The reframing, rewriting, and resizing that eats your team's week — handled.")}</span>}
           />
@@ -72,8 +72,8 @@ export function Ecommerce() {
             <FeatureTriple
               items={BENEFITS.map((b, i) => ({
                 ...b,
-                title: c(`ec.benefit${i}.title`, b.title),
-                body: c(`ec.benefit${i}.body`, b.body),
+                title: <span {...editable(`ec.benefit${i}.title`)}>{c(`ec.benefit${i}.title`, b.title)}</span>,
+                body: <span {...editable(`ec.benefit${i}.body`, "richtext")}>{c(`ec.benefit${i}.body`, b.body)}</span>,
               }))}
             />
           </div>

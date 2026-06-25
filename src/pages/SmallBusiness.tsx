@@ -39,15 +39,15 @@ export function SmallBusiness() {
   return (
     <>
       <SubHero
-        eyebrow={c("sb.hero.eyebrow", "For small business")}
+        eyebrow={<span {...editable("sb.hero.eyebrow")}>{c("sb.hero.eyebrow", "For small business")}</span>}
         title={
           <>
             <span {...editable("sb.hero.title_lead")}>{c("sb.hero.title_lead", "Small teams. ")}</span>
             <span className="italic-blue" {...editable("sb.hero.title_accent")}>{c("sb.hero.title_accent", "Big presence.")}</span>
           </>
         }
-        sub={c("sb.hero.sub", "Create professional marketing across every channel without hiring an agency or becoming a marketing expert. AIREA Studio adapts your campaigns for each platform and bakes in best practices at every step.")}
-        note={c("sb.hero.note", "No credit card required · Cancel anytime")}
+        sub={<span {...editable("sb.hero.sub", "richtext")}>{c("sb.hero.sub", "Create professional marketing across every channel without hiring an agency or becoming a marketing expert. AIREA Studio adapts your campaigns for each platform and bakes in best practices at every step.")}</span>}
+        note={<span {...editable("sb.hero.note")}>{c("sb.hero.note", "No credit card required · Cancel anytime")}</span>}
         visual={
           <div className="relative mx-auto w-fit">
             <span
@@ -73,7 +73,7 @@ export function SmallBusiness() {
       <section className="py-20 md:py-28">
         <div className="wrap-wide">
           <SectionHeading
-            tag={c("sb.benefits.tag", "Why AIREA Studio")}
+            tag={<span {...editable("sb.benefits.tag")}>{c("sb.benefits.tag", "Why AIREA Studio")}</span>}
             title={<span {...editable("sb.benefits.title")}>{c("sb.benefits.title", "Designed for small teams and solo operators")}</span>}
             sub={<span {...editable("sb.benefits.sub", "richtext")}>{c("sb.benefits.sub", "The leverage of an in-house marketing department, sized for the way you actually work.")}</span>}
           />
@@ -81,8 +81,8 @@ export function SmallBusiness() {
             <FeatureTriple
               items={BENEFITS.map((b, i) => ({
                 ...b,
-                title: c(`sb.benefit${i}.title`, b.title),
-                body: c(`sb.benefit${i}.body`, b.body),
+                title: <span {...editable(`sb.benefit${i}.title`)}>{c(`sb.benefit${i}.title`, b.title)}</span>,
+                body: <span {...editable(`sb.benefit${i}.body`, "richtext")}>{c(`sb.benefit${i}.body`, b.body)}</span>,
               }))}
             />
           </div>
@@ -93,7 +93,7 @@ export function SmallBusiness() {
         <div className="wrap-wide">
           <SectionHeading
             align="center"
-            tag={c("sb.tailored.tag", "Tailored for you")}
+            tag={<span {...editable("sb.tailored.tag")}>{c("sb.tailored.tag", "Tailored for you")}</span>}
             title={<span {...editable("sb.tailored.title")}>{c("sb.tailored.title", "Built around your business")}</span>}
           />
           <div className="mt-12 grid gap-5 md:grid-cols-3">

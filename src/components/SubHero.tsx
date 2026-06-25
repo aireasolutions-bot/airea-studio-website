@@ -14,10 +14,10 @@ export function SubHero({
   note,
   visual,
 }: {
-  eyebrow: string;
+  eyebrow: ReactNode;
   title: ReactNode;
-  sub: string;
-  note?: string;
+  sub: ReactNode;
+  note?: ReactNode;
   visual?: ReactNode;
 }) {
   const c = useC();

@@ -59,7 +59,7 @@ export function Pricing() {
         <div className="wrap">
           <SectionHeading
             align="center"
-            tag={c("pricing.compare.tag", "Compare")}
+            tag={<span {...editable("pricing.compare.tag")}>{c("pricing.compare.tag", "Compare")}</span>}
             title={<span {...editable("pricing.compare.title")}>{c("pricing.compare.title", "Everything in every plan")}</span>}
           />
           <Reveal className="mt-12 overflow-hidden rounded-3xl border border-line">
@@ -113,7 +113,7 @@ export function Pricing() {
         <div className="wrap">
           <SectionHeading
             align="center"
-            tag={c("pricing.faq.tag", "FAQ")}
+            tag={<span {...editable("pricing.faq.tag")}>{c("pricing.faq.tag", "FAQ")}</span>}
             title={<span {...editable("pricing.faq.title")}>{c("pricing.faq.title", "Questions, answered")}</span>}
           />
           <div className="mt-12">
