@@ -89,6 +89,80 @@ export async function commitFiles(
   return { sha: newSha, url: `https://github.com/${REPO}/commit/${newSha}` };
 }
 
+// Build the staged edits on a throwaway branch (= production HEAD + edits) so
+// Vercel creates a PREVIEW deployment, WITHOUT touching production. Force-updates
+// the branch each time so every preview is a clean "main + current edits".
+export async function deployToBranch(
+  files: { path: string; content: string }[],
+  message: string,
+  branch: string
+): Promise<{ sha: string }> {
+  const refRes = await gh(`/repos/${REPO}/git/ref/heads/${BRANCH}`);
+  if (!refRes.ok) throw new Error(`GitHub ref ${refRes.status}`);
+  const baseSha = (await refRes.json()).object.sha;
+
+  const commitRes = await gh(`/repos/${REPO}/git/commits/${baseSha}`);
+  const baseTree = (await commitRes.json()).tree.sha;
+
+  const tree: any[] = [];
+  for (const f of files) {
+    const blobRes = await gh(`/repos/${REPO}/git/blobs`, {
+      method: "POST",
+      body: JSON.stringify({ content: f.content, encoding: "utf-8" }),
+    });
+    if (!blobRes.ok) throw new Error(`GitHub blob ${blobRes.status} for ${f.path}`);
+    tree.push({ path: f.path, mode: "100644", type: "blob", sha: (await blobRes.json()).sha });
+  }
+
+  const treeRes = await gh(`/repos/${REPO}/git/trees`, {
+    method: "POST",
+    body: JSON.stringify({ base_tree: baseTree, tree }),
+  });
+  if (!treeRes.ok) throw new Error(`GitHub tree create ${treeRes.status}`);
+  const newTree = (await treeRes.json()).sha;
+
+  const newCommitRes = await gh(`/repos/${REPO}/git/commits`, {
+    method: "POST",
+    body: JSON.stringify({ message, tree: newTree, parents: [baseSha] }),
+  });
+  if (!newCommitRes.ok) throw new Error(`GitHub commit ${newCommitRes.status}`);
+  const newSha = (await newCommitRes.json()).sha;
+
+  // Create the branch, or force-update it if it already exists.
+  const createRes = await gh(`/repos/${REPO}/git/refs`, {
+    method: "POST",
+    body: JSON.stringify({ ref: `refs/heads/${branch}`, sha: newSha }),
+  });
+  if (!createRes.ok) {
+    const patchRes = await gh(`/repos/${REPO}/git/refs/heads/${branch}`, {
+      method: "PATCH",
+      body: JSON.stringify({ sha: newSha, force: true }),
+    });
+    if (!patchRes.ok) throw new Error(`GitHub ref update ${patchRes.status}`);
+  }
+
+  return { sha: newSha };
+}
+
+// Read the Vercel preview deployment's state + URL for a commit, via the GitHub
+// Deployments the Vercel integration creates (no Vercel token needed). State is
+// one of: queued | pending | in_progress | success | failure | error.
+export async function previewStatus(sha: string): Promise<{ state: string; url: string | null }> {
+  const depRes = await gh(`/repos/${REPO}/deployments?sha=${sha}&per_page=10`);
+  if (!depRes.ok) throw new Error(`GitHub deployments ${depRes.status}`);
+  const deps = await depRes.json();
+  if (!Array.isArray(deps) || deps.length === 0) return { state: "queued", url: null };
+
+  const dep = deps.find((d: any) => (d.creator?.login || "").includes("vercel")) || deps[0];
+  const stRes = await gh(`/repos/${REPO}/deployments/${dep.id}/statuses?per_page=10`);
+  if (!stRes.ok) throw new Error(`GitHub statuses ${stRes.status}`);
+  const statuses = await stRes.json();
+  if (!Array.isArray(statuses) || statuses.length === 0) return { state: "pending", url: null };
+
+  const latest = statuses[0]; // most-recent first
+  return { state: latest.state || "pending", url: latest.environment_url || null };
+}
+
 // Recent commits on the branch — each push is a Vercel deploy, so this is the
 // version history the team can roll back to.
 export async function listCommits(

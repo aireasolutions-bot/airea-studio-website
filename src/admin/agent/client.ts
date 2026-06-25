@@ -100,6 +100,44 @@ export async function runAgent(
   }
 }
 
+// Build a disposable preview deployment of the staged edits (Vercel preview
+// branch). Returns the commit sha to poll for status.
+export async function requestPreview(
+  edits: { path: string; content: string }[]
+): Promise<{ sha: string; branch: string }> {
+  try {
+    const res = await fetch("/api/agent/preview", {
+      method: "POST",
+      headers: await headers(),
+      body: JSON.stringify({ edits }),
+    });
+    if (!res.ok) {
+      const body = await asJson(res).catch(() => null);
+      if (body?.error) throw new Error(body.error);
+      if (res.status >= 500) throw new Error(`Preview hit a server error (${res.status}). Check the Vercel logs for /api/agent/preview.`);
+      throw new Error(NOT_DEPLOYED);
+    }
+    return asJson(res);
+  } catch (e) {
+    throw new Error(friendly(e));
+  }
+}
+
+export type PreviewStatus = { state: string; url: string | null };
+
+// Poll the Vercel build state + URL for a preview commit.
+export async function getPreviewStatus(sha: string): Promise<PreviewStatus> {
+  const res = await fetch(`/api/agent/preview-status?sha=${encodeURIComponent(sha)}`, {
+    headers: await headers(),
+  });
+  if (!res.ok) {
+    const body = await asJson(res).catch(() => null);
+    if (body?.error) throw new Error(body.error);
+    throw new Error(NOT_DEPLOYED);
+  }
+  return asJson(res);
+}
+
 export async function publishEdits(
   edits: { path: string; content: string }[],
   message: string

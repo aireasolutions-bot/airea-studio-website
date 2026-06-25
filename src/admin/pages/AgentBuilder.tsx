@@ -8,6 +8,7 @@ import {
   Check,
   ChevronDown,
   ExternalLink,
+  Eye,
   FileCode2,
   GitCommitHorizontal,
   Images,
@@ -30,6 +31,8 @@ import {
   runAgent,
   publishEdits,
   uploadImage,
+  requestPreview,
+  getPreviewStatus,
   type AgentEdit,
   type AgentMode,
   type ChatMsg,
@@ -227,12 +230,14 @@ export function AgentBuilder() {
   const [workingLine, setWorkingLine] = useState(0);
   const [publishing, setPublishing] = useState(false);
   const [publishOk, setPublishOk] = useState<{ url: string } | null>(null);
+  const [preview, setPreview] = useState<{ state: "building" | "ready" | "error"; url?: string; sha?: string } | null>(null);
   const [railOpen, setRailOpen] = useState(false); // mobile drawer
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const skipNextSave = useRef(false);
+  const previewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ---- boot: migrate legacy localStorage chat, then load conversations ----
   useEffect(() => {
@@ -439,13 +444,62 @@ export function AgentBuilder() {
         ...m,
         { id: uid(), role: "assistant", content: res.reply || "Done.", transcript: res.transcript, edits: res.edits },
       ]);
-      if (res.edits?.length) setStaged((prev) => mergeEdits(prev, res.edits));
+      if (res.edits?.length) {
+        setStaged((prev) => mergeEdits(prev, res.edits));
+        setPreview(null); // staged set changed → previous preview is stale
+        cancelPreviewPoll();
+      }
     } catch (e) {
       setMessages((m) => [...m, { id: uid(), role: "assistant", content: (e as Error).message, error: true }]);
     } finally {
       setBusy(false);
     }
   };
+
+  const cancelPreviewPoll = () => {
+    if (previewTimer.current) {
+      clearTimeout(previewTimer.current);
+      previewTimer.current = null;
+    }
+  };
+
+  const startPreview = async () => {
+    if (!staged.length || preview?.state === "building") return;
+    cancelPreviewPoll();
+    setPreview({ state: "building" });
+    try {
+      const { sha } = await requestPreview(staged.map((e) => ({ path: e.path, content: e.content })));
+      let tries = 0;
+      const poll = async () => {
+        tries++;
+        try {
+          const st = await getPreviewStatus(sha);
+          if (st.state === "success" && st.url) {
+            setPreview({ state: "ready", url: st.url, sha });
+            return;
+          }
+          if (st.state === "failure" || st.state === "error") {
+            setPreview({ state: "error", sha });
+            return;
+          }
+        } catch {
+          /* transient — keep polling */
+        }
+        if (tries > 60) {
+          setPreview({ state: "error", sha });
+          return;
+        }
+        previewTimer.current = setTimeout(poll, 4000);
+      };
+      poll();
+    } catch (e) {
+      setPreview({ state: "error" });
+      setMessages((m) => [...m, { id: uid(), role: "assistant", content: (e as Error).message, error: true }]);
+    }
+  };
+
+  // clean up the poll on unmount
+  useEffect(() => () => cancelPreviewPoll(), []);
 
   const publish = async () => {
     if (!staged.length || publishing) return;
@@ -464,6 +518,8 @@ export function AgentBuilder() {
         },
       ]);
       setStaged([]);
+      setPreview(null);
+      cancelPreviewPoll();
     } catch (e) {
       setMessages((m) => [...m, { id: uid(), role: "assistant", content: (e as Error).message, error: true }]);
     } finally {
@@ -673,10 +729,54 @@ export function AgentBuilder() {
                   <span className="text-emerald-600">+{totals.add}</span> <span className="text-critical">−{totals.del}</span>
                 </span>
               </span>
-              <div className="ml-auto flex items-center gap-2">
-                <button onClick={() => confirm("Discard all unpublished changes?") && setStaged([])} className="rounded-full border border-line-2 bg-white px-3.5 py-2 text-[13px] font-semibold text-ink hover:border-ink-3">
+              <div className="ml-auto flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => {
+                    if (confirm("Discard all unpublished changes?")) {
+                      setStaged([]);
+                      setPreview(null);
+                      cancelPreviewPoll();
+                    }
+                  }}
+                  className="rounded-full border border-line-2 bg-white px-3.5 py-2 text-[13px] font-semibold text-ink hover:border-ink-3"
+                >
                   Discard
                 </button>
+
+                {preview?.state === "ready" && preview.url ? (
+                  <a
+                    href={preview.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Opens the preview build in a new tab (uses your Vercel login)"
+                    className="flex items-center gap-2 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-[13px] font-semibold text-emerald-700 hover:bg-emerald-100"
+                  >
+                    <Eye className="h-4 w-4" /> Open preview <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                ) : preview?.state === "building" ? (
+                  <span
+                    title="Vercel is building your preview — about a minute"
+                    className="flex items-center gap-2 rounded-full border border-line-2 bg-white px-3.5 py-2 text-[13px] font-semibold text-ink-2"
+                  >
+                    <Loader2 className="h-4 w-4 animate-spin text-blue" /> Building preview…
+                  </span>
+                ) : preview?.state === "error" ? (
+                  <button
+                    onClick={startPreview}
+                    className="flex items-center gap-2 rounded-full border border-critical/40 bg-critical/5 px-3.5 py-2 text-[13px] font-semibold text-critical hover:bg-critical/10"
+                  >
+                    <AlertTriangle className="h-4 w-4" /> Preview failed · Retry
+                  </button>
+                ) : (
+                  <button
+                    onClick={startPreview}
+                    title="Build a preview of these changes before publishing"
+                    className="flex items-center gap-2 rounded-full border border-line-2 bg-white px-3.5 py-2 text-[13px] font-semibold text-ink hover:border-blue/40 hover:text-blue"
+                  >
+                    <Eye className="h-4 w-4" /> Preview
+                  </button>
+                )}
+
                 <button onClick={publish} disabled={publishing} className="flex items-center gap-2 rounded-full bg-blue px-4 py-2 text-[13.5px] font-semibold text-white shadow-soft hover:bg-blue-ink disabled:opacity-60">
                   {publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <GitCommitHorizontal className="h-4 w-4" />}
                   {publishing ? "Publishing…" : "Publish to live"}
