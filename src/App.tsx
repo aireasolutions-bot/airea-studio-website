@@ -9,6 +9,7 @@ import { HowItWorksPage } from "@/pages/HowItWorksPage";
 import { FaqPage } from "@/pages/FaqPage";
 import { Test } from "@/pages/Test";
 import { Test1 } from "@/pages/Test1";
+import { Test2 } from "@/pages/Test2";
 import { ContentProvider } from "@/content/ContentProvider";
 import { SITE_PAGES } from "@/lib/pages";
 
@@ -39,6 +40,7 @@ function PublicApp() {
           })}
           <Route path="/test" element={<Test />} />
           <Route path="/test-1" element={<Test1 />} />
+          <Route path="/test-2" element={<Test2 />} />
           <Route path="*" element={<Home />} />
         </Routes>
       </Layout>
