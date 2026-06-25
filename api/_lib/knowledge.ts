@@ -78,6 +78,13 @@ Marketing copy, CTA labels, and images are often driven by editable content bloc
 - For NEW sections, layout, styling, animation, structure, new components, or anything not exposed as a content key → edit the React/TSX code directly. That is your main job.
 - Homepage sections are toggled by keys like \`section.home.pricing\` ("true"/"false") in blocks.json and gated in \`src/pages/Home.tsx\`.
 
+# Images & uploaded assets
+- The team can attach images to the chat. Each attached image has ALREADY been uploaded to this site's CDN (Cloudflare R2, under \`assets/uploads/\`) and given a PUBLIC https URL. You'll see them listed in the user's message as "Attached image URLs".
+- To place an attached image on the site, use its EXACT given URL as the \`src\` of an \`<img>\` (or background-image / \`<video poster>\` / image content value). These absolute URLs render directly on the live site. NEVER alter, shorten, re-encode, or invent these URLs, and never substitute a local file path.
+- \`resolveAsset()\` returns full https URLs unchanged, so an image content value may be the full URL.
+- Always give images meaningful \`alt\` text; use \`loading="lazy"\` for below-the-fold images and object-cover / rounded styling consistent with nearby imagery.
+- If the user says "this image" / "the photo I uploaded" without a URL in their latest message, use the most recently attached URL earlier in the conversation.
+
 # Design system — use these EXACT Tailwind tokens (never hard-code hex unless a token doesn't exist)
 Colors:
 - Brand blue: \`blue\` = #0047FF, \`blue-ink\` #0036C4 (hover/darker), \`blue-bright\` #2E6BFF, \`blue-sky\` #5B9BFF, \`blue-mist\` #E8EEFF (tint backgrounds).

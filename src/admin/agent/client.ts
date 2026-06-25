@@ -20,7 +20,8 @@ export type AgentResult = {
   mode: AgentMode;
 };
 
-export type ChatMsg = { role: "user" | "assistant"; content: string };
+export type ChatAttachment = { url: string; name?: string };
+export type ChatMsg = { role: "user" | "assistant"; content: string; attachments?: ChatAttachment[] };
 
 async function headers() {
   const { data } = await supabase!.auth.getSession();
@@ -45,6 +46,34 @@ function friendly(e: unknown): string {
 async function asJson(res: Response): Promise<any> {
   const ct = res.headers.get("content-type") || "";
   if (!ct.includes("application/json")) throw new Error(NOT_DEPLOYED);
+  return res.json();
+}
+
+// Upload an image to Cloudflare R2 (under assets/uploads/) via the secure
+// serverless endpoint, returning its public URL + key. Used by the chat composer
+// so the agent can place real, live-on-CDN images.
+export async function uploadImage(file: File): Promise<{ url: string; key: string }> {
+  const dataBase64 = await new Promise<string>((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result).split(",")[1] ?? "");
+    r.onerror = () => reject(new Error("Couldn't read that file."));
+    r.readAsDataURL(file);
+  });
+  const { data: s } = await supabase!.auth.getSession();
+  const res = await fetch("/api/upload", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${s.session?.access_token ?? ""}` },
+    body: JSON.stringify({ filename: file.name, contentType: file.type, folder: "uploads", dataBase64 }),
+  });
+  if (!res.ok) {
+    const b = await res.json().catch(() => null);
+    throw new Error(
+      b?.error ||
+        (res.status === 404 || res.status === 405
+          ? "Image upload runs on the deployed site (needs the serverless function + R2 keys)."
+          : `Upload failed (${res.status})`)
+    );
+  }
   return res.json();
 }
 

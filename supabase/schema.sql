@@ -132,3 +132,24 @@ create policy p_assets on public.assets
 drop policy if exists p_publish on public.publish_log;
 create policy p_publish on public.publish_log
   for select using (public.is_admin());
+
+-- ---------- AIREA Agent conversations (per-admin chat history) ----------
+create table if not exists public.agent_conversations (
+  id         uuid primary key default gen_random_uuid(),
+  user_email text not null,
+  title      text not null default 'New chat',
+  messages   jsonb not null default '[]'::jsonb,   -- chat transcript (+ attachments, edits)
+  staged     jsonb not null default '[]'::jsonb,    -- unpublished file edits for this chat
+  mode       text not null default 'build',         -- build (gpt-5.5) | reason (o3-mini)
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.agent_conversations enable row level security;
+-- Each admin sees/edits only their OWN conversations (browser CRUD via supabase-js).
+drop policy if exists p_agent_convos on public.agent_conversations;
+create policy p_agent_convos on public.agent_conversations
+  for all
+  using (public.is_admin() and lower(user_email) = lower(coalesce(auth.jwt() ->> 'email', '')))
+  with check (public.is_admin() and lower(user_email) = lower(coalesce(auth.jwt() ->> 'email', '')));
+create index if not exists idx_agent_convos_user_updated
+  on public.agent_conversations (user_email, updated_at desc);

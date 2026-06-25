@@ -13,6 +13,20 @@ export const config = { maxDuration: 300 };
 
 const MAX_STEPS = 12;
 
+// Fold any attached image URLs into the user message as explicit, copy-exact text
+// so the model embeds the real CDN links (text-only keeps it model-agnostic).
+function toModelMessage(m: any) {
+  const role = m.role === "assistant" ? "assistant" : "user";
+  const text = String(m.content ?? "");
+  const atts = Array.isArray(m.attachments) ? m.attachments.filter((a: any) => a && a.url) : [];
+  if (role !== "user" || !atts.length) return { role, content: text };
+  const list = atts.map((a: any) => `- ${a.url}`).join("\n");
+  return {
+    role,
+    content: `${text}\n\n[Attached image URLs — LIVE public CDN links already hosted for this site. Use the EXACT URL(s) in code so the image displays on the live site:]\n${list}`,
+  };
+}
+
 export default async function handler(req: any, res: any) {
   if (req.method !== "POST") {
     res.status(405).json({ error: "Method not allowed" });
@@ -54,7 +68,7 @@ export default async function handler(req: any, res: any) {
 
     const messages: any[] = [
       { role: "system", content: buildSystemPrompt(tree, pendingEdits) },
-      ...userMessages.map((m: any) => ({ role: m.role, content: String(m.content ?? "") })),
+      ...userMessages.map(toModelMessage),
     ];
 
     // Seed the read cache with pending edits so the model sees unpublished work.
