@@ -88,3 +88,52 @@ export async function commitFiles(
 
   return { sha: newSha, url: `https://github.com/${REPO}/commit/${newSha}` };
 }
+
+// Recent commits on the branch — each push is a Vercel deploy, so this is the
+// version history the team can roll back to.
+export async function listCommits(
+  limit = 20
+): Promise<{ sha: string; message: string; body: string; author: string; date: string; url: string }[]> {
+  const r = await gh(`/repos/${REPO}/commits?sha=${BRANCH}&per_page=${limit}`);
+  if (!r.ok) throw new Error(`GitHub commits ${r.status}`);
+  const data = await r.json();
+  return (data || []).map((c: any) => {
+    const msg = c.commit?.message || "";
+    return {
+      sha: c.sha,
+      message: msg.split("\n")[0],
+      body: msg.split("\n").slice(1).join("\n").trim(),
+      author: c.commit?.author?.name || c.author?.login || "unknown",
+      date: c.commit?.author?.date || "",
+      url: c.html_url,
+    };
+  });
+}
+
+// Roll the branch back to a previous commit's exact file tree, as a NEW commit on
+// top of HEAD. History is preserved, repo + live stay in sync, and it's itself
+// reversible. Triggers a fresh Vercel deploy of that snapshot.
+export async function rollbackTo(sha: string, message: string): Promise<{ sha: string; url: string }> {
+  const targetRes = await gh(`/repos/${REPO}/git/commits/${sha}`);
+  if (!targetRes.ok) throw new Error(`GitHub target commit ${targetRes.status}`);
+  const targetTree = (await targetRes.json()).tree.sha;
+
+  const refRes = await gh(`/repos/${REPO}/git/ref/heads/${BRANCH}`);
+  if (!refRes.ok) throw new Error(`GitHub ref ${refRes.status}`);
+  const head = (await refRes.json()).object.sha;
+
+  const commitRes = await gh(`/repos/${REPO}/git/commits`, {
+    method: "POST",
+    body: JSON.stringify({ message, tree: targetTree, parents: [head] }),
+  });
+  if (!commitRes.ok) throw new Error(`GitHub rollback commit ${commitRes.status}`);
+  const newSha = (await commitRes.json()).sha;
+
+  const patchRes = await gh(`/repos/${REPO}/git/refs/heads/${BRANCH}`, {
+    method: "PATCH",
+    body: JSON.stringify({ sha: newSha }),
+  });
+  if (!patchRes.ok) throw new Error(`GitHub ref update ${patchRes.status}`);
+
+  return { sha: newSha, url: `https://github.com/${REPO}/commit/${newSha}` };
+}

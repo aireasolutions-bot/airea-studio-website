@@ -39,9 +39,11 @@ create table if not exists public.comments (
   pos_y        real,
   body         text not null,
   status       text not null default 'open'
-               check (status in ('open','in_progress','confirmed','rejected')),
+               check (status in ('open','in_progress','confirmed','rejected','resolved')),
   author_email text,
   author_name  text,
+  mentions     text[] not null default '{}',
+  parent_id    uuid references public.comments(id) on delete cascade,
   created_at   timestamptz not null default now(),
   updated_at   timestamptz not null default now(),
   resolved_by  text
