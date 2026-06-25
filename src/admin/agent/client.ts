@@ -10,11 +10,14 @@ export type AgentEdit = {
 
 export type AgentStep = { type: string; label: string };
 
+export type AgentMode = "build" | "reason";
+
 export type AgentResult = {
   reply: string;
   transcript: AgentStep[];
   edits: AgentEdit[];
   model: string;
+  mode: AgentMode;
 };
 
 export type ChatMsg = { role: "user" | "assistant"; content: string };
@@ -45,12 +48,16 @@ async function asJson(res: Response): Promise<any> {
   return res.json();
 }
 
-export async function runAgent(messages: ChatMsg[], pendingEdits: { path: string; content: string }[]): Promise<AgentResult> {
+export async function runAgent(
+  messages: ChatMsg[],
+  pendingEdits: { path: string; content: string }[],
+  mode: AgentMode = "build"
+): Promise<AgentResult> {
   try {
     const res = await fetch("/api/agent/run", {
       method: "POST",
       headers: await headers(),
-      body: JSON.stringify({ messages, pendingEdits }),
+      body: JSON.stringify({ messages, pendingEdits, mode }),
     });
     if (!res.ok) {
       const body = await asJson(res).catch(() => null);

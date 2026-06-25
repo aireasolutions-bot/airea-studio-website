@@ -3,6 +3,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertTriangle,
   ArrowUp,
+  Boxes,
+  Bug,
   Check,
   ChevronDown,
   ExternalLink,
@@ -16,7 +18,7 @@ import {
 } from "lucide-react";
 import { RobotHead } from "@/components/RobotHead";
 import { cn } from "@/lib/cn";
-import { runAgent, publishEdits, type AgentEdit, type AgentStep, type ChatMsg } from "../agent/client";
+import { runAgent, publishEdits, type AgentEdit, type AgentMode, type AgentStep, type ChatMsg } from "../agent/client";
 import { lineDiff, diffStat } from "../agent/diff";
 
 type Role = "user" | "assistant" | "system";
@@ -37,6 +39,11 @@ const SUGGESTIONS = [
   { icon: Sparkles, text: "Add a 4th pricing tier called Enterprise" },
   { icon: FileCode2, text: "Make the final call-to-action section background a soft blue gradient" },
   { icon: Search, text: "Add a testimonial from a fictional happy customer to the homepage" },
+];
+
+const MODES: { id: AgentMode; label: string; model: string; icon: typeof Boxes; hint: string }[] = [
+  { id: "build", label: "Build", model: "GPT-5.5", icon: Boxes, hint: "Broad, multi-file architecture & design" },
+  { id: "reason", label: "Reason", model: "o3-mini · high", icon: Bug, hint: "Pinpoint bugs & algorithmic code" },
 ];
 
 const WORKING_LINES = [
@@ -129,6 +136,7 @@ export function AgentBuilder() {
     }
   });
   const [input, setInput] = useState("");
+  const [mode, setMode] = useState<AgentMode>("build");
   const [busy, setBusy] = useState(false);
   const [workingLine, setWorkingLine] = useState(0);
   const [publishing, setPublishing] = useState(false);
@@ -164,7 +172,7 @@ export function AgentBuilder() {
     setBusy(true);
     setWorkingLine(0);
     try {
-      const res = await runAgent(history, staged.map((e) => ({ path: e.path, content: e.content })));
+      const res = await runAgent(history, staged.map((e) => ({ path: e.path, content: e.content })), mode);
       setMessages((m) => [
         ...m,
         {
@@ -410,8 +418,31 @@ export function AgentBuilder() {
         )}
       </AnimatePresence>
 
+      {/* brain mode */}
+      <div className="mt-3 flex flex-wrap items-center gap-2.5">
+        <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-3">Brain</span>
+        <div className="flex rounded-full border border-line-2 bg-white p-0.5">
+          {MODES.map((m) => (
+            <button
+              key={m.id}
+              onClick={() => setMode(m.id)}
+              title={m.hint}
+              className={cn(
+                "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-colors",
+                mode === m.id ? "bg-blue text-white shadow-soft" : "text-ink-2 hover:text-ink"
+              )}
+            >
+              <m.icon className="h-3.5 w-3.5" />
+              {m.label}
+              <span className={cn("font-mono text-[10px]", mode === m.id ? "text-white/75" : "text-ink-3")}>{m.model}</span>
+            </button>
+          ))}
+        </div>
+        <span className="hidden text-[12px] text-ink-3 md:block">{MODES.find((m) => m.id === mode)?.hint}</span>
+      </div>
+
       {/* input */}
-      <div className="mt-3 flex items-end gap-2 rounded-2xl border border-line bg-white p-2 shadow-soft focus-within:border-blue">
+      <div className="mt-2 flex items-end gap-2 rounded-2xl border border-line bg-white p-2 shadow-soft focus-within:border-blue">
         <textarea
           ref={taRef}
           value={input}

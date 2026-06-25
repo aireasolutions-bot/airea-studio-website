@@ -3,11 +3,13 @@
 // reply, a transcript of what it did, and any staged file edits (with old content
 // for diffing). Stateless: the client re-sends the conversation + pending edits.
 import { verifyAdmin } from "../_lib/admin";
-import { chat, openaiConfigured, getModel } from "../_lib/openai";
+import { chat, openaiConfigured, getModel, getReasoningModel, getReasoningEffort } from "../_lib/openai";
 import { listTree, readFile, githubConfigured } from "../_lib/github";
 import { buildSystemPrompt, TOOLS } from "../_lib/knowledge";
 
-export const config = { maxDuration: 60 };
+// Architecture work (gpt-5.5) can take several reasoning-heavy tool rounds; give
+// it room. (Requires a Vercel plan that allows >60s; drops to plan max otherwise.)
+export const config = { maxDuration: 300 };
 
 const MAX_STEPS = 12;
 
@@ -37,6 +39,12 @@ export default async function handler(req: any, res: any) {
       return;
     }
 
+    // Mode picks the model: "build" → architecture model (gpt-5.5),
+    // "reason" → high-reasoning model for bugs / algorithmic code (o3-mini).
+    const mode = body.mode === "reason" ? "reason" : "build";
+    const model = mode === "reason" ? getReasoningModel() : getModel();
+    const reasoningEffort = mode === "reason" ? getReasoningEffort() : undefined;
+
     let tree: string[] = [];
     try {
       tree = await listTree();
@@ -58,7 +66,7 @@ export default async function handler(req: any, res: any) {
     let reply = "";
 
     for (let step = 0; step < MAX_STEPS; step++) {
-      const data = await chat(messages, TOOLS);
+      const data = await chat(messages, TOOLS, { model, reasoningEffort });
       const msg = data?.choices?.[0]?.message;
       if (!msg) break;
       messages.push(msg);
@@ -123,7 +131,7 @@ export default async function handler(req: any, res: any) {
       break;
     }
 
-    res.status(200).json({ reply, transcript, edits: Object.values(edits), model: getModel() });
+    res.status(200).json({ reply, transcript, edits: Object.values(edits), model, mode });
   } catch (e: any) {
     res.status(500).json({ error: e?.message || "Agent run failed" });
   }
