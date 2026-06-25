@@ -1,6 +1,6 @@
 // Version history — recent commits on the branch (each is a Vercel deploy).
-import { verifyAdmin } from "../_lib/admin";
-import { listCommits, githubConfigured } from "../_lib/github";
+import { verifyAdmin } from "../_lib/admin.js";
+import { listCommits, githubConfigured } from "../_lib/github.js";
 
 export const config = { maxDuration: 30 };
 

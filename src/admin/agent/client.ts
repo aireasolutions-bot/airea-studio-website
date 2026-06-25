@@ -61,7 +61,9 @@ export async function runAgent(
     });
     if (!res.ok) {
       const body = await asJson(res).catch(() => null);
-      throw new Error(body?.error || NOT_DEPLOYED);
+      if (body?.error) throw new Error(body.error);
+      if (res.status >= 500) throw new Error(`The agent hit a server error (${res.status}). Check the Vercel function logs for /api/agent/run.`);
+      throw new Error(NOT_DEPLOYED);
     }
     return asJson(res);
   } catch (e) {
@@ -81,7 +83,9 @@ export async function publishEdits(
     });
     if (!res.ok) {
       const body = await asJson(res).catch(() => null);
-      throw new Error(body?.error || NOT_DEPLOYED);
+      if (body?.error) throw new Error(body.error);
+      if (res.status >= 500) throw new Error(`Publish hit a server error (${res.status}). Check the Vercel function logs for /api/agent/publish.`);
+      throw new Error(NOT_DEPLOYED);
     }
     return asJson(res);
   } catch (e) {

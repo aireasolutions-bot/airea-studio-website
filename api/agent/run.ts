@@ -2,10 +2,10 @@
 // repo + tools to read it, runs a tool-calling loop, and returns the assistant's
 // reply, a transcript of what it did, and any staged file edits (with old content
 // for diffing). Stateless: the client re-sends the conversation + pending edits.
-import { verifyAdmin } from "../_lib/admin";
-import { chat, openaiConfigured, getModel, getReasoningModel, getReasoningEffort } from "../_lib/openai";
-import { listTree, readFile, githubConfigured } from "../_lib/github";
-import { buildSystemPrompt, TOOLS } from "../_lib/knowledge";
+import { verifyAdmin } from "../_lib/admin.js";
+import { chat, openaiConfigured, getModel, getReasoningModel, getReasoningEffort } from "../_lib/openai.js";
+import { listTree, readFile, githubConfigured } from "../_lib/github.js";
+import { buildSystemPrompt, TOOLS } from "../_lib/knowledge.js";
 
 // Architecture work (gpt-5.5) can take several reasoning-heavy tool rounds; give
 // it room. (Requires a Vercel plan that allows >60s; drops to plan max otherwise.)

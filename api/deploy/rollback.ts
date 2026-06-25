@@ -1,7 +1,7 @@
 // Roll the live site back to a previous commit's snapshot (new commit on top of
 // HEAD → Vercel redeploys). Admin-gated.
-import { verifyAdmin } from "../_lib/admin";
-import { rollbackTo, githubConfigured } from "../_lib/github";
+import { verifyAdmin } from "../_lib/admin.js";
+import { rollbackTo, githubConfigured } from "../_lib/github.js";
 
 export const config = { maxDuration: 60 };
 
