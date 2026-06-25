@@ -3,6 +3,7 @@ import { Check, ExternalLink, Film, ImageIcon, LayoutTemplate, Loader2, Monitor,
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/cn";
 import { resolveAsset } from "@/content/ContentProvider";
+import { mergePages, pageLabel, pagePath } from "@/lib/pages";
 import { useAdminAuth } from "../auth";
 import { AssetPicker } from "../AssetPicker";
 
@@ -15,15 +16,6 @@ type Block = {
   draft_value: string | null;
   published_value: string | null;
   sort: number;
-};
-
-const PAGE_LABELS: Record<string, string> = {
-  home: "Home",
-  faq: "FAQ",
-  "how-it-works": "How it works",
-  "small-business": "Small business",
-  ecommerce: "E-commerce",
-  pricing: "Pricing",
 };
 
 const DEVICE_W = { desktop: 1280, tablet: 834, mobile: 390 } as const;
@@ -81,7 +73,7 @@ export function Editor() {
     return () => ro.disconnect();
   }, []);
 
-  const pages = useMemo(() => Array.from(new Set(blocks.map((b) => b.page))), [blocks]);
+  const pages = useMemo(() => mergePages(blocks.map((b) => b.page)).map((p) => p.slug), [blocks]);
   const sections = useMemo(() => {
     const map = new Map<string, Block[]>();
     blocks
@@ -95,7 +87,7 @@ export function Editor() {
   const dirtyKeys = useMemo(() => Object.keys(draft).filter((k) => draft[k] !== published[k]), [draft, published]);
 
   draftRef.current = draft;
-  const previewSrc = (page === "home" ? "/?preview=1" : `/${page}?preview=1`) + (editOnCanvas ? "&edit=1" : "");
+  const previewSrc = `${pagePath(page)}?preview=1${editOnCanvas ? "&edit=1" : ""}`;
   const refreshPreview = () => iframeRef.current?.contentWindow?.postMessage({ type: "airea-refresh-content" }, "*");
 
   const onEdit = (key: string, value: string) => {
@@ -241,7 +233,7 @@ export function Editor() {
             onClick={() => setPage(p)}
             className={cn("rounded-xl px-3.5 py-1.5 text-[13px] font-semibold transition-colors", page === p ? "bg-blue text-white" : "text-ink-2 hover:text-ink")}
           >
-            {PAGE_LABELS[p] ?? p}
+            {pageLabel(p)}
           </button>
         ))}
       </div>
