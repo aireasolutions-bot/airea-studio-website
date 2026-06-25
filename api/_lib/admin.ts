@@ -24,12 +24,16 @@ export async function requireAdmin(req: any): Promise<AdminCheck> {
   const email = (await userRes.json())?.email;
   if (!email) return { error: "Couldn't read your account email from the session.", status: 401 };
 
-  const adminRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/admin_users?select=email&email=eq.${encodeURIComponent(email)}`,
-    { headers: { apikey: SUPABASE_SERVICE_ROLE, Authorization: `Bearer ${SUPABASE_SERVICE_ROLE}` } }
-  );
-  const admins = await adminRes.json().catch(() => null);
-  if (!Array.isArray(admins) || admins.length === 0) {
+  // Verify via the same is_admin() the site's RLS uses: SECURITY DEFINER (so it's
+  // RLS-safe) and case-insensitive. Calling it with the user's token works whether
+  // SUPABASE_SERVICE_ROLE holds the service-role or the anon key.
+  const rpcRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/is_admin`, {
+    method: "POST",
+    headers: { apikey: SUPABASE_SERVICE_ROLE, Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: "{}",
+  });
+  const isAdmin = rpcRes.ok ? await rpcRes.json().catch(() => false) : false;
+  if (isAdmin !== true) {
     return { error: `${email} isn't on the admin allow-list (add it to the admin_users table).`, status: 403 };
   }
 
