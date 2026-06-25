@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { Button, Eyebrow } from "./ui";
 import { SIGN_UP_URL } from "@/lib/site";
+import { useC, editable } from "@/content/ContentProvider";
 
 const EASE = [0.22, 0.61, 0.36, 1] as const;
 
@@ -19,6 +20,7 @@ export function SubHero({
   note?: string;
   visual?: ReactNode;
 }) {
+  const c = useC();
   return (
     <section className="relative overflow-hidden pb-16 pt-32 md:pb-24 md:pt-40">
       <div className="pointer-events-none absolute inset-0 -z-10 bg-blue-radial" />
@@ -55,10 +57,10 @@ export function SubHero({
             transition={{ duration: 0.8, ease: EASE, delay: 0.32 }}
           >
             <Button href={SIGN_UP_URL} variant="primary" size="lg" magnetic arrow>
-              Start 14-day free trial
+              <span {...editable("global.subhero.cta_primary")}>{c("global.subhero.cta_primary", "Start 14-day free trial")}</span>
             </Button>
             <Button to="/how-it-works" variant="ghost" size="lg">
-              See how it works
+              <span {...editable("global.subhero.cta_secondary")}>{c("global.subhero.cta_secondary", "See how it works")}</span>
             </Button>
           </motion.div>
           {note && (

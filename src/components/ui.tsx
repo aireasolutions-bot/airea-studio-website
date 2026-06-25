@@ -139,7 +139,7 @@ export function SectionHeading({
   className,
   light = false,
 }: {
-  tag?: string;
+  tag?: ReactNode;
   title: ReactNode;
   sub?: ReactNode;
   align?: "left" | "center";

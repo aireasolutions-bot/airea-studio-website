@@ -3,7 +3,7 @@ import { Button } from "@/components/ui";
 import { RobotHead } from "@/components/RobotHead";
 import { Reveal } from "@/components/Reveal";
 import { SIGN_UP_URL } from "@/lib/site";
-import { useC } from "@/content/ContentProvider";
+import { useC, editable } from "@/content/ContentProvider";
 
 export function FinalCTA() {
   const c = useC();
@@ -25,13 +25,13 @@ export function FinalCTA() {
                 <RobotHead size={120} />
               </div>
               <h2 className="font-display text-[clamp(34px,6vw,68px)] leading-[1.02] tracking-[-0.01em] text-white">
-                {c("home.cta.line1")}
+                <span {...editable("home.cta.line1")}>{c("home.cta.line1")}</span>
                 <br />
-                <span className="font-display italic text-white/90">
+                <span className="font-display italic text-white/90" {...editable("home.cta.line2")}>
                   {c("home.cta.line2")}
                 </span>
               </h2>
-              <p className="mx-auto mt-6 max-w-xl text-[clamp(15px,1.6vw,18px)] text-white/75">
+              <p className="mx-auto mt-6 max-w-xl text-[clamp(15px,1.6vw,18px)] text-white/75" {...editable("home.cta.sub", "richtext")}>
                 {c("home.cta.sub")}
               </p>
 
@@ -44,7 +44,7 @@ export function FinalCTA() {
                   arrow
                   className="border-transparent bg-white text-ink shadow-lift hover:bg-white"
                 >
-                  {c("home.cta.primary")}
+                  <span {...editable("home.cta.primary")}>{c("home.cta.primary")}</span>
                 </Button>
                 <Button
                   to="/how-it-works"
@@ -52,11 +52,11 @@ export function FinalCTA() {
                   size="lg"
                   className="border-white/40 bg-transparent text-white hover:border-white hover:bg-white/10"
                 >
-                  See how it works
+                  <span {...editable("home.cta.secondary")}>{c("home.cta.secondary", "See how it works")}</span>
                 </Button>
               </div>
 
-              <p className="mt-5 flex items-center justify-center gap-2 text-[13px] text-white/70">
+              <p className="mt-5 flex items-center justify-center gap-2 text-[13px] text-white/70" {...editable("home.cta.note")}>
                 <Check className="h-4 w-4" />
                 {c("home.cta.note")}
               </p>

@@ -3,12 +3,12 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check, FolderKanban, Sparkles, Users, Wand2 } from "lucide-react";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { RobotHead } from "@/components/RobotHead";
-import { Button, Eyebrow, SectionHeading } from "@/components/ui";
+import { Button, Eyebrow, Tag } from "@/components/ui";
 import { Reveal } from "@/components/Reveal";
 import { FinalCTA } from "@/sections/FinalCTA";
 import { cn } from "@/lib/cn";
 import { SIGN_UP_URL } from "@/lib/site";
-import { useC } from "@/content/ContentProvider";
+import { useC, resolveAsset, editable } from "@/content/ContentProvider";
 
 const EASE = [0.22, 0.61, 0.36, 1] as const;
 
@@ -60,6 +60,7 @@ const VISUAL_OPTIONS = [
 ];
 
 function StepExplorer() {
+  const c = useC();
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
 
@@ -97,8 +98,11 @@ function StepExplorer() {
                 {i + 1}
               </span>
               <div className="min-w-0">
-                <div className={cn("text-[17px] font-semibold transition-colors", on ? "text-ink" : "text-ink-2")}>
-                  {s.title}
+                <div
+                  {...editable(`howitworks.step${i}.title`)}
+                  className={cn("text-[17px] font-semibold transition-colors", on ? "text-ink" : "text-ink-2")}
+                >
+                  {c(`howitworks.step${i}.title`, s.title)}
                 </div>
                 <div
                   className={cn(
@@ -107,12 +111,19 @@ function StepExplorer() {
                   )}
                 >
                   <div className="overflow-hidden">
-                    <p className="mt-1.5 text-[14px] leading-relaxed text-ink-2">{s.desc}</p>
+                    <p
+                      {...editable(`howitworks.step${i}.desc`, "richtext")}
+                      className="mt-1.5 text-[14px] leading-relaxed text-ink-2"
+                    >
+                      {c(`howitworks.step${i}.desc`, s.desc)}
+                    </p>
                     <ul className="mt-3 space-y-1.5">
-                      {s.features.map((f) => (
-                        <li key={f} className="flex items-start gap-2 text-[13px] text-ink-2">
+                      {s.features.map((f, j) => (
+                        <li key={j} className="flex items-start gap-2 text-[13px] text-ink-2">
                           <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-blue" />
-                          {f}
+                          <span {...editable(`howitworks.step${i}.feature${j}`)}>
+                            {c(`howitworks.step${i}.feature${j}`, f)}
+                          </span>
                         </li>
                       ))}
                     </ul>
@@ -146,12 +157,16 @@ function StepExplorer() {
           <AnimatePresence mode="wait">
             <motion.div
               key={active}
+              {...editable(`howitworks.step${active}.image`, "image")}
               initial={{ opacity: 0, y: 18, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -14, scale: 0.97 }}
               transition={{ duration: 0.45, ease: EASE }}
             >
-              <PhoneFrame src={STEPS[active].image} width={290} />
+              <PhoneFrame
+                src={resolveAsset(c(`howitworks.step${active}.image`, STEPS[active].image))}
+                width={290}
+              />
             </motion.div>
           </AnimatePresence>
         </div>
@@ -173,40 +188,44 @@ export function HowItWorksPage() {
             <RobotHead size={104} />
           </div>
           <div className="flex justify-center">
-            <Eyebrow>{c("howitworks.hero.eyebrow")}</Eyebrow>
+            <Eyebrow><span {...editable("howitworks.hero.eyebrow")}>{c("howitworks.hero.eyebrow")}</span></Eyebrow>
           </div>
           <h1 className="mx-auto mt-6 max-w-4xl font-display text-[clamp(40px,6.5vw,76px)] leading-[1.0] tracking-[-0.02em] text-ink">
-            {c("howitworks.hero.title_lead")}
-            <span className="italic-blue">{c("howitworks.hero.title_accent")}</span>
-            {c("howitworks.hero.title_tail")}
+            <span {...editable("howitworks.hero.title_lead")}>{c("howitworks.hero.title_lead")}</span>
+            <span className="italic-blue" {...editable("howitworks.hero.title_accent")}>{c("howitworks.hero.title_accent")}</span>
+            <span {...editable("howitworks.hero.title_tail")}>{c("howitworks.hero.title_tail")}</span>
           </h1>
-          <p className="mx-auto mt-5 max-w-xl text-[clamp(15px,1.5vw,18px)] text-ink-2">
+          <p className="mx-auto mt-5 max-w-xl text-[clamp(15px,1.5vw,18px)] text-ink-2" {...editable("howitworks.hero.sub", "richtext")}>
             {c("howitworks.hero.sub")}
           </p>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
             <Button href={SIGN_UP_URL} variant="primary" size="lg" magnetic arrow>
-              {c("howitworks.hero.cta_primary")}
+              <span {...editable("howitworks.hero.cta_primary")}>{c("howitworks.hero.cta_primary")}</span>
             </Button>
             <Button to="/pricing" variant="ghost" size="lg">
-              {c("howitworks.hero.cta_secondary")}
+              <span {...editable("howitworks.hero.cta_secondary")}>{c("howitworks.hero.cta_secondary")}</span>
             </Button>
           </div>
-          <p className="mt-4 text-[13px] text-ink-3">{c("howitworks.hero.note")}</p>
+          <p className="mt-4 text-[13px] text-ink-3" {...editable("howitworks.hero.note")}>{c("howitworks.hero.note")}</p>
         </div>
       </section>
 
       {/* step explorer */}
       <section className="py-16 md:py-24">
         <div className="wrap-wide">
-          <SectionHeading
-            tag="The workflow"
-            title={
-              <>
-                From idea to launch, <span className="italic-blue">guided</span> the whole way.
-              </>
-            }
-            sub="Six steps. One canvas. Tap any step to explore — or watch it cycle."
-          />
+          <div className="max-w-2xl">
+            <Tag className="mb-5 text-ink-3">
+              <span {...editable("howitworks.workflow.tag")}>{c("howitworks.workflow.tag", "The workflow")}</span>
+            </Tag>
+            <h2 className="font-display text-[clamp(32px,5vw,58px)] leading-[1.03] tracking-[-0.01em] text-ink">
+              <span {...editable("howitworks.workflow.title", "richtext")}>{c("howitworks.workflow.title", "From idea to launch, ")}</span>
+              <span className="italic-blue" {...editable("howitworks.workflow.title_accent")}>{c("howitworks.workflow.title_accent", "guided")}</span>
+              <span {...editable("howitworks.workflow.title_tail")}>{c("howitworks.workflow.title_tail", " the whole way.")}</span>
+            </h2>
+            <p className="mt-5 text-[clamp(15px,1.5vw,18px)] text-ink-2 max-w-xl" {...editable("howitworks.workflow.sub", "richtext")}>
+              {c("howitworks.workflow.sub", "Six steps. One canvas. Tap any step to explore — or watch it cycle.")}
+            </p>
+          </div>
           <div className="mt-12">
             <StepExplorer />
           </div>
@@ -216,16 +235,19 @@ export function HowItWorksPage() {
       {/* visual direction */}
       <section className="border-y border-line bg-paper py-20 md:py-28">
         <div className="wrap-wide">
-          <SectionHeading
-            align="center"
-            tag="Creative direction"
-            title={
-              <>
-                Three ways to shape the <span className="italic-blue">look</span>.
-              </>
-            }
-            sub="However hands-on you want to be, the Agent meets you there."
-          />
+          <div className="max-w-2xl mx-auto text-center">
+            <Tag className="mb-5 text-ink-3">
+              <span {...editable("howitworks.creative.tag")}>{c("howitworks.creative.tag", "Creative direction")}</span>
+            </Tag>
+            <h2 className="font-display text-[clamp(32px,5vw,58px)] leading-[1.03] tracking-[-0.01em] text-ink">
+              <span {...editable("howitworks.creative.title")}>{c("howitworks.creative.title", "Three ways to shape the ")}</span>
+              <span className="italic-blue" {...editable("howitworks.creative.title_accent")}>{c("howitworks.creative.title_accent", "look")}</span>
+              <span {...editable("howitworks.creative.title_tail")}>{c("howitworks.creative.title_tail", ".")}</span>
+            </h2>
+            <p className="mt-5 text-[clamp(15px,1.5vw,18px)] mx-auto text-ink-2 max-w-xl" {...editable("howitworks.creative.sub", "richtext")}>
+              {c("howitworks.creative.sub", "However hands-on you want to be, the Agent meets you there.")}
+            </p>
+          </div>
           <div className="mt-12 grid gap-5 md:grid-cols-3">
             {VISUAL_OPTIONS.map((o, i) => (
               <Reveal key={o.tag} delay={i * 0.08}>
@@ -236,8 +258,12 @@ export function HowItWorksPage() {
                     </span>
                     <span className="font-mono text-[11px] uppercase tracking-wider text-ink-3">{o.tag}</span>
                   </div>
-                  <h3 className="mt-5 text-[19px] font-semibold text-ink">{o.title}</h3>
-                  <p className="mt-2 text-[14.5px] leading-relaxed text-ink-2">{o.body}</p>
+                  <h3 className="mt-5 text-[19px] font-semibold text-ink" {...editable(`howitworks.visual.opt${i}.title`)}>
+                    {c(`howitworks.visual.opt${i}.title`, o.title)}
+                  </h3>
+                  <p className="mt-2 text-[14.5px] leading-relaxed text-ink-2" {...editable(`howitworks.visual.opt${i}.body`, "richtext")}>
+                    {c(`howitworks.visual.opt${i}.body`, o.body)}
+                  </p>
                 </div>
               </Reveal>
             ))}
@@ -249,28 +275,36 @@ export function HowItWorksPage() {
       <section className="py-20 md:py-28">
         <div className="wrap-wide grid items-center gap-14 lg:grid-cols-2">
           <div>
-            <SectionHeading
-              tag="Stay organized"
-              title={
-                <>
-                  Workspaces built for <span className="italic-blue">teams</span>.
-                </>
-              }
-              sub="Keep campaigns, brands, and initiatives organized — and manage everything from one place."
-            />
+            <div className="max-w-2xl">
+              <Tag className="mb-5 text-ink-3">
+                <span {...editable("howitworks.organize.tag")}>{c("howitworks.organize.tag", "Stay organized")}</span>
+              </Tag>
+              <h2 className="font-display text-[clamp(32px,5vw,58px)] leading-[1.03] tracking-[-0.01em] text-ink">
+                <span {...editable("howitworks.organize.title")}>{c("howitworks.organize.title", "Workspaces built for ")}</span>
+                <span className="italic-blue" {...editable("howitworks.organize.title_accent")}>{c("howitworks.organize.title_accent", "teams")}</span>
+                <span {...editable("howitworks.organize.title_tail")}>{c("howitworks.organize.title_tail", ".")}</span>
+              </h2>
+              <p className="mt-5 text-[clamp(15px,1.5vw,18px)] text-ink-2 max-w-xl" {...editable("howitworks.organize.sub", "richtext")}>
+                {c("howitworks.organize.sub", "Keep campaigns, brands, and initiatives organized — and manage everything from one place.")}
+              </p>
+            </div>
             <Reveal className="mt-7 flex flex-col gap-3" delay={0.1}>
               {[
                 { icon: FolderKanban, t: "Separate workspaces", d: "For brands, locations, or initiatives." },
                 { icon: Users, t: "Invite your team", d: "Assign access and collaborate in one place." },
                 { icon: Check, t: "Organized by default", d: "Campaigns, assets, and approvals, all in order." },
-              ].map((r) => (
-                <div key={r.t} className="flex items-start gap-3">
+              ].map((r, i) => (
+                <div key={i} className="flex items-start gap-3">
                   <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white text-blue shadow-soft">
                     <r.icon className="h-4.5 w-4.5" />
                   </span>
                   <div>
-                    <div className="text-[15px] font-semibold text-ink">{r.t}</div>
-                    <div className="text-[14px] text-ink-2">{r.d}</div>
+                    <div className="text-[15px] font-semibold text-ink" {...editable(`howitworks.organize.item${i}.title`)}>
+                      {c(`howitworks.organize.item${i}.title`, r.t)}
+                    </div>
+                    <div className="text-[14px] text-ink-2" {...editable(`howitworks.organize.item${i}.desc`)}>
+                      {c(`howitworks.organize.item${i}.desc`, r.d)}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -281,7 +315,9 @@ export function HowItWorksPage() {
               className="absolute inset-0 -z-10 rounded-[3rem] blur-3xl"
               style={{ background: "radial-gradient(circle at 50% 40%, rgba(0,71,255,0.18), transparent 65%)" }}
             />
-            <PhoneFrame src="/assets/product/control-center.png" width={300} />
+            <div className="contents" {...editable("howitworks.organize.image", "image")}>
+              <PhoneFrame src={resolveAsset(c("howitworks.organize.image", "/assets/product/control-center.png"))} width={300} />
+            </div>
           </Reveal>
         </div>
       </section>

@@ -6,7 +6,7 @@ import { cn } from "@/lib/cn";
 import { scrollToTarget } from "@/hooks/useSmoothScroll";
 import { FAQ_CATEGORIES } from "@/lib/faq";
 import { SIGN_UP_URL } from "@/lib/site";
-import { useC } from "@/content/ContentProvider";
+import { useC, editable } from "@/content/ContentProvider";
 
 export function FaqPage() {
   const c = useC();
@@ -17,12 +17,12 @@ export function FaqPage() {
   const q = query.trim().toLowerCase();
   const cats = useMemo(() => {
     if (!q) return FAQ_CATEGORIES;
-    return FAQ_CATEGORIES.map((c) => ({
-      ...c,
-      items: c.items.filter((it) =>
+    return FAQ_CATEGORIES.map((cat) => ({
+      ...cat,
+      items: cat.items.filter((it) =>
         (it.q + " " + it.a.join(" ")).toLowerCase().includes(q)
       ),
-    })).filter((c) => c.items.length);
+    })).filter((cat) => cat.items.length);
   }, [q]);
 
   useEffect(() => {
@@ -39,7 +39,7 @@ export function FaqPage() {
     return () => io.disconnect();
   }, [q]);
 
-  const total = FAQ_CATEGORIES.reduce((n, c) => n + c.items.length, 0);
+  const total = FAQ_CATEGORIES.reduce((n, cat) => n + cat.items.length, 0);
 
   return (
     <>
@@ -52,12 +52,12 @@ export function FaqPage() {
             <RobotHead size={96} />
           </div>
           <div className="flex justify-center">
-            <Eyebrow>{c("faq.eyebrow")}</Eyebrow>
+            <Eyebrow><span {...editable("faq.eyebrow")}>{c("faq.eyebrow")}</span></Eyebrow>
           </div>
-          <h1 className="mx-auto mt-6 max-w-3xl font-display text-[clamp(40px,6.5vw,72px)] leading-[1.02] tracking-[-0.02em] text-ink">
+          <h1 className="mx-auto mt-6 max-w-3xl font-display text-[clamp(40px,6.5vw,72px)] leading-[1.02] tracking-[-0.02em] text-ink" {...editable("faq.title")}>
             {c("faq.title")}
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-[clamp(15px,1.5vw,18px)] text-ink-2">
+          <p className="mx-auto mt-5 max-w-2xl text-[clamp(15px,1.5vw,18px)] text-ink-2" {...editable("faq.intro", "richtext")}>
             {c("faq.intro")}
           </p>
 
@@ -84,21 +84,21 @@ export function FaqPage() {
           {/* sidebar */}
           <aside className="hidden lg:block">
             <nav className="sticky top-24 space-y-1">
-              <div className="mb-3 px-3 text-[11px] font-semibold uppercase tracking-wider text-ink-3">
-                Categories
+              <div className="mb-3 px-3 text-[11px] font-semibold uppercase tracking-wider text-ink-3" {...editable("faq.sidebar.heading")}>
+                {c("faq.sidebar.heading", "Categories")}
               </div>
-              {FAQ_CATEGORIES.map((c) => (
+              {FAQ_CATEGORIES.map((cat, ci) => (
                 <button
-                  key={c.id}
-                  onClick={() => scrollToTarget(`#${c.id}`, -90)}
+                  key={cat.id}
+                  onClick={() => scrollToTarget(`#${cat.id}`, -90)}
                   className={cn(
                     "block w-full rounded-xl px-3 py-2 text-left text-[13.5px] transition-colors",
-                    active === c.id && !q
+                    active === cat.id && !q
                       ? "bg-blue-mist font-semibold text-blue-ink"
                       : "text-ink-2 hover:bg-ink/5 hover:text-ink"
                   )}
                 >
-                  {c.title}
+                  <span {...editable(`faq.cat${ci}.title`)}>{c(`faq.cat${ci}.title`, cat.title)}</span>
                 </button>
               ))}
             </nav>
@@ -118,14 +118,17 @@ export function FaqPage() {
             )}
 
             <div className="space-y-14">
-              {cats.map((c) => (
-                <section key={c.id} id={c.id} data-cat={c.id} className="scroll-mt-24">
-                  <h2 className="mb-5 font-display text-[clamp(24px,3vw,34px)] tracking-[-0.01em] text-ink">
-                    {c.title}
+              {cats.map((cat) => {
+                const ci = FAQ_CATEGORIES.findIndex((x) => x.id === cat.id);
+                return (
+                <section key={cat.id} id={cat.id} data-cat={cat.id} className="scroll-mt-24">
+                  <h2 className="mb-5 font-display text-[clamp(24px,3vw,34px)] tracking-[-0.01em] text-ink" {...editable(`faq.cat${ci}.title`)}>
+                    {c(`faq.cat${ci}.title`, cat.title)}
                   </h2>
                   <div className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-white">
-                    {c.items.map((it, i) => {
-                      const id = `${c.id}-${i}`;
+                    {cat.items.map((it, i) => {
+                      const id = `${cat.id}-${i}`;
+                      const ii = FAQ_CATEGORIES[ci].items.findIndex((x) => x.q === it.q);
                       const isOpen = open === id;
                       return (
                         <div key={id}>
@@ -133,7 +136,7 @@ export function FaqPage() {
                             onClick={() => setOpen(isOpen ? null : id)}
                             className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-canvas"
                           >
-                            <span className="text-[15.5px] font-semibold text-ink">{it.q}</span>
+                            <span className="text-[15.5px] font-semibold text-ink" {...editable(`faq.cat${ci}.item${ii}.q`)}>{c(`faq.cat${ci}.item${ii}.q`, it.q)}</span>
                             <Plus
                               className={cn(
                                 "h-5 w-5 shrink-0 text-blue transition-transform duration-300",
@@ -150,8 +153,8 @@ export function FaqPage() {
                             <div className="overflow-hidden">
                               <div className="space-y-3 px-5 pb-5 pt-0.5">
                                 {it.a.map((p, j) => (
-                                  <p key={j} className="max-w-2xl text-[14.5px] leading-relaxed text-ink-2">
-                                    {p}
+                                  <p key={j} className="max-w-2xl text-[14.5px] leading-relaxed text-ink-2" {...editable(`faq.cat${ci}.item${ii}.a${j}`, "richtext")}>
+                                    {c(`faq.cat${ci}.item${ii}.a${j}`, p)}
                                   </p>
                                 ))}
                               </div>
@@ -162,15 +165,16 @@ export function FaqPage() {
                     })}
                   </div>
                 </section>
-              ))}
+                );
+              })}
             </div>
 
             {/* contact CTA */}
             <div className="mt-14 flex flex-col items-start gap-5 rounded-3xl border border-line bg-paper p-8 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h3 className="font-display text-2xl text-ink">Still have a question?</h3>
-                <p className="mt-1 text-[14.5px] text-ink-2">
-                  Start free in minutes, or email us at{" "}
+                <h3 className="font-display text-2xl text-ink" {...editable("faq.contact.title")}>{c("faq.contact.title", "Still have a question?")}</h3>
+                <p className="mt-1 text-[14.5px] text-ink-2" {...editable("faq.contact.body", "richtext")}>
+                  <span>{c("faq.contact.body", "Start free in minutes, or email us at ")}</span>
                   <a href="mailto:info@aireastudio.ai" className="font-semibold text-blue">
                     info@aireastudio.ai
                   </a>
@@ -178,7 +182,7 @@ export function FaqPage() {
                 </p>
               </div>
               <Button href={SIGN_UP_URL} variant="primary" size="lg" magnetic arrow>
-                Start 14-day free trial
+                <span {...editable("faq.contact.cta")}>{c("faq.contact.cta", "Start 14-day free trial")}</span>
               </Button>
             </div>
           </div>

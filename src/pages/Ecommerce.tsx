@@ -5,7 +5,7 @@ import { SectionHeading } from "@/components/ui";
 import { OnePhotoCampaign } from "@/sections/OnePhotoCampaign";
 import { Testimonials } from "@/sections/Testimonials";
 import { FinalCTA } from "@/sections/FinalCTA";
-import { useC, resolveAsset } from "@/content/ContentProvider";
+import { useC, resolveAsset, editable } from "@/content/ContentProvider";
 
 const BENEFITS = [
   {
@@ -30,15 +30,15 @@ export function Ecommerce() {
   return (
     <>
       <SubHero
-        eyebrow={c("ec.hero.eyebrow")}
+        eyebrow={c("ec.hero.eyebrow", "For e-commerce")}
         title={
           <>
-            {c("ec.hero.title_lead")}
-            <span className="italic-blue">{c("ec.hero.title_accent")}</span>
+            <span {...editable("ec.hero.title_lead")}>{c("ec.hero.title_lead", "One product photo. ")}</span>
+            <span className="italic-blue" {...editable("ec.hero.title_accent")}>{c("ec.hero.title_accent", "Every ad.")}</span>
           </>
         }
-        sub={c("ec.hero.sub")}
-        note="No credit card required · Cancel anytime"
+        sub={c("ec.hero.sub", "Turn a single product shot into a full, on-brand funnel — paid social, organic, email, and marketplace creative — sized and written for every channel automatically.")}
+        note={c("ec.hero.note", "No credit card required · Cancel anytime")}
         visual={
           <div className="relative mx-auto w-fit">
             <span
@@ -47,14 +47,15 @@ export function Ecommerce() {
             />
             <div className="overflow-hidden rounded-[28px] border border-line bg-white shadow-card">
               <img
-                src={resolveAsset(c("ec.hero.image"))}
+                src={resolveAsset(c("ec.hero.image", "assets/campaigns/robot-cover.jpg"))}
                 alt="One photo, a full campaign"
                 className="w-[360px]"
                 draggable={false}
+                {...editable("ec.hero.image", "image")}
               />
             </div>
-            <div className="absolute -right-5 top-8 rounded-2xl border border-line bg-white/95 px-3.5 py-2 font-mono text-[11px] font-semibold text-blue-ink shadow-card backdrop-blur">
-              4:5 · 9:16 · 1:1 · 16:9
+            <div className="absolute -right-5 top-8 rounded-2xl border border-line bg-white/95 px-3.5 py-2 font-mono text-[11px] font-semibold text-blue-ink shadow-card backdrop-blur" {...editable("ec.hero.badge")}>
+              {c("ec.hero.badge", "4:5 · 9:16 · 1:1 · 16:9")}
             </div>
           </div>
         }
@@ -63,12 +64,18 @@ export function Ecommerce() {
       <section className="py-20 md:py-28">
         <div className="wrap-wide">
           <SectionHeading
-            tag="Why AIREA Studio"
-            title="Your catalog, multiplied"
-            sub="The reframing, rewriting, and resizing that eats your team's week — handled."
+            tag={c("ec.benefits.tag", "Why AIREA Studio")}
+            title={<span {...editable("ec.benefits.title")}>{c("ec.benefits.title", "Your catalog, multiplied")}</span>}
+            sub={<span {...editable("ec.benefits.sub", "richtext")}>{c("ec.benefits.sub", "The reframing, rewriting, and resizing that eats your team's week — handled.")}</span>}
           />
           <div className="mt-12">
-            <FeatureTriple items={BENEFITS} />
+            <FeatureTriple
+              items={BENEFITS.map((b, i) => ({
+                ...b,
+                title: c(`ec.benefit${i}.title`, b.title),
+                body: c(`ec.benefit${i}.body`, b.body),
+              }))}
+            />
           </div>
         </div>
       </section>

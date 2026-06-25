@@ -4,7 +4,7 @@ import { Sparkles } from "lucide-react";
 import { Button, Tag } from "@/components/ui";
 import { RobotHead } from "@/components/RobotHead";
 import { SIGN_UP_URL } from "@/lib/site";
-import { useC } from "@/content/ContentProvider";
+import { useC, resolveAsset, editable } from "@/content/ContentProvider";
 
 const WORLDS = [
   { src: "/assets/campaigns/worlds/w1.jpg", n: "01", label: "Track" },
@@ -33,6 +33,7 @@ function WorldCard({
   n: string;
   label: string;
 }) {
+  const c = useC();
   const start = 0.12 + index * 0.062;
   const end = start + 0.2;
   const opacity = useTransform(progress, [start, end], [0, 1]);
@@ -46,7 +47,8 @@ function WorldCard({
       className="group relative overflow-hidden rounded-xl border border-line bg-white shadow-card md:rounded-2xl"
     >
       <img
-        src={src}
+        src={resolveAsset(c(`home.onephoto.world${index}.image`, src))}
+        {...editable(`home.onephoto.world${index}.image`, "image")}
         alt={`Sneaker — ${label}`}
         className="aspect-square w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
         draggable={false}
@@ -54,7 +56,7 @@ function WorldCard({
       />
       <div className="absolute bottom-1.5 left-1.5 flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 backdrop-blur">
         <span className="font-mono text-[9px] font-semibold text-blue">{n}</span>
-        <span className="text-[10px] font-semibold text-ink">{label}</span>
+        <span className="text-[10px] font-semibold text-ink" {...editable(`home.onephoto.world${index}.label`)}>{c(`home.onephoto.world${index}.label`, label)}</span>
       </div>
     </motion.div>
   );
@@ -83,13 +85,13 @@ export function OnePhotoCampaign() {
           {/* left: source */}
           <div>
             <motion.div style={{ opacity: titleO, y: titleY }}>
-              <Tag className="mb-5 text-ink-3">{c("home.onephoto.tag")}</Tag>
+              <Tag className="mb-5 text-ink-3"><span {...editable("home.onephoto.tag")}>{c("home.onephoto.tag")}</span></Tag>
               <h2 className="font-display text-[clamp(34px,5vw,62px)] leading-[1.0] tracking-[-0.01em] text-ink">
-                {c("home.onephoto.title_lead")}
+                <span {...editable("home.onephoto.title_lead")}>{c("home.onephoto.title_lead")}</span>
                 <br />
-                <span className="italic-blue">{c("home.onephoto.title_accent")}</span>
+                <span className="italic-blue" {...editable("home.onephoto.title_accent")}>{c("home.onephoto.title_accent")}</span>
               </h2>
-              <p className="mt-5 max-w-md text-[clamp(15px,1.5vw,18px)] text-ink-2">
+              <p className="mt-5 max-w-md text-[clamp(15px,1.5vw,18px)] text-ink-2" {...editable("home.onephoto.sub", "richtext")}>
                 {c("home.onephoto.sub")}
               </p>
             </motion.div>
@@ -101,7 +103,8 @@ export function OnePhotoCampaign() {
                 className="overflow-hidden rounded-3xl border border-line bg-white p-2 shadow-card"
               >
                 <img
-                  src="/assets/campaigns/shoe-source.jpg"
+                  src={resolveAsset(c("home.onephoto.source_image", "/assets/campaigns/shoe-source.jpg"))}
+                  {...editable("home.onephoto.source_image", "image")}
                   alt="One source product photo"
                   className="w-[230px] rounded-2xl md:w-[260px]"
                   draggable={false}
@@ -111,7 +114,7 @@ export function OnePhotoCampaign() {
                     <span className="grid h-6 w-6 place-items-center rounded-full bg-ink text-white">
                       <Sparkles className="h-3.5 w-3.5" />
                     </span>
-                    <span className="text-[13px] font-semibold text-ink">1 source photo</span>
+                    <span className="text-[13px] font-semibold text-ink" {...editable("home.onephoto.source_label")}>{c("home.onephoto.source_label", "1 source photo")}</span>
                   </span>
                 </div>
               </motion.div>
@@ -131,10 +134,10 @@ export function OnePhotoCampaign() {
               className="mt-8 flex flex-wrap items-center gap-4"
             >
               <Button href={SIGN_UP_URL} variant="primary" magnetic arrow>
-                Turn a photo into a campaign
+                <span {...editable("home.onephoto.cta")}>{c("home.onephoto.cta", "Turn a photo into a campaign")}</span>
               </Button>
-              <span className="font-mono text-[12px] uppercase tracking-wider text-ink-3">
-                ~90 seconds
+              <span className="font-mono text-[12px] uppercase tracking-wider text-ink-3" {...editable("home.onephoto.timing")}>
+                {c("home.onephoto.timing", "~90 seconds")}
               </span>
             </motion.div>
           </div>

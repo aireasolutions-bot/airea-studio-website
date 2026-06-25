@@ -2,7 +2,7 @@ import { Check } from "lucide-react";
 import { Button } from "./ui";
 import { cn } from "@/lib/cn";
 import { SIGN_UP_URL } from "@/lib/site";
-import { useC } from "@/content/ContentProvider";
+import { useC, editable } from "@/content/ContentProvider";
 
 const PLAN_KEYS = ["plan1", "plan2", "plan3"] as const;
 
@@ -27,23 +27,23 @@ export function PricingCards() {
             )}
           >
             {featured && (
-              <span className="absolute right-6 top-6 rounded-full bg-blue px-3 py-1 text-[11px] font-semibold text-white">
-                Most popular
+              <span className="absolute right-6 top-6 rounded-full bg-blue px-3 py-1 text-[11px] font-semibold text-white" {...editable("pricing.card.badge")}>
+                {c("pricing.card.badge", "Most popular")}
               </span>
             )}
-            <div className={cn("text-[14px] font-semibold", featured ? "text-blue-sky" : "text-blue")}>
+            <div className={cn("text-[14px] font-semibold", featured ? "text-blue-sky" : "text-blue")} {...editable(`pricing.${pk}.name`)}>
               {c(`pricing.${pk}.name`)}
             </div>
             <div className="mt-3 flex items-end gap-1">
-              <span className="font-display text-5xl leading-none">{c(`pricing.${pk}.price`)}</span>
-              <span className={cn("mb-1 text-[14px]", featured ? "text-white/60" : "text-ink-3")}>
+              <span className="font-display text-5xl leading-none" {...editable(`pricing.${pk}.price`)}>{c(`pricing.${pk}.price`)}</span>
+              <span className={cn("mb-1 text-[14px]", featured ? "text-white/60" : "text-ink-3")} {...editable(`pricing.${pk}.cadence`)}>
                 {c(`pricing.${pk}.cadence`)}
               </span>
             </div>
-            <p className={cn("mt-3 text-[14px]", featured ? "text-white/70" : "text-ink-2")}>
+            <p className={cn("mt-3 text-[14px]", featured ? "text-white/70" : "text-ink-2")} {...editable(`pricing.${pk}.blurb`)}>
               {c(`pricing.${pk}.blurb`)}
             </p>
-            <ul className="mt-6 flex-1 space-y-3">
+            <ul className="mt-6 flex-1 space-y-3" {...editable(`pricing.${pk}.features`)}>
               {features.map((f, i) => (
                 <li key={i} className="flex items-start gap-2.5 text-[14px]">
                   <Check className={cn("mt-0.5 h-4 w-4 shrink-0", featured ? "text-blue-sky" : "text-blue")} />
@@ -53,10 +53,10 @@ export function PricingCards() {
             </ul>
             <div className="mt-7">
               <Button href={SIGN_UP_URL} variant={featured ? "primary" : "ghost"} className="w-full" arrow>
-                {c(`pricing.${pk}.cta`)}
+                <span {...editable(`pricing.${pk}.cta`)}>{c(`pricing.${pk}.cta`)}</span>
               </Button>
-              <p className={cn("mt-3 text-center text-[12px]", featured ? "text-white/50" : "text-ink-3")}>
-                14-day free trial · no card
+              <p className={cn("mt-3 text-center text-[12px]", featured ? "text-white/50" : "text-ink-3")} {...editable("pricing.card.reassurance")}>
+                {c("pricing.card.reassurance", "14-day free trial · no card")}
               </p>
             </div>
           </div>

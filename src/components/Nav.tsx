@@ -6,6 +6,7 @@ import { Button } from "./ui";
 import { cn } from "@/lib/cn";
 import { SOLUTIONS, SIGN_UP_URL, SIGN_IN_URL } from "@/lib/site";
 import { scrollToTarget } from "@/hooks/useSmoothScroll";
+import { useC, editable } from "@/content/ContentProvider";
 
 const ROUTE_LINKS = [
   { label: "How it works", to: "/how-it-works" },
@@ -18,6 +19,7 @@ const HASH_LINKS = [
 ];
 
 export function Nav() {
+  const c = useC();
   const [scrolled, setScrolled] = useState(false);
   const [progress, setProgress] = useState(0);
   const [open, setOpen] = useState(false);
@@ -77,22 +79,24 @@ export function Nav() {
 
           {/* desktop nav */}
           <nav className="hidden items-center gap-1 lg:flex">
-            {ROUTE_LINKS.map((l) => (
+            {ROUTE_LINKS.map((l, i) => (
               <Link
                 key={l.to}
                 to={l.to}
                 className="rounded-lg px-3 py-2 text-[13.5px] font-medium text-ink-2 transition-colors hover:bg-ink/5 hover:text-ink"
+                {...editable(`global.nav.route${i}`)}
               >
-                {l.label}
+                {c(`global.nav.route${i}`, l.label)}
               </Link>
             ))}
-            {HASH_LINKS.map((l) => (
+            {HASH_LINKS.map((l, i) => (
               <button
                 key={l.hash}
                 onClick={() => goHash(l.hash)}
                 className="rounded-lg px-3 py-2 text-[13.5px] font-medium text-ink-2 transition-colors hover:bg-ink/5 hover:text-ink"
+                {...editable(`global.nav.hash${i}`)}
               >
-                {l.label}
+                {c(`global.nav.hash${i}`, l.label)}
               </button>
             ))}
 
@@ -102,7 +106,7 @@ export function Nav() {
               onMouseLeave={() => setSolOpen(false)}
             >
               <button className="flex items-center gap-1 rounded-lg px-3 py-2 text-[13.5px] font-medium text-ink-2 transition-colors hover:bg-ink/5 hover:text-ink">
-                Solutions
+                <span {...editable("global.nav.solutions_label")}>{c("global.nav.solutions_label", "Solutions")}</span>
                 <ChevronDown className="h-3.5 w-3.5 opacity-60" />
               </button>
               <div
@@ -114,14 +118,14 @@ export function Nav() {
                 )}
               >
                 <div className="card overflow-hidden p-2">
-                  {SOLUTIONS.map((s) => (
+                  {SOLUTIONS.map((s, i) => (
                     <Link
                       key={s.to}
                       to={s.to}
                       className="block rounded-xl px-3 py-2.5 transition-colors hover:bg-blue-mist"
                     >
-                      <div className="text-[14px] font-semibold text-ink">{s.label}</div>
-                      <div className="text-[12.5px] text-ink-3">{s.desc}</div>
+                      <div className="text-[14px] font-semibold text-ink" {...editable(`global.nav.solution${i}.label`)}>{c(`global.nav.solution${i}.label`, s.label)}</div>
+                      <div className="text-[12.5px] text-ink-3" {...editable(`global.nav.solution${i}.desc`)}>{c(`global.nav.solution${i}.desc`, s.desc)}</div>
                     </Link>
                   ))}
                 </div>
@@ -131,8 +135,9 @@ export function Nav() {
             <Link
               to="/pricing"
               className="rounded-lg px-3 py-2 text-[13.5px] font-medium text-ink-2 transition-colors hover:bg-ink/5 hover:text-ink"
+              {...editable("global.nav.pricing_label")}
             >
-              Pricing
+              {c("global.nav.pricing_label", "Pricing")}
             </Link>
           </nav>
 
@@ -140,11 +145,12 @@ export function Nav() {
             <a
               href={SIGN_IN_URL}
               className="px-3 py-2 text-[13.5px] font-medium text-ink-2 transition-colors hover:text-ink"
+              {...editable("global.nav.login")}
             >
-              Log in
+              {c("global.nav.login", "Log in")}
             </a>
             <Button href={SIGN_UP_URL} variant="primary" magnetic arrow>
-              Start free
+              <span {...editable("global.nav.cta")}>{c("global.nav.cta", "Start free")}</span>
             </Button>
           </div>
 
@@ -168,49 +174,54 @@ export function Nav() {
       >
         <div className="flex h-full flex-col px-6 pb-8 pt-24">
           <div className="flex flex-col gap-1">
-            {ROUTE_LINKS.map((l) => (
+            {ROUTE_LINKS.map((l, i) => (
               <Link
                 key={l.to}
                 to={l.to}
                 className="border-b border-line py-4 font-display text-3xl text-ink"
+                {...editable(`global.nav.route${i}`)}
               >
-                {l.label}
+                {c(`global.nav.route${i}`, l.label)}
               </Link>
             ))}
-            {HASH_LINKS.map((l) => (
+            {HASH_LINKS.map((l, i) => (
               <button
                 key={l.hash}
                 onClick={() => goHash(l.hash)}
                 className="border-b border-line py-4 text-left font-display text-3xl text-ink"
+                {...editable(`global.nav.hash${i}`)}
               >
-                {l.label}
+                {c(`global.nav.hash${i}`, l.label)}
               </button>
             ))}
-            {SOLUTIONS.map((s) => (
+            {SOLUTIONS.map((s, i) => (
               <Link
                 key={s.to}
                 to={s.to}
                 className="border-b border-line py-4 font-display text-3xl text-ink"
+                {...editable(`global.nav.solution${i}.label`)}
               >
-                {s.label}
+                {c(`global.nav.solution${i}.label`, s.label)}
               </Link>
             ))}
             <Link
               to="/pricing"
               className="border-b border-line py-4 font-display text-3xl text-ink"
+              {...editable("global.nav.pricing_label")}
             >
-              Pricing
+              {c("global.nav.pricing_label", "Pricing")}
             </Link>
           </div>
           <div className="mt-auto flex flex-col gap-3">
             <Button href={SIGN_UP_URL} variant="primary" size="lg" arrow>
-              Start 14-day free trial
+              <span {...editable("global.nav.cta_mobile")}>{c("global.nav.cta_mobile", "Start 14-day free trial")}</span>
             </Button>
             <a
               href={SIGN_IN_URL}
               className="text-center text-sm font-medium text-ink-2"
+              {...editable("global.nav.login")}
             >
-              Log in
+              {c("global.nav.login", "Log in")}
             </a>
           </div>
         </div>

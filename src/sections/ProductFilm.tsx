@@ -1,6 +1,6 @@
 import { Reveal } from "@/components/Reveal";
 import { SectionHeading } from "@/components/ui";
-import { useC, resolveAsset } from "@/content/ContentProvider";
+import { useC, resolveAsset, editable } from "@/content/ContentProvider";
 
 export function ProductFilm() {
   const c = useC();
@@ -9,12 +9,12 @@ export function ProductFilm() {
       <div className="wrap-wide">
         <SectionHeading
           align="center"
-          tag={c("home.film.tag")}
+          tag={<span {...editable("home.film.tag")}>{c("home.film.tag")}</span>}
           title={
             <>
-              {c("home.film.title_lead")}
-              <span className="italic-blue">{c("home.film.title_accent")}</span>
-              {c("home.film.title_tail")}
+              <span {...editable("home.film.title_lead")}>{c("home.film.title_lead")}</span>
+              <span className="italic-blue" {...editable("home.film.title_accent")}>{c("home.film.title_accent")}</span>
+              <span {...editable("home.film.title_tail")}>{c("home.film.title_tail")}</span>
             </>
           }
         />
@@ -25,17 +25,20 @@ export function ProductFilm() {
               style={{ background: "rgba(0,71,255,0.25)" }}
             />
             <div className="overflow-hidden rounded-[28px] border border-line bg-ink p-2 shadow-[0_40px_90px_-30px_rgba(16,24,40,0.5)]">
-              <video
-                key={c("home.film.video")}
-                className="w-full rounded-[20px]"
-                src={resolveAsset(c("home.film.video"))}
-                poster={resolveAsset("assets/video/airea-widescreen-poster.jpg")}
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="metadata"
-              />
+              <span style={{ display: "contents" }} {...editable("home.film.poster", "image")}>
+                <video
+                  key={c("home.film.video")}
+                  className="w-full rounded-[20px]"
+                  src={resolveAsset(c("home.film.video"))}
+                  poster={resolveAsset(c("home.film.poster", "assets/video/airea-widescreen-poster.jpg"))}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  preload="metadata"
+                  {...editable("home.film.video", "image")}
+                />
+              </span>
             </div>
           </div>
         </Reveal>

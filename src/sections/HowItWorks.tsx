@@ -4,8 +4,10 @@ import { PhoneFrame } from "@/components/PhoneFrame";
 import { SectionHeading } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { STEPS } from "@/lib/site";
+import { useC, resolveAsset, editable } from "@/content/ContentProvider";
 
 export function HowItWorks() {
+  const c = useC();
   const [active, setActive] = useState(0);
   const refs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -29,14 +31,15 @@ export function HowItWorks() {
     <section id="how" className="relative py-24 md:py-32">
       <div className="wrap-wide">
         <SectionHeading
-          tag="How it works"
+          tag={<span {...editable("home.howitworks.tag")}>{c("home.howitworks.tag", "How it works")}</span>}
           title={
             <>
-              From brand to{" "}
-              <span className="italic-blue">published</span>, in one flow.
+              <span {...editable("home.howitworks.title_lead")}>{c("home.howitworks.title_lead", "From brand to ")}</span>
+              <span className="italic-blue" {...editable("home.howitworks.title_accent")}>{c("home.howitworks.title_accent", "published")}</span>
+              <span {...editable("home.howitworks.title_tail")}>{c("home.howitworks.title_tail", ", in one flow.")}</span>
             </>
           }
-          sub="Six steps. One canvas. Studio keeps you in the loop and does the heavy lifting in between."
+          sub={<span {...editable("home.howitworks.sub", "richtext")}>{c("home.howitworks.sub", "Six steps. One canvas. Studio keeps you in the loop and does the heavy lifting in between.")}</span>}
         />
 
         <div className="mt-16 grid gap-12 lg:grid-cols-2 lg:gap-20">
@@ -59,15 +62,15 @@ export function HowItWorks() {
                     exit={{ opacity: 0, y: -16, scale: 0.97 }}
                     transition={{ duration: 0.5, ease: [0.22, 0.61, 0.36, 1] }}
                   >
-                    <PhoneFrame src={STEPS[active].image} width={300} />
+                    <PhoneFrame src={resolveAsset(c(`home.howitworks.step${active}.image`, STEPS[active].image))} width={300} />
                   </motion.div>
                 </AnimatePresence>
                 <div className="absolute -left-6 bottom-10 rounded-2xl border border-line bg-white/90 px-4 py-2.5 shadow-card backdrop-blur">
                   <span className="font-mono text-[11px] tracking-wider text-blue">
-                    STEP {STEPS[active].n}
+                    <span {...editable("home.howitworks.step_label")}>{c("home.howitworks.step_label", "STEP")}</span> {STEPS[active].n}
                   </span>
-                  <div className="text-[13px] font-semibold text-ink">
-                    {STEPS[active].title}
+                  <div className="text-[13px] font-semibold text-ink" {...editable(`home.howitworks.step${active}.title`)}>
+                    {c(`home.howitworks.step${active}.title`, STEPS[active].title)}
                   </div>
                 </div>
               </div>
@@ -101,20 +104,22 @@ export function HowItWorks() {
                     "mt-5 font-display text-[clamp(26px,3.4vw,40px)] leading-tight transition-colors",
                     active === i ? "text-ink" : "text-ink/45 lg:text-ink/35"
                   )}
+                  {...editable(`home.howitworks.step${i}.title`)}
                 >
-                  {step.title}
+                  {c(`home.howitworks.step${i}.title`, step.title)}
                 </h3>
                 <p
                   className={cn(
                     "mt-3 max-w-md text-[15px] transition-colors",
                     active === i ? "text-ink-2" : "text-ink-3"
                   )}
+                  {...editable(`home.howitworks.step${i}.body`)}
                 >
-                  {step.body}
+                  {c(`home.howitworks.step${i}.body`, step.body)}
                 </p>
                 {/* inline media on mobile */}
                 <div className="mt-7 lg:hidden">
-                  <PhoneFrame src={step.image} width={260} />
+                  <PhoneFrame src={resolveAsset(c(`home.howitworks.step${i}.image`, step.image))} width={260} />
                 </div>
               </div>
             ))}

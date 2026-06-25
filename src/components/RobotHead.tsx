@@ -1,4 +1,5 @@
 import { cn } from "@/lib/cn";
+import { useC, resolveAsset, editable } from "@/content/ContentProvider";
 
 type RobotProps = {
   className?: string;
@@ -8,6 +9,7 @@ type RobotProps = {
 };
 
 export function RobotHead({ className, size = 140, float = true, glow = true }: RobotProps) {
+  const c = useC();
   return (
     <div
       className={cn("relative grid place-items-center", float && "animate-float-y", className)}
@@ -23,7 +25,8 @@ export function RobotHead({ className, size = 140, float = true, glow = true }: 
         />
       )}
       <img
-        src="/assets/robot/head.png"
+        src={resolveAsset(c("global.robot.image", "/assets/robot/head.png"))}
+        {...editable("global.robot.image", "image")}
         alt="AIREA — your AI marketing assistant"
         draggable={false}
         className="h-full w-full object-contain drop-shadow-[0_18px_30px_rgba(16,24,40,0.18)]"
