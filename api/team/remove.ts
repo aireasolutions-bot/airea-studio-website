@@ -1,8 +1,17 @@
-// Team & Access — revoke a member. Removes them from the admin allow-list (so
-// is_admin() is false and the admin locks them out immediately). Optionally also
-// deletes their auth account. Admin-gated; can't remove yourself.
+// Team & Access — revoke a member. Only owners/admins may remove. The super-admin
+// (owner) account can't be removed, and you can't remove yourself. Removing clears
+// the allow-list row so is_admin() is false → instant lockout.
 import { requireAdmin } from "../_lib/admin.js";
-import { teamConfigured, removeAdminUser, findAuthUser, deleteAuthUser, serviceRoleHint } from "../_lib/team.js";
+import {
+  teamConfigured,
+  removeAdminUser,
+  findAuthUser,
+  deleteAuthUser,
+  serviceRoleHint,
+  getRole,
+  canManageTeam,
+  isSuperAdmin,
+} from "../_lib/team.js";
 
 export const config = { maxDuration: 30 };
 
@@ -21,12 +30,22 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
+  const callerRole = await getRole(auth.email);
+  if (!canManageTeam(callerRole)) {
+    res.status(403).json({ error: "You need Admin access to remove teammates." });
+    return;
+  }
+
   try {
     const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
     const email = String(body.email || "").trim().toLowerCase();
     const deleteAccount = body.deleteAccount === true;
     if (!email) {
       res.status(400).json({ error: "No email provided." });
+      return;
+    }
+    if (isSuperAdmin(email)) {
+      res.status(400).json({ error: "The owner account can't be removed." });
       return;
     }
     if (email === auth.email.toLowerCase()) {

@@ -1,16 +1,20 @@
 import { supabase } from "@/lib/supabase";
 
 export type TeamStatus = "active" | "confirmed" | "invited" | "pending";
+export type TeamRole = "owner" | "admin" | "member";
 
 export type TeamMember = {
   email: string;
   fullName: string;
-  role: string;
+  role: TeamRole;
+  isSuperAdmin: boolean;
   createdAt: string | null;
   lastSignIn: string | null;
   status: TeamStatus;
   isSelf: boolean;
 };
+
+export type TeamMe = { email: string; role: TeamRole; canManage: boolean };
 
 async function authHeaders() {
   const { data } = await supabase!.auth.getSession();
@@ -43,22 +47,30 @@ async function call(path: string, init?: RequestInit): Promise<any> {
   return body;
 }
 
-export async function listTeam(): Promise<TeamMember[]> {
+export async function listTeam(): Promise<{ members: TeamMember[]; me: TeamMe }> {
   const d = await call("/api/team/list");
-  return (d.members || []) as TeamMember[];
+  return {
+    members: (d.members || []) as TeamMember[],
+    me: (d.me || { email: "", role: "member", canManage: false }) as TeamMe,
+  };
 }
 
-export type InviteResult = { ok: boolean; email: string; mode: string };
+export type InviteResult = { ok: boolean; email: string; mode: string; role?: TeamRole };
 
 export async function inviteMember(input: {
   email: string;
   fullName?: string;
   password?: string;
+  role?: "admin" | "member";
 }): Promise<InviteResult> {
   return call("/api/team/invite", {
     method: "POST",
     body: JSON.stringify({ ...input, redirectTo: window.location.origin + "/admin" }),
   });
+}
+
+export async function setMemberRole(email: string, role: "admin" | "member"): Promise<void> {
+  await call("/api/team/role", { method: "POST", body: JSON.stringify({ email, role }) });
 }
 
 export async function removeMember(email: string, deleteAccount = false): Promise<void> {

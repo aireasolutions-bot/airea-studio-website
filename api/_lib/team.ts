@@ -14,6 +14,44 @@ export function teamConfigured(): boolean {
   return !!(URL && KEY);
 }
 
+// ---------- roles & permissions ----------
+export type Role = "owner" | "admin" | "member";
+
+// The single super-admin: always 'owner', can't be demoted or removed. Enforced
+// server-side (not just in the DB), so a stray row edit can't lock the owner out.
+export const SUPER_ADMIN = (process.env.SUPER_ADMIN_EMAIL || "nicolas@aireasolutions.com").toLowerCase();
+
+export function isSuperAdmin(email: string): boolean {
+  return (email || "").toLowerCase() === SUPER_ADMIN;
+}
+
+export function normalizeRole(email: string, raw: any): Role {
+  if (isSuperAdmin(email)) return "owner";
+  return raw === "owner" ? "owner" : raw === "admin" ? "admin" : "member";
+}
+
+// Owners + admins can manage the team (invite, change roles, remove). Members can't.
+export function canManageTeam(role: Role): boolean {
+  return role === "owner" || role === "admin";
+}
+
+export async function getRole(email: string): Promise<Role> {
+  if (isSuperAdmin(email)) return "owner";
+  const r = await fetch(`${URL}/rest/v1/admin_users?select=role&email=eq.${encodeURIComponent((email || "").toLowerCase())}`, { headers: H });
+  if (!r.ok) return "member";
+  const rows = await r.json().catch(() => []);
+  return normalizeRole(email, Array.isArray(rows) ? rows[0]?.role : undefined);
+}
+
+export async function setRole(email: string, role: "admin" | "member"): Promise<void> {
+  const r = await fetch(`${URL}/rest/v1/admin_users?email=eq.${encodeURIComponent(email.toLowerCase())}`, {
+    method: "PATCH",
+    headers: { ...H, Prefer: "return=minimal" },
+    body: JSON.stringify({ role }),
+  });
+  if (!r.ok) throw new Error(`Couldn't update the role (${r.status})`);
+}
+
 // ---------- admin_users allow-list (PostgREST) ----------
 export async function listAdminUsers(): Promise<any[]> {
   const r = await fetch(
@@ -24,9 +62,10 @@ export async function listAdminUsers(): Promise<any[]> {
   return r.json();
 }
 
-export async function upsertAdminUser(email: string, fullName: string): Promise<void> {
-  const row: Record<string, any> = { email, role: "admin" };
+export async function upsertAdminUser(email: string, fullName: string, role?: Role): Promise<void> {
+  const row: Record<string, any> = { email: email.toLowerCase() };
   if (fullName) row.full_name = fullName; // omit when empty so re-invites don't clobber a name
+  if (role) row.role = role; // omit on resend so an existing member's role is preserved
   const r = await fetch(`${URL}/rest/v1/admin_users?on_conflict=email`, {
     method: "POST",
     headers: { ...H, Prefer: "resolution=merge-duplicates,return=minimal" },

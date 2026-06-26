@@ -1,7 +1,9 @@
 // Team & Access — list members: the admin_users allow-list joined with each
-// account's auth status (active / confirmed / invited / pending). Admin-gated.
+// account's auth status, each member's role, plus the caller's own permissions
+// ("me") so the UI can show/hide invite + role controls. Admin-gated (any member
+// can view the team; only owners/admins can act on it).
 import { requireAdmin } from "../_lib/admin.js";
-import { teamConfigured, listAdminUsers, listAuthUsers } from "../_lib/team.js";
+import { teamConfigured, listAdminUsers, listAuthUsers, normalizeRole, isSuperAdmin, canManageTeam } from "../_lib/team.js";
 
 export const config = { maxDuration: 30 };
 
@@ -23,6 +25,7 @@ export default async function handler(req: any, res: any) {
   try {
     const [admins, authUsers] = await Promise.all([listAdminUsers(), listAuthUsers().catch(() => [])]);
     const byEmail = new Map<string, any>(authUsers.map((u: any) => [(u.email || "").toLowerCase(), u]));
+    const meEmail = auth.email.toLowerCase();
 
     const members = admins.map((a: any) => {
       const key = (a.email || "").toLowerCase();
@@ -33,15 +36,22 @@ export default async function handler(req: any, res: any) {
       return {
         email: a.email,
         fullName: a.full_name || u?.user_metadata?.full_name || "",
-        role: a.role || "admin",
+        role: normalizeRole(a.email, a.role),
+        isSuperAdmin: isSuperAdmin(a.email),
         createdAt: a.created_at || null,
         lastSignIn: u?.last_sign_in_at || null,
         status,
-        isSelf: key === auth.email.toLowerCase(),
+        isSelf: key === meEmail,
       };
     });
 
-    res.status(200).json({ members });
+    const myRow = members.find((m) => m.isSelf);
+    const myRole = isSuperAdmin(meEmail) ? "owner" : myRow?.role || "member";
+
+    res.status(200).json({
+      members,
+      me: { email: auth.email, role: myRole, canManage: canManageTeam(myRole) },
+    });
   } catch (e: any) {
     res.status(500).json({ error: e?.message || "Failed to load the team" });
   }
