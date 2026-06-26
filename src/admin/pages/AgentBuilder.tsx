@@ -15,10 +15,12 @@ import {
   ImagePlus,
   Loader2,
   MessageSquare,
+  Monitor,
   PanelLeft,
   Plus,
   RotateCcw,
   Search,
+  Smartphone,
   Sparkles,
   Trash2,
   Wand2,
@@ -155,6 +157,64 @@ function DiffCard({ edit }: { edit: AgentEdit }) {
   );
 }
 
+function PreviewModal({ url, onClose }: { url: string; onClose: () => void }) {
+  const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
+  return (
+    <div className="fixed inset-0 z-[70] flex bg-ink/70 backdrop-blur-sm" onClick={onClose}>
+      <div
+        className="m-auto flex h-[92vh] w-[95vw] max-w-[1440px] flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-card"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-3 border-b border-line px-4 py-2.5">
+          <span className="flex items-center gap-2 text-[13px] font-semibold text-ink">
+            <Eye className="h-4 w-4 text-blue" /> Live preview
+          </span>
+          <span className="hidden truncate font-mono text-[11px] text-ink-3 md:block">{url.replace(/^https?:\/\//, "")}</span>
+          <div className="ml-auto flex items-center gap-2">
+            <div className="flex rounded-full border border-line-2 bg-white p-0.5">
+              <button
+                onClick={() => setDevice("desktop")}
+                title="Desktop"
+                className={cn("grid h-7 w-8 place-items-center rounded-full", device === "desktop" ? "bg-blue text-white" : "text-ink-3 hover:text-ink")}
+              >
+                <Monitor className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => setDevice("mobile")}
+                title="Mobile"
+                className={cn("grid h-7 w-8 place-items-center rounded-full", device === "mobile" ? "bg-blue text-white" : "text-ink-3 hover:text-ink")}
+              >
+                <Smartphone className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <a
+              href={url}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 rounded-full border border-line-2 bg-white px-3 py-1.5 text-[12.5px] font-semibold text-ink hover:border-blue/40 hover:text-blue"
+            >
+              Open in new tab <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+            <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-lg text-ink-3 hover:bg-ink/5 hover:text-ink">
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+        <div className="grid flex-1 place-items-center overflow-auto bg-canvas p-3">
+          <iframe
+            src={url}
+            title="Live preview"
+            className={cn("h-full rounded-lg border border-line bg-white shadow-soft", device === "mobile" ? "w-[390px]" : "w-full")}
+          />
+        </div>
+        <p className="border-t border-line px-4 py-1.5 text-center text-[11px] text-ink-3">
+          Preview shows a Vercel login? Enable public preview deployments in Vercel, or use “Open in new tab”.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function ConversationList({
   conversations,
   activeId,
@@ -231,6 +291,7 @@ export function AgentBuilder() {
   const [publishing, setPublishing] = useState(false);
   const [publishOk, setPublishOk] = useState<{ url: string } | null>(null);
   const [preview, setPreview] = useState<{ state: "building" | "ready" | "error"; url?: string; sha?: string } | null>(null);
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
   const [railOpen, setRailOpen] = useState(false); // mobile drawer
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -744,15 +805,13 @@ export function AgentBuilder() {
                 </button>
 
                 {preview?.state === "ready" && preview.url ? (
-                  <a
-                    href={preview.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    title="Opens the preview build in a new tab (uses your Vercel login)"
+                  <button
+                    onClick={() => setPreviewModalOpen(true)}
+                    title="View the built preview inside the admin"
                     className="flex items-center gap-2 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-[13px] font-semibold text-emerald-700 hover:bg-emerald-100"
                   >
-                    <Eye className="h-4 w-4" /> Open preview <ExternalLink className="h-3.5 w-3.5" />
-                  </a>
+                    <Eye className="h-4 w-4" /> Open preview
+                  </button>
                 ) : preview?.state === "building" ? (
                   <span
                     title="Vercel is building your preview — about a minute"
@@ -888,6 +947,7 @@ export function AgentBuilder() {
       </div>
 
       <AssetPicker open={pickerOpen} kind="image" onClose={() => setPickerOpen(false)} onSelect={addFromAssets} />
+      {previewModalOpen && preview?.url && <PreviewModal url={preview.url} onClose={() => setPreviewModalOpen(false)} />}
     </div>
   );
 }
