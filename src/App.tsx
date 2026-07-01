@@ -7,6 +7,8 @@ import { SmallBusiness } from "@/pages/SmallBusiness";
 import { Ecommerce } from "@/pages/Ecommerce";
 import { HowItWorksPage } from "@/pages/HowItWorksPage";
 import { FaqPage } from "@/pages/FaqPage";
+import { Blog } from "@/pages/Blog";
+import { BlogPost } from "@/pages/BlogPost";
 import { Test } from "@/pages/Test";
 import { Test1 } from "@/pages/Test1";
 import { Test2 } from "@/pages/Test2";
@@ -38,6 +40,8 @@ function PublicApp() {
             const C = PAGE_COMPONENTS[p.slug];
             return C ? <Route key={p.slug} path={p.path} element={<C />} /> : null;
           })}
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/test" element={<Test />} />
           <Route path="/test-1" element={<Test1 />} />
           <Route path="/test-2" element={<Test2 />} />

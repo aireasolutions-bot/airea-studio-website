@@ -8,9 +8,12 @@ import { SOLUTIONS, SIGN_UP_URL, SIGN_IN_URL } from "@/lib/site";
 import { scrollToTarget } from "@/hooks/useSmoothScroll";
 import { useC, editable } from "@/content/ContentProvider";
 
+// NOTE: these are keyed by index for content overrides (global.nav.route{i}),
+// so only ever APPEND — inserting in the middle re-labels existing entries.
 const ROUTE_LINKS = [
   { label: "How it works", to: "/how-it-works" },
   { label: "FAQ", to: "/faq" },
+  { label: "Blog", to: "/blog" },
 ];
 
 const HASH_LINKS = [

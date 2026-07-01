@@ -23,7 +23,7 @@ function friendly(e: unknown): string {
 
 export async function getHistory(): Promise<Commit[]> {
   try {
-    const res = await fetch("/api/deploy/history", { headers: await headers() });
+    const res = await fetch("/api/deploy", { headers: await headers() });
     if (!res.ok) {
       const body = await asJson(res).catch(() => null);
       throw new Error(body?.error || "__not_deployed__");
@@ -36,7 +36,7 @@ export async function getHistory(): Promise<Commit[]> {
 
 export async function rollback(sha: string, label: string): Promise<{ sha: string; url: string }> {
   try {
-    const res = await fetch("/api/deploy/rollback", {
+    const res = await fetch("/api/deploy", {
       method: "POST",
       headers: await headers(),
       body: JSON.stringify({ sha, label }),

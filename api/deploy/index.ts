@@ -1,13 +1,15 @@
-// Roll the live site back to a previous commit's snapshot (new commit on top of
-// HEAD → Vercel redeploys). Admin-gated.
+// Deploy history + rollback (one function to stay within Vercel's limit).
+//   GET   → recent commits on the branch (each is a Vercel deploy).
+//   POST  → roll the live site back to a previous commit's snapshot.
+// Admin-gated.
 import { requireAdmin } from "../_lib/admin.js";
-import { rollbackTo, githubConfigured } from "../_lib/github.js";
+import { listCommits, rollbackTo, githubConfigured } from "../_lib/github.js";
 import { logActivity, reqMeta } from "../_lib/activity.js";
 
 export const config = { maxDuration: 60 };
 
 export default async function handler(req: any, res: any) {
-  if (req.method !== "POST") {
+  if (req.method !== "GET" && req.method !== "POST") {
     res.status(405).json({ error: "Method not allowed" });
     return;
   }
@@ -20,6 +22,19 @@ export default async function handler(req: any, res: any) {
     res.status(auth.status).json({ error: auth.error });
     return;
   }
+
+  // --- GET: version history ---
+  if (req.method === "GET") {
+    try {
+      const commits = await listCommits(25);
+      res.status(200).json({ commits });
+    } catch (e: any) {
+      res.status(500).json({ error: e?.message || "Failed to load history" });
+    }
+    return;
+  }
+
+  // --- POST: roll back to a commit ---
   const email = auth.email;
   try {
     const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};

@@ -43,3 +43,85 @@ export async function chat(
   }
   return res.json();
 }
+
+// The model to use for live web research (web_search tool). Override with
+// OPENAI_SEARCH_MODEL if the default doesn't support the tool on your account.
+export function getSearchModel(): string {
+  return process.env.OPENAI_SEARCH_MODEL || getModel();
+}
+
+// Pull the aggregated text + de-duped URL citations out of a Responses API result.
+function extractResponse(data: any): { text: string; citations: { url: string; title?: string }[] } {
+  let text = typeof data?.output_text === "string" ? data.output_text : "";
+  const citations: { url: string; title?: string }[] = [];
+  const seen = new Set<string>();
+  for (const item of data?.output || []) {
+    if (item.type === "message") {
+      for (const c of item.content || []) {
+        if (c.type === "output_text") {
+          if (!text) text += c.text || "";
+          for (const a of c.annotations || []) {
+            if (a?.type === "url_citation" && a.url && !seen.has(a.url)) {
+              seen.add(a.url);
+              citations.push({ url: a.url, title: a.title || undefined });
+            }
+          }
+        }
+      }
+    }
+  }
+  return { text: text.trim(), citations };
+}
+
+// Live web research via the Responses API + web_search tool. The model decides
+// how many searches to run (agentic), then synthesizes — returning grounded,
+// current text plus the real source URLs it cited.
+export async function respondWithSearch(
+  input: string,
+  opts: { model?: string; instructions?: string; maxOutputTokens?: number } = {}
+): Promise<{ text: string; citations: { url: string; title?: string }[] }> {
+  const body: any = {
+    model: opts.model || getSearchModel(),
+    input,
+    tools: [{ type: "web_search" }],
+  };
+  if (opts.instructions) body.instructions = opts.instructions;
+  if (opts.maxOutputTokens) body.max_output_tokens = opts.maxOutputTokens;
+
+  const res = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`OpenAI Responses ${res.status}: ${text.slice(0, 400)}`);
+  }
+  return extractResponse(await res.json());
+}
+
+// Chat Completions with strict JSON-schema Structured Outputs — guarantees a
+// valid object back (no fragile parsing), even with a long markdown body.
+export async function completeJson(
+  messages: any[],
+  schema: { name: string; schema: any },
+  opts: { model?: string } = {}
+): Promise<any> {
+  const body: any = {
+    model: opts.model || getModel(),
+    messages,
+    response_format: { type: "json_schema", json_schema: { name: schema.name, schema: schema.schema, strict: true } },
+  };
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`OpenAI ${res.status}: ${text.slice(0, 400)}`);
+  }
+  const data = await res.json();
+  const content = data?.choices?.[0]?.message?.content || "{}";
+  return JSON.parse(content);
+}
