@@ -127,7 +127,7 @@ export type PreviewStatus = { state: string; url: string | null };
 
 // Poll the Vercel build state + URL for a preview commit.
 export async function getPreviewStatus(sha: string): Promise<PreviewStatus> {
-  const res = await fetch(`/api/agent/preview-status?sha=${encodeURIComponent(sha)}`, {
+  const res = await fetch(`/api/agent/preview?sha=${encodeURIComponent(sha)}`, {
     headers: await headers(),
   });
   if (!res.ok) {
