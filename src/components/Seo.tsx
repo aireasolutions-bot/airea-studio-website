@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { SITE_NAME, OG_IMAGE, canonical, pageSeo } from "@/lib/seo";
+import { useSeo } from "@/content/ContentProvider";
 
 type Props = {
   /** Route path, e.g. "/pricing" — used for the canonical + og:url. */
@@ -39,12 +40,15 @@ function upsertLink(rel: string, href: string) {
 // the site-wide baseline + structured data live statically in index.html for
 // non-JS AI crawlers.
 export function Seo({ path, title, description, image, type = "website", noindex, jsonLd }: Props) {
+  const override = useSeo()(path); // live per-page overrides from the SEO console/agent
   const fallback = pageSeo(path);
-  const t = title || fallback.title;
-  const d = description || fallback.description;
-  const url = canonical(path);
-  const img = image || OG_IMAGE;
-  const ld = jsonLd ? JSON.stringify(jsonLd) : "";
+  const t = override.title || title || fallback.title;
+  const d = override.description || description || fallback.description;
+  const url = override.canonical || canonical(path);
+  const img = override.ogImage || image || OG_IMAGE;
+  const noidx = override.noindex ?? noindex ?? false;
+  const allLd = [...(jsonLd || []), ...(override.jsonld ? [override.jsonld as object] : [])];
+  const ld = allLd.length ? JSON.stringify(allLd) : "";
 
   useEffect(() => {
     document.title = t;
@@ -53,7 +57,7 @@ export function Seo({ path, title, description, image, type = "website", noindex
     upsertMeta(
       "name",
       "robots",
-      noindex ? "noindex, nofollow" : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      noidx ? "noindex, nofollow" : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
     );
 
     // Open Graph
@@ -73,8 +77,8 @@ export function Seo({ path, title, description, image, type = "website", noindex
 
     // Page-specific JSON-LD
     const nodes: HTMLScriptElement[] = [];
-    if (jsonLd?.length) {
-      for (const obj of jsonLd) {
+    if (allLd.length) {
+      for (const obj of allLd) {
         const s = document.createElement("script");
         s.type = "application/ld+json";
         s.setAttribute("data-seo-jsonld", "");
@@ -84,7 +88,7 @@ export function Seo({ path, title, description, image, type = "website", noindex
       }
     }
     return () => nodes.forEach((n) => n.remove());
-  }, [t, d, url, img, type, noindex, ld]);
+  }, [t, d, url, img, type, noidx, ld]);
 
   return null;
 }

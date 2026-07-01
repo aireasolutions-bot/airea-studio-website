@@ -8,6 +8,7 @@ import {
   Menu,
   MessagesSquare,
   Rocket,
+  Search,
   Sparkles,
   Users,
   X,
@@ -22,6 +23,7 @@ const NAV = [
   { to: "/admin/editor", label: "Site editor", icon: FilePenLine },
   { to: "/admin/assets", label: "Assets", icon: Images },
   { to: "/admin/comments", label: "Review", icon: MessagesSquare },
+  { to: "/admin/seo", label: "SEO", icon: Search },
   { to: "/admin/publish", label: "Publish", icon: Rocket },
   { to: "/admin/settings", label: "Team", icon: Users },
 ];

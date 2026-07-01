@@ -25,6 +25,23 @@ const ContentCtx = createContext<(key: string, fallback?: string) => string>((k,
 /** Read editable copy by key, falling back to a provided default or the baked-in one. */
 export const useC = () => useContext(ContentCtx);
 
+export type SeoOverride = {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+  canonical?: string;
+  noindex?: boolean;
+  keywords?: string;
+  priority?: number;
+  changefreq?: string;
+  jsonld?: unknown;
+};
+
+const SeoCtx = createContext<(path: string) => SeoOverride>(() => ({}));
+
+/** Read live per-page SEO overrides (from the seo_meta table) by route path. */
+export const useSeo = () => useContext(SeoCtx);
+
 /** Spread onto an element to make it click-to-editable on the visual canvas (?edit=1). */
 export const editable = (key: string, type: "text" | "richtext" | "image" = "text") => ({
   "data-edit-key": key,
@@ -55,6 +72,7 @@ function previewToken(): string | null {
 
 export function ContentProvider({ children }: { children: ReactNode }) {
   const [overrides, setOverrides] = useState<Dict>({});
+  const [seoMap, setSeoMap] = useState<Record<string, SeoOverride>>({});
   const editing = isEdit();
   const preview = isPreview() || editing;
 
@@ -63,23 +81,53 @@ export function ContentProvider({ children }: { children: ReactNode }) {
     let active = true;
 
     const load = async () => {
+      const headers: Record<string, string> = {
+        apikey: SUPABASE_ANON,
+        Authorization: `Bearer ${preview ? previewToken() ?? SUPABASE_ANON : SUPABASE_ANON}`,
+      };
+      const contentPath = preview
+        ? "content_blocks?select=key,draft_value"
+        : "published_content?select=key,value";
+
+      // Editable copy
       try {
-        const headers: Record<string, string> = {
-          apikey: SUPABASE_ANON,
-          Authorization: `Bearer ${preview ? previewToken() ?? SUPABASE_ANON : SUPABASE_ANON}`,
-        };
-        const path = preview
-          ? "content_blocks?select=key,draft_value"
-          : "published_content?select=key,value";
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers });
-        if (!res.ok || !active) return;
-        const rows: Array<Record<string, unknown>> = await res.json();
-        const next: Dict = {};
-        for (const r of rows) {
-          const v = preview ? r.draft_value : r.value;
-          if (v != null) next[String(r.key)] = String(v);
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/${contentPath}`, { headers });
+        if (res.ok && active) {
+          const rows: Array<Record<string, unknown>> = await res.json();
+          const next: Dict = {};
+          for (const r of rows) {
+            const v = preview ? r.draft_value : r.value;
+            if (v != null) next[String(r.key)] = String(v);
+          }
+          if (active) setOverrides(next);
         }
-        if (active) setOverrides(next);
+      } catch {
+        /* keep defaults */
+      }
+
+      // Per-page SEO overrides (public read; live for everyone)
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/seo_meta?select=*`, {
+          headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` },
+        });
+        if (res.ok && active) {
+          const rows: Array<Record<string, any>> = await res.json();
+          const map: Record<string, SeoOverride> = {};
+          for (const r of rows) {
+            map[String(r.path)] = {
+              title: r.title || undefined,
+              description: r.description || undefined,
+              ogImage: r.og_image || undefined,
+              canonical: r.canonical || undefined,
+              noindex: r.noindex ?? undefined,
+              keywords: r.keywords || undefined,
+              priority: r.priority ?? undefined,
+              changefreq: r.changefreq || undefined,
+              jsonld: r.jsonld ?? undefined,
+            };
+          }
+          if (active) setSeoMap(map);
+        }
       } catch {
         /* keep defaults */
       }
@@ -119,12 +167,14 @@ export function ContentProvider({ children }: { children: ReactNode }) {
 
   return (
     <ContentCtx.Provider value={get}>
-      {children}
-      {preview && (
-        <div className="pointer-events-none fixed bottom-4 left-1/2 z-[200] -translate-x-1/2 rounded-full bg-ink px-4 py-2 text-[12px] font-semibold text-white shadow-card">
-          Preview · draft content
-        </div>
-      )}
+      <SeoCtx.Provider value={(path: string) => seoMap[path] || {}}>
+        {children}
+        {preview && (
+          <div className="pointer-events-none fixed bottom-4 left-1/2 z-[200] -translate-x-1/2 rounded-full bg-ink px-4 py-2 text-[12px] font-semibold text-white shadow-card">
+            Preview · draft content
+          </div>
+        )}
+      </SeoCtx.Provider>
     </ContentCtx.Provider>
   );
 }
