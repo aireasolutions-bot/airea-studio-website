@@ -5,6 +5,7 @@
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE,
 //   R2_ENDPOINT, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET, R2_PUBLIC_URL
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { logActivity, reqMeta } from "./_lib/activity.js";
 
 export default async function handler(req: any, res: any) {
   if (req.method !== "POST") {
@@ -100,6 +101,17 @@ export default async function handler(req: any, res: any) {
         uploaded_by: email,
       },
     ]),
+  });
+
+  await logActivity({
+    actor: email,
+    action: "asset.upload",
+    category: "assets",
+    target: safe,
+    targetType: "asset",
+    summary: `Uploaded ${safe}`,
+    metadata: { key, folder: cleanFolder, sizeBytes: buf.length, contentType },
+    ...reqMeta(req),
   });
 
   res.status(200).json({ key, url });

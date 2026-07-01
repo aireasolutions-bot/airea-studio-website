@@ -2,6 +2,7 @@
 // admins may change roles. The super-admin (owner) is locked and can't be changed,
 // and no one can be promoted to 'owner' through here.
 import { requireAdmin } from "../_lib/admin.js";
+import { logActivity, reqMeta } from "../_lib/activity.js";
 import { teamConfigured, setRole, serviceRoleHint, getRole, canManageTeam, isSuperAdmin } from "../_lib/team.js";
 
 export const config = { maxDuration: 30 };
@@ -41,6 +42,16 @@ export default async function handler(req: any, res: any) {
     }
 
     await setRole(email, role);
+    await logActivity({
+      actor: auth.email,
+      action: "team.role",
+      category: "team",
+      target: email,
+      targetType: "member",
+      summary: `Set ${email} to ${role === "admin" ? "Admin" : "Member"}`,
+      metadata: { role },
+      ...reqMeta(req),
+    });
     res.status(200).json({ ok: true, email, role });
   } catch (e: any) {
     res.status(500).json({ error: serviceRoleHint(e?.message || "Couldn't update the role") });

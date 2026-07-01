@@ -3,6 +3,7 @@
 // a Vercel production deploy.
 import { requireAdmin } from "../_lib/admin.js";
 import { commitFiles, githubConfigured, REPO, BRANCH } from "../_lib/github.js";
+import { logActivity, reqMeta } from "../_lib/activity.js";
 
 export const config = { maxDuration: 60 };
 
@@ -48,6 +49,17 @@ export default async function handler(req: any, res: any) {
     const files = edits.map((e: any) => ({ path: String(e.path), content: String(e.content) }));
     const message = `${summary}\n\nPublished via AIREA Agent by ${email}.\n\nCo-Authored-By: AIREA Agent <agent@aireastudio.ai>`;
     const out = await commitFiles(files, message);
+
+    await logActivity({
+      actor: email,
+      action: "site.publish",
+      category: "publish",
+      target: out.sha,
+      targetType: "commit",
+      summary: `Published ${files.length} file${files.length > 1 ? "s" : ""} to ${BRANCH}`,
+      metadata: { files: files.length, sha: out.sha, message: summary },
+      ...reqMeta(req),
+    });
 
     res.status(200).json({ ...out, repo: REPO, branch: BRANCH, files: files.length });
   } catch (e: any) {

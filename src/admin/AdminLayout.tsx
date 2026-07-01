@@ -8,6 +8,7 @@ import {
   Menu,
   MessagesSquare,
   Rocket,
+  ScrollText,
   Search,
   Sparkles,
   Users,
@@ -26,6 +27,7 @@ const NAV = [
   { to: "/admin/seo", label: "SEO", icon: Search },
   { to: "/admin/publish", label: "Publish", icon: Rocket },
   { to: "/admin/settings", label: "Team", icon: Users },
+  { to: "/admin/activity", label: "Activity", icon: ScrollText },
 ];
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {

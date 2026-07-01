@@ -2,6 +2,7 @@
 // (owner) account can't be removed, and you can't remove yourself. Removing clears
 // the allow-list row so is_admin() is false → instant lockout.
 import { requireAdmin } from "../_lib/admin.js";
+import { logActivity, reqMeta } from "../_lib/activity.js";
 import {
   teamConfigured,
   removeAdminUser,
@@ -58,6 +59,17 @@ export default async function handler(req: any, res: any) {
       const u = await findAuthUser(email);
       if (u?.id) await deleteAuthUser(u.id);
     }
+
+    await logActivity({
+      actor: auth.email,
+      action: "team.remove",
+      category: "team",
+      target: email,
+      targetType: "member",
+      summary: `Removed ${email}${deleteAccount ? " (account deleted)" : ""}`,
+      metadata: { deleteAccount },
+      ...reqMeta(req),
+    });
 
     res.status(200).json({ ok: true, email, deleted: deleteAccount });
   } catch (e: any) {

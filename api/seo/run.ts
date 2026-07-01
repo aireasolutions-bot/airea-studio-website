@@ -1,6 +1,7 @@
 // AIREA SEO Agent — audits the site's SEO and applies optimized titles,
 // descriptions, keywords, and structured data to seo_meta (live). Admin-gated.
 import { requireAdmin } from "../_lib/admin.js";
+import { logActivity, reqMeta } from "../_lib/activity.js";
 import { chat, openaiConfigured, getModel } from "../_lib/openai.js";
 import {
   seoConfigured,
@@ -38,6 +39,7 @@ export default async function handler(req: any, res: any) {
     return;
   }
   const email = auth.email;
+  const started = Date.now();
 
   try {
     const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
@@ -130,6 +132,16 @@ export default async function handler(req: any, res: any) {
       reply = msg.content || "";
       break;
     }
+
+    await logActivity({
+      actor: email,
+      action: "seo.agent",
+      category: "seo",
+      summary: changes.length ? `SEO agent applied ${changes.length} change${changes.length > 1 ? "s" : ""}` : "SEO agent audit",
+      durationMs: Date.now() - started,
+      metadata: { applied: changes.length, pages: changes.map((c: any) => c.path) },
+      ...reqMeta(req),
+    });
 
     res.status(200).json({ reply, transcript, changes });
   } catch (e: any) {

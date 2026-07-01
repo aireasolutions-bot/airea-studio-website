@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { Logo } from "@/components/Logo";
 import { RobotHead } from "@/components/RobotHead";
 import { useAdminAuth } from "../auth";
+import { logEvent } from "../activity/client";
 
 export function Login() {
   const nav = useNavigate();
@@ -30,6 +31,7 @@ export function Login() {
     });
     setBusy("");
     if (error) setError(error.message);
+    else void logEvent({ action: "auth.signin", category: "auth", summary: "Signed in" });
   };
 
   const sendMagic = async () => {

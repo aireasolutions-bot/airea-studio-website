@@ -10,6 +10,7 @@ import { Comments } from "./pages/Comments";
 import { Publish } from "./pages/Publish";
 import { Settings } from "./pages/Settings";
 import { SeoConsole } from "./pages/SeoConsole";
+import { Activity } from "./pages/Activity";
 
 export function AdminApp() {
   return (
@@ -31,6 +32,7 @@ export function AdminApp() {
           <Route path="seo" element={<SeoConsole />} />
           <Route path="publish" element={<Publish />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="activity" element={<Activity />} />
         </Route>
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Routes>

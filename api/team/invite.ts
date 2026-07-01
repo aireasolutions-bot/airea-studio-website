@@ -2,6 +2,7 @@
 // picks the new member's role (admin or member). Adds them to the allow-list and
 // sends the on-brand email (magic-link invite, or a password account + welcome).
 import { requireAdmin } from "../_lib/admin.js";
+import { logActivity, reqMeta } from "../_lib/activity.js";
 import {
   teamConfigured,
   upsertAdminUser,
@@ -94,6 +95,17 @@ export default async function handler(req: any, res: any) {
         }
       }
     }
+
+    await logActivity({
+      actor: auth.email,
+      action: "team.invite",
+      category: "team",
+      target: email,
+      targetType: "member",
+      summary: mode === "resent" ? `Re-sent sign-in link to ${email}` : `Invited ${email} as ${roleProvided ? role : "member"}`,
+      metadata: { role: roleProvided ? role : undefined, mode },
+      ...reqMeta(req),
+    });
 
     res.status(200).json({ ok: true, email, mode, role: roleProvided ? role : undefined });
   } catch (e: any) {

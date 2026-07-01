@@ -2,6 +2,7 @@
 // HEAD → Vercel redeploys). Admin-gated.
 import { requireAdmin } from "../_lib/admin.js";
 import { rollbackTo, githubConfigured } from "../_lib/github.js";
+import { logActivity, reqMeta } from "../_lib/activity.js";
 
 export const config = { maxDuration: 60 };
 
@@ -30,6 +31,16 @@ export default async function handler(req: any, res: any) {
     const label = String(body.label || sha.slice(0, 7)).slice(0, 80);
     const message = `Roll back to "${label}" (${sha.slice(0, 7)})\n\nReverted via the admin by ${email}.\n\nCo-Authored-By: AIREA Agent <agent@aireastudio.ai>`;
     const out = await rollbackTo(sha, message);
+    await logActivity({
+      actor: email,
+      action: "site.rollback",
+      category: "publish",
+      target: out.sha,
+      targetType: "commit",
+      summary: `Rolled back to "${label}"`,
+      metadata: { restoredFrom: sha, newSha: out.sha, label },
+      ...reqMeta(req),
+    });
     res.status(200).json(out);
   } catch (e: any) {
     res.status(500).json({ error: e?.message || "Rollback failed" });

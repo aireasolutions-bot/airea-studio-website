@@ -28,6 +28,7 @@ import {
   type SeoStep,
   type SeoChange,
 } from "../seo/client";
+import { logEvent } from "../activity/client";
 
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.round(Math.random() * 1e6)}`);
 
@@ -147,6 +148,7 @@ export function SeoConsole() {
         changefreq: form.changefreq || null,
       });
       setSaveMsg({ kind: "ok", text: "Saved — live on the site." });
+      void logEvent({ action: "seo.edit", category: "seo", target: selected, targetType: "page", summary: `Updated SEO for ${selected}` });
       await load();
     } catch (e) {
       setSaveMsg({ kind: "err", text: (e as Error).message });

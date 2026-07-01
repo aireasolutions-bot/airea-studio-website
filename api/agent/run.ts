@@ -3,6 +3,7 @@
 // reply, a transcript of what it did, and any staged file edits (with old content
 // for diffing). Stateless: the client re-sends the conversation + pending edits.
 import { requireAdmin } from "../_lib/admin.js";
+import { logActivity, reqMeta } from "../_lib/activity.js";
 import { chat, openaiConfigured, getModel, getReasoningModel, getReasoningEffort } from "../_lib/openai.js";
 import { listTree, readFile, githubConfigured } from "../_lib/github.js";
 import { buildSystemPrompt, TOOLS } from "../_lib/knowledge.js";
@@ -44,6 +45,7 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
+  const started = Date.now();
   try {
     const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
     const userMessages = Array.isArray(body.messages) ? body.messages : [];
@@ -144,6 +146,17 @@ export default async function handler(req: any, res: any) {
       reply = msg.content || "";
       break;
     }
+
+    const editCount = Object.keys(edits).length;
+    await logActivity({
+      actor: auth.email,
+      action: "agent.run",
+      category: "agent",
+      summary: editCount ? `Website agent staged ${editCount} edit${editCount > 1 ? "s" : ""} (${mode})` : `Ran the website agent (${mode})`,
+      durationMs: Date.now() - started,
+      metadata: { model, mode, edits: editCount },
+      ...reqMeta(req),
+    });
 
     res.status(200).json({ reply, transcript, edits: Object.values(edits), model, mode });
   } catch (e: any) {
