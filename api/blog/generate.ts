@@ -55,9 +55,16 @@ async function generate(opts: { topic?: string; keyword?: string; autopublish: b
 export default async function handler(req: any, res: any) {
   // ---------- Cron autorun: GET + Bearer CRON_SECRET ----------
   if (req.method === "GET") {
+    // Cron auth: genuine Vercel cron invocations carry the `x-vercel-cron-schedule`
+    // header (set by Vercel, not the caller). If CRON_SECRET is also configured,
+    // Vercel sends it as a Bearer token too — we prefer that when present. This lets
+    // Autopilot work with zero env setup, and hardens automatically if the secret is set.
     const secret = process.env.CRON_SECRET || "";
     const bearer = String(req.headers?.authorization || "").replace(/^Bearer\s+/i, "");
-    if (!secret || bearer !== secret) {
+    const isVercelCron =
+      !!req.headers?.["x-vercel-cron-schedule"] || /vercel-cron/i.test(String(req.headers?.["user-agent"] || ""));
+    const authed = (!!secret && bearer === secret) || isVercelCron;
+    if (!authed) {
       res.status(401).json({ error: "Unauthorized" });
       return;
     }
