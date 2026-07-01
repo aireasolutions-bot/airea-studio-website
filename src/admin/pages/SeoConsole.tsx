@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   AlertTriangle,
   ArrowUp,
@@ -10,9 +10,9 @@ import {
   RotateCcw,
   Save,
   Search,
+  SlidersHorizontal,
   Sparkles,
   Wand2,
-  X,
 } from "lucide-react";
 import { RobotHead } from "@/components/RobotHead";
 import { cn } from "@/lib/cn";
@@ -62,12 +62,14 @@ function pageChecks(title: string, description: string, keywords: string, noinde
 type UIMsg = { id: string; role: "user" | "assistant"; content: string; transcript?: SeoStep[]; changes?: SeoChange[]; error?: boolean };
 
 const SUGGESTIONS = [
-  "Audit every page and list the highest-impact fixes",
-  "Optimize the pricing page for higher click-through",
-  "Rewrite all meta descriptions to be more compelling and keyword-rich",
+  { title: "Audit the whole site", body: "Check every page and list the highest-impact fixes, ranked." },
+  { title: "Sharpen the pricing page", body: "Rewrite its title + description for higher click-through." },
+  { title: "Refresh all meta descriptions", body: "Make every description compelling and keyword-rich." },
+  { title: "Fill keyword gaps", body: "Find pages missing a focus keyword and add the best one." },
 ];
 
 export function SeoConsole() {
+  const [mode, setMode] = useState<"agent" | "manual">("agent");
   const [seoMap, setSeoMap] = useState<Record<string, SeoRow>>({});
   const [loading, setLoading] = useState(true);
   const [loadErr, setLoadErr] = useState("");
@@ -200,7 +202,7 @@ export function SeoConsole() {
       <PageHead
         eyebrow="SEO"
         title="SEO console"
-        sub="Edit titles, descriptions, and structured data per page — changes go live instantly — or let the SEO agent audit and optimize the whole site."
+        sub="Let the SEO agent audit and optimize the whole site for you — or fine-tune any page by hand. Everything goes live instantly."
       />
 
       {/* health strip */}
@@ -226,9 +228,156 @@ export function SeoConsole() {
         </a>
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_390px]">
-        {/* ---------- editor ---------- */}
-        <div className="min-w-0 space-y-5">
+      {/* mode toggle */}
+      <div className="mt-6 inline-flex rounded-full border border-line bg-white p-1 shadow-soft">
+        <button
+          onClick={() => setMode("agent")}
+          className={cn(
+            "flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-semibold transition-colors",
+            mode === "agent" ? "bg-blue text-white shadow-soft" : "text-ink-2 hover:text-ink"
+          )}
+        >
+          <Sparkles className="h-4 w-4" /> SEO Agent
+        </button>
+        <button
+          onClick={() => setMode("manual")}
+          className={cn(
+            "flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-semibold transition-colors",
+            mode === "manual" ? "bg-blue text-white shadow-soft" : "text-ink-2 hover:text-ink"
+          )}
+        >
+          <SlidersHorizontal className="h-4 w-4" /> Manual editor
+        </button>
+      </div>
+
+      {/* ================= AGENT ================= */}
+      {mode === "agent" && (
+        <div
+          className="mt-5 flex w-full flex-col overflow-hidden rounded-3xl border border-line bg-white shadow-soft"
+          style={{ height: "calc(100vh - 17rem)", minHeight: 560 }}
+        >
+          <div className="flex items-center gap-3 border-b border-line bg-gradient-to-r from-white to-blue-mist/40 px-5 py-4">
+            <RobotHead size={38} float={false} glow={false} />
+            <div className="min-w-0 flex-1">
+              <div className="text-[15px] font-semibold text-ink">SEO Agent</div>
+              <div className="truncate text-[12.5px] text-ink-3">Audits your pages, then writes + applies better titles, descriptions & keywords — live</div>
+            </div>
+            <span className="hidden items-center gap-1.5 rounded-full bg-blue-mist px-3 py-1 text-[11.5px] font-semibold text-blue-ink sm:inline-flex">
+              <Gauge className="h-3.5 w-3.5" /> {health.issues} open {health.issues === 1 ? "issue" : "issues"}
+            </span>
+          </div>
+
+          <div ref={chatRef} className="flex-1 overflow-y-auto p-5">
+            {msgs.length === 0 && !agentBusy ? (
+              <div className="mx-auto max-w-2xl pt-6 text-center">
+                <div className="mb-4 flex justify-center">
+                  <RobotHead size={64} />
+                </div>
+                <h3 className="font-display text-[26px] tracking-[-0.01em] text-ink">What should we optimize?</h3>
+                <p className="mx-auto mt-2 max-w-md text-[14px] text-ink-2">
+                  I read each page's real copy, then write and apply higher-converting, keyword-rich SEO. Just ask — or start with one of these:
+                </p>
+                <div className="mt-6 grid gap-2.5 text-left sm:grid-cols-2">
+                  {SUGGESTIONS.map((s) => (
+                    <button
+                      key={s.title}
+                      onClick={() => sendAgent(`${s.title}: ${s.body}`)}
+                      className="group flex flex-col gap-1 rounded-2xl border border-line bg-white p-4 text-left transition-all hover:-translate-y-0.5 hover:border-blue/40 hover:shadow-card"
+                    >
+                      <span className="flex items-center gap-1.5 text-[13.5px] font-semibold text-ink">
+                        <Wand2 className="h-3.5 w-3.5 text-blue" /> {s.title}
+                      </span>
+                      <span className="text-[12.5px] leading-snug text-ink-3">{s.body}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="mx-auto max-w-2xl space-y-3">
+                {msgs.map((m) =>
+                  m.role === "user" ? (
+                    <div key={m.id} className="flex justify-end">
+                      <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-blue px-3.5 py-2 text-[13px] text-white shadow-soft">{m.content}</div>
+                    </div>
+                  ) : (
+                    <div key={m.id} className="space-y-2">
+                      <div
+                        className={cn(
+                          "rounded-2xl rounded-tl-sm border px-3.5 py-2.5 text-[13px] leading-relaxed",
+                          m.error ? "border-critical/30 bg-critical/5 text-ink" : "border-line bg-white text-ink"
+                        )}
+                      >
+                        {m.error && (
+                          <div className="mb-1 flex items-center gap-1.5 text-[11.5px] font-semibold text-critical">
+                            <AlertTriangle className="h-3.5 w-3.5" /> Couldn't complete that
+                          </div>
+                        )}
+                        <div className="whitespace-pre-wrap">{m.content}</div>
+                      </div>
+                      {m.transcript && m.transcript.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {m.transcript.map((s, i) => (
+                            <span key={i} className="inline-flex items-center gap-1 rounded-full border border-line bg-white px-2 py-0.5 font-mono text-[10px] text-ink-3">
+                              <Sparkles className="h-2.5 w-2.5" /> {s.label}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {m.changes && m.changes.length > 0 && (
+                        <div className="space-y-1.5">
+                          {m.changes.map((ch, i) => (
+                            <div key={i} className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-2.5">
+                              <div className="flex items-center gap-1.5 text-[11.5px] font-semibold text-emerald-800">
+                                <Check className="h-3.5 w-3.5" /> Applied to {ch.label}
+                              </div>
+                              {ch.title && <div className="mt-1 truncate text-[12px] text-ink"><span className="text-ink-3">Title:</span> {ch.title}</div>}
+                              {ch.description && <div className="mt-0.5 line-clamp-2 text-[11.5px] text-ink-2"><span className="text-ink-3">Desc:</span> {ch.description}</div>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+                )}
+                {agentBusy && (
+                  <div className="flex items-center gap-2 rounded-2xl rounded-tl-sm border border-line bg-white px-3.5 py-2.5 text-[13px] text-ink-2">
+                    <Loader2 className="h-4 w-4 animate-spin text-blue" /> Auditing & optimizing…
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="border-t border-line bg-white p-3">
+            <div className="mx-auto flex max-w-2xl items-end gap-2">
+              <textarea
+                value={agentInput}
+                onChange={(e) => setAgentInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    sendAgent(agentInput);
+                  }
+                }}
+                rows={1}
+                placeholder="Ask the SEO agent to audit or optimize anything…"
+                className="max-h-32 min-h-[42px] flex-1 resize-none rounded-xl border border-line-2 bg-white px-3.5 py-2.5 text-[13.5px] text-ink outline-none placeholder:text-ink-3 focus:border-blue"
+              />
+              <button
+                onClick={() => sendAgent(agentInput)}
+                disabled={agentBusy || !agentInput.trim()}
+                className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-blue text-white shadow-soft hover:bg-blue-ink disabled:opacity-40"
+              >
+                {agentBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-5 w-5" />}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= MANUAL EDITOR ================= */}
+      {mode === "manual" && (
+        <div className="mx-auto mt-5 max-w-3xl space-y-5">
           {/* page tabs */}
           <div className="flex flex-wrap gap-1.5">
             {SITE_PAGES.map((p) => {
@@ -415,121 +564,12 @@ export function SeoConsole() {
             </>
           )}
         </div>
-
-        {/* ---------- SEO agent ---------- */}
-        <div className="flex h-[calc(100vh-13rem)] min-h-[520px] flex-col overflow-hidden rounded-2xl border border-line bg-canvas shadow-soft">
-          <div className="flex items-center gap-2.5 border-b border-line bg-gradient-to-r from-white to-blue-mist/40 px-4 py-3">
-            <RobotHead size={30} float={false} glow={false} />
-            <div className="min-w-0 flex-1">
-              <div className="text-[13.5px] font-semibold text-ink">SEO Agent</div>
-              <div className="truncate text-[11.5px] text-ink-3">Audits & optimizes your whole site</div>
-            </div>
-            <Gauge className="h-4 w-4 text-blue" />
-          </div>
-
-          <div ref={chatRef} className="flex-1 space-y-3 overflow-y-auto p-3.5">
-            {msgs.length === 0 && !agentBusy && (
-              <div className="space-y-2 pt-2">
-                <p className="px-1 text-[12.5px] text-ink-3">
-                  Ask me to audit or optimize. I read each page's real copy, then write and apply better titles,
-                  descriptions, and keywords — live.
-                </p>
-                {SUGGESTIONS.map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => sendAgent(s)}
-                    className="flex w-full items-start gap-2 rounded-xl border border-line bg-white p-2.5 text-left text-[12.5px] text-ink-2 transition-all hover:-translate-y-0.5 hover:border-blue/40 hover:text-ink hover:shadow-card"
-                  >
-                    <Wand2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-blue" /> {s}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {msgs.map((m) =>
-              m.role === "user" ? (
-                <div key={m.id} className="flex justify-end">
-                  <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-blue px-3.5 py-2 text-[13px] text-white shadow-soft">{m.content}</div>
-                </div>
-              ) : (
-                <div key={m.id} className="space-y-2">
-                  <div
-                    className={cn(
-                      "rounded-2xl rounded-tl-sm border px-3.5 py-2.5 text-[13px] leading-relaxed",
-                      m.error ? "border-critical/30 bg-critical/5 text-ink" : "border-line bg-white text-ink"
-                    )}
-                  >
-                    {m.error && (
-                      <div className="mb-1 flex items-center gap-1.5 text-[11.5px] font-semibold text-critical">
-                        <AlertTriangle className="h-3.5 w-3.5" /> Couldn't complete that
-                      </div>
-                    )}
-                    <div className="whitespace-pre-wrap">{m.content}</div>
-                  </div>
-                  {m.transcript && m.transcript.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {m.transcript.map((s, i) => (
-                        <span key={i} className="inline-flex items-center gap-1 rounded-full border border-line bg-white px-2 py-0.5 font-mono text-[10px] text-ink-3">
-                          <Sparkles className="h-2.5 w-2.5" /> {s.label}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  {m.changes && m.changes.length > 0 && (
-                    <div className="space-y-1.5">
-                      {m.changes.map((ch, i) => (
-                        <div key={i} className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-2.5">
-                          <div className="flex items-center gap-1.5 text-[11.5px] font-semibold text-emerald-800">
-                            <Check className="h-3.5 w-3.5" /> Applied to {ch.label}
-                          </div>
-                          {ch.title && <div className="mt-1 truncate text-[12px] text-ink"><span className="text-ink-3">Title:</span> {ch.title}</div>}
-                          {ch.description && <div className="mt-0.5 line-clamp-2 text-[11.5px] text-ink-2"><span className="text-ink-3">Desc:</span> {ch.description}</div>}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )
-            )}
-
-            {agentBusy && (
-              <div className="flex items-center gap-2 rounded-2xl rounded-tl-sm border border-line bg-white px-3.5 py-2.5 text-[13px] text-ink-2">
-                <Loader2 className="h-4 w-4 animate-spin text-blue" /> Auditing & optimizing…
-              </div>
-            )}
-          </div>
-
-          <div className="border-t border-line bg-white p-2.5">
-            <div className="flex items-end gap-2">
-              <textarea
-                value={agentInput}
-                onChange={(e) => setAgentInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    sendAgent(agentInput);
-                  }
-                }}
-                rows={1}
-                placeholder="Ask the SEO agent…"
-                className="max-h-28 min-h-[38px] flex-1 resize-none rounded-xl border border-line-2 bg-white px-3 py-2 text-[13px] text-ink outline-none placeholder:text-ink-3 focus:border-blue"
-              />
-              <button
-                onClick={() => sendAgent(agentInput)}
-                disabled={agentBusy || !agentInput.trim()}
-                className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-blue text-white shadow-soft hover:bg-blue-ink disabled:opacity-40"
-              >
-                {agentBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-5 w-5" />}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
 
-function Field({ label, hint, bar, children }: { label: string; hint?: string; bar?: React.ReactNode; children: React.ReactNode }) {
+function Field({ label, hint, bar, children }: { label: string; hint?: string; bar?: ReactNode; children: ReactNode }) {
   return (
     <label className="block">
       <div className="mb-1.5 flex items-center justify-between gap-2">
