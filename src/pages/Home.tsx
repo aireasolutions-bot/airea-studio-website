@@ -13,12 +13,16 @@ import { Testimonials } from "@/sections/Testimonials";
 import { PricingPreview } from "@/sections/PricingPreview";
 import { FinalCTA } from "@/sections/FinalCTA";
 import { useC } from "@/content/ContentProvider";
+import { Seo } from "@/components/Seo";
+import { faqSchema } from "@/lib/seo";
+import { FAQ } from "@/lib/site";
 
 export function Home() {
   const c = useC();
   const on = (k: string) => c(k) !== "false";
   return (
     <>
+      <Seo path="/" jsonLd={[faqSchema(FAQ)]} />
       <Hero />
       {on("section.home.stats") && <StatStrip />}
       {on("section.home.agent") && <TellTheAgent />}

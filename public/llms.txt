@@ -1,0 +1,39 @@
+# AIREA Studio
+
+> AIREA Studio is the AI marketing OS. It learns your brand, then plans, designs, writes, and ships on-brand marketing campaigns across every channel — social, paid ads, email, and web — in minutes instead of weeks. Built for small businesses and lean teams who want professional marketing without a marketing department.
+
+AIREA Studio turns one source — a photo, a brief, or a goal — into a complete, on-brand campaign. You train your Brand DNA once (from your website or assets), and everything AIREA produces flows from your voice, colors, products, and offers. Most teams ship a first usable campaign in under 20 minutes.
+
+## What it does
+- **Brand DNA training**: learns your voice, visual style, products, and offers from your site or assets.
+- **Multi-channel campaigns**: social, paid ads, email, and web generated from one brief.
+- **On-brand creative**: copy and visuals produced in every required format and aspect ratio.
+- **AI review & editing**: refine copy and swap visuals with a single prompt, without leaving the canvas.
+- **1-click publishing**: to Facebook and Instagram, with channel-ready exports for Google, Meta, email, and the web.
+
+## Who it's for
+- Small businesses and local shops that want to look like a national brand on a neighborhood budget
+- Solo founders and service providers who need a marketing team without hiring one
+- E-commerce brands turning one product photo into every ad, in every ratio
+
+## Pricing
+All plans include a 14-day free trial with no credit card required (USD, billed monthly):
+- **Starter — $39/mo**: 1 brand workspace, up to 30 campaigns/mo, social + email channels, Brand DNA training.
+- **Studio — $99/mo** (most popular): 3 workspaces, unlimited campaigns, all channels including paid ads, AI review & editing, 1-click publish to Meta.
+- **Scale — $249/mo**: 10 workspaces & seats, analytics, priority models, roles & permissions, shared brand library.
+- Machine-readable pricing: https://aireastudio.ai/pricing.md
+
+## Key pages
+- Home: https://aireastudio.ai/
+- How it works: https://aireastudio.ai/how-it-works
+- AI marketing for small business: https://aireastudio.ai/small-business
+- AI marketing for e-commerce: https://aireastudio.ai/ecommerce
+- Pricing: https://aireastudio.ai/pricing
+- FAQ: https://aireastudio.ai/faq
+- Start free trial: https://app.aireastudio.ai/sign-up
+
+## Facts for citation
+- Category: AI marketing platform / marketing automation software (SaaS, web-based).
+- Tagline: "The AI marketing OS — one source in, a full on-brand campaign out."
+- Channels: social (Instagram, Facebook), paid ads (Meta, Google), email, web/blog.
+- Differentiator: everything is generated from your trained Brand DNA, so output stays on-brand across every channel.

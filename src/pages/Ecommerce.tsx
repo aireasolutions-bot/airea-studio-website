@@ -6,6 +6,8 @@ import { OnePhotoCampaign } from "@/sections/OnePhotoCampaign";
 import { Testimonials } from "@/sections/Testimonials";
 import { FinalCTA } from "@/sections/FinalCTA";
 import { useC, resolveAsset, editable } from "@/content/ContentProvider";
+import { Seo } from "@/components/Seo";
+import { breadcrumbSchema } from "@/lib/seo";
 
 const BENEFITS = [
   {
@@ -29,6 +31,10 @@ export function Ecommerce() {
   const c = useC();
   return (
     <>
+      <Seo
+        path="/ecommerce"
+        jsonLd={[breadcrumbSchema([{ name: "Home", path: "/" }, { name: "E-commerce", path: "/ecommerce" }])]}
+      />
       <SubHero
         eyebrow={<span {...editable("ec.hero.eyebrow")}>{c("ec.hero.eyebrow", "For e-commerce")}</span>}
         title={

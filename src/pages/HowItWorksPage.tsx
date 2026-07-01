@@ -7,8 +7,10 @@ import { Button, Eyebrow, Tag } from "@/components/ui";
 import { Reveal } from "@/components/Reveal";
 import { FinalCTA } from "@/sections/FinalCTA";
 import { cn } from "@/lib/cn";
-import { SIGN_UP_URL } from "@/lib/site";
+import { SIGN_UP_URL, STEPS as PRODUCT_STEPS } from "@/lib/site";
 import { useC, resolveAsset, editable } from "@/content/ContentProvider";
+import { Seo } from "@/components/Seo";
+import { howToSchema, breadcrumbSchema } from "@/lib/seo";
 
 const EASE = [0.22, 0.61, 0.36, 1] as const;
 
@@ -179,6 +181,13 @@ export function HowItWorksPage() {
   const c = useC();
   return (
     <>
+      <Seo
+        path="/how-it-works"
+        jsonLd={[
+          howToSchema("How AIREA Studio turns one brief into a full, on-brand campaign", PRODUCT_STEPS),
+          breadcrumbSchema([{ name: "Home", path: "/" }, { name: "How it works", path: "/how-it-works" }]),
+        ]}
+      />
       {/* hero */}
       <section className="relative overflow-hidden pb-12 pt-32 text-center md:pt-40">
         <div className="pointer-events-none absolute inset-0 -z-10 bg-blue-radial" />

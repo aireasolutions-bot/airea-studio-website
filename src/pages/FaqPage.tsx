@@ -7,6 +7,8 @@ import { scrollToTarget } from "@/hooks/useSmoothScroll";
 import { FAQ_CATEGORIES } from "@/lib/faq";
 import { SIGN_UP_URL } from "@/lib/site";
 import { useC, editable } from "@/content/ContentProvider";
+import { Seo } from "@/components/Seo";
+import { faqSchema, breadcrumbSchema } from "@/lib/seo";
 
 export function FaqPage() {
   const c = useC();
@@ -43,6 +45,13 @@ export function FaqPage() {
 
   return (
     <>
+      <Seo
+        path="/faq"
+        jsonLd={[
+          faqSchema(FAQ_CATEGORIES.flatMap((cat) => cat.items.map((it) => ({ q: it.q, a: it.a.join(" ") })))),
+          breadcrumbSchema([{ name: "Home", path: "/" }, { name: "FAQ", path: "/faq" }]),
+        ]}
+      />
       {/* header */}
       <section className="relative overflow-hidden pb-12 pt-32 md:pt-40">
         <div className="pointer-events-none absolute inset-0 -z-10 bg-blue-radial" />

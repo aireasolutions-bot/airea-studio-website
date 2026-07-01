@@ -9,6 +9,8 @@ import { BrandDNA } from "@/sections/BrandDNA";
 import { Channels } from "@/sections/Channels";
 import { FinalCTA } from "@/sections/FinalCTA";
 import { useC, resolveAsset, editable } from "@/content/ContentProvider";
+import { Seo } from "@/components/Seo";
+import { breadcrumbSchema } from "@/lib/seo";
 
 const BENEFITS = [
   {
@@ -38,6 +40,10 @@ export function SmallBusiness() {
   const c = useC();
   return (
     <>
+      <Seo
+        path="/small-business"
+        jsonLd={[breadcrumbSchema([{ name: "Home", path: "/" }, { name: "Small business", path: "/small-business" }])]}
+      />
       <SubHero
         eyebrow={<span {...editable("sb.hero.eyebrow")}>{c("sb.hero.eyebrow", "For small business")}</span>}
         title={

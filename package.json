@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "node scripts/gen-sitemap.mjs && tsc --noEmit && vite build",
     "preview": "vite preview",
     "upload:r2": "node scripts/upload-r2.mjs"
   },
