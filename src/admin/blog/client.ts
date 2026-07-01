@@ -130,3 +130,84 @@ export async function generateBlog(opts: {
   }
   return asJson(res);
 }
+
+// ---------- conversational streaming agent ----------
+export type ChatMsg = { role: "user" | "assistant"; content: string };
+
+export type AgentEvent =
+  | { type: "step"; label: string; kind?: string }
+  | { type: "search"; query: string; n: number }
+  | { type: "source"; url: string; title?: string }
+  | { type: "reasoning"; delta: string }
+  | { type: "delta"; delta: string }
+  | { type: "draft"; post: AdminBlogPost }
+  | { type: "message"; content: string }
+  | { type: "error"; error: string }
+  | { type: "done"; slug: string };
+
+// Talk to AIREA. Streams the agent's live working (searches, sources, reasoning,
+// writing) as Server-Sent Events, calling onEvent for each. `draft` is the current
+// draft's body, passed so the agent can revise it in place on follow-up turns.
+export async function streamBlogAgent(
+  messages: ChatMsg[],
+  draft: string | undefined,
+  onEvent: (e: AgentEvent) => void,
+  signal?: AbortSignal
+): Promise<void> {
+  const { data } = await supabase!.auth.getSession();
+  const token = data.session?.access_token ?? "";
+  let res: Response;
+  try {
+    res = await fetch("/api/blog/agent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ messages, draft }),
+      signal,
+    });
+  } catch (e) {
+    if ((e as Error)?.name === "AbortError") return;
+    throw new Error(NOT_DEPLOYED);
+  }
+  if (!res.ok || !res.body) {
+    const ct = res.headers.get("content-type") || "";
+    if (ct.includes("application/json")) {
+      const b = await res.json().catch(() => null);
+      throw new Error(b?.error || `The agent hit a server error (${res.status}).`);
+    }
+    throw new Error(NOT_DEPLOYED);
+  }
+
+  const reader = res.body.getReader();
+  const dec = new TextDecoder();
+  let buf = "";
+  for (;;) {
+    let chunk: ReadableStreamReadResult<Uint8Array>;
+    try {
+      chunk = await reader.read();
+    } catch (e) {
+      if ((e as Error)?.name === "AbortError") return;
+      throw e;
+    }
+    if (chunk.done) break;
+    buf += dec.decode(chunk.value, { stream: true });
+    const parts = buf.split("\n\n");
+    buf = parts.pop() || "";
+    for (const part of parts) {
+      const evLine = part.split("\n").find((l) => l.startsWith("event:"));
+      if (!evLine) continue;
+      const type = evLine.slice(6).trim();
+      const dataStr = part
+        .split("\n")
+        .filter((l) => l.startsWith("data:"))
+        .map((l) => l.slice(5).trim())
+        .join("");
+      let payload: any = {};
+      try {
+        payload = dataStr ? JSON.parse(dataStr) : {};
+      } catch {
+        /* ignore malformed */
+      }
+      onEvent({ type, ...payload } as AgentEvent);
+    }
+  }
+}

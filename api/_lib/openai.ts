@@ -125,3 +125,79 @@ export async function completeJson(
   const content = data?.choices?.[0]?.message?.content || "{}";
   return JSON.parse(content);
 }
+
+// Streaming live research + writing via the Responses API (web_search + reasoning).
+// Calls onEvent(evt) for every parsed SSE event object so the caller can surface
+// the agent's real working (searches, sources, reasoning, text) as it happens.
+// Returns the aggregated final text + de-duped citations.
+export async function streamResponses(
+  input: string,
+  opts: { model?: string; instructions?: string; maxOutputTokens?: number; reasoning?: boolean },
+  onEvent: (evt: any) => void
+): Promise<{ text: string; citations: { url: string; title?: string }[] }> {
+  const body: any = {
+    model: opts.model || getSearchModel(),
+    input,
+    tools: [{ type: "web_search" }],
+    stream: true,
+  };
+  if (opts.instructions) body.instructions = opts.instructions;
+  if (opts.maxOutputTokens) body.max_output_tokens = opts.maxOutputTokens;
+  if (opts.reasoning) body.reasoning = { summary: "auto" };
+
+  const res = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok || !res.body) {
+    const t = await res.text().catch(() => "");
+    throw new Error(`OpenAI Responses ${res.status}: ${t.slice(0, 300)}`);
+  }
+
+  const reader = (res.body as any).getReader();
+  const dec = new TextDecoder();
+  let buf = "";
+  let text = "";
+  const citations: { url: string; title?: string }[] = [];
+  const seen = new Set<string>();
+  const cite = (a: any) => {
+    if (a?.url && !seen.has(a.url)) {
+      seen.add(a.url);
+      citations.push({ url: a.url, title: a.title || undefined });
+    }
+  };
+
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    const chunks = buf.split("\n\n");
+    buf = chunks.pop() || "";
+    for (const chunk of chunks) {
+      const dataStr = chunk
+        .split("\n")
+        .filter((l) => l.startsWith("data:"))
+        .map((l) => l.slice(5).trim())
+        .join("");
+      if (!dataStr || dataStr === "[DONE]") continue;
+      let evt: any;
+      try {
+        evt = JSON.parse(dataStr);
+      } catch {
+        continue;
+      }
+      const type = evt?.type || "";
+      if (type === "response.output_text.delta" && typeof evt.delta === "string") text += evt.delta;
+      if (type === "response.output_text.annotation.added") cite(evt.annotation);
+      if (type === "response.completed" && evt.response) {
+        for (const item of evt.response.output || [])
+          for (const c of item.content || [])
+            for (const a of c.annotations || []) if (a?.type === "url_citation") cite(a);
+        if (!text && typeof evt.response.output_text === "string") text = evt.response.output_text;
+      }
+      onEvent(evt);
+    }
+  }
+  return { text: text.trim(), citations };
+}
