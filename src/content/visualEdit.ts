@@ -45,7 +45,11 @@ export function activate(): () => void {
     t.classList.add("airea-edit-hl");
     const type = t.getAttribute("data-edit-type") || "text";
     const r = t.getBoundingClientRect();
-    badge.textContent = type === "image" ? "✎ Change image" : "✎ Edit text";
+    badge.textContent =
+      type === "image" ? "✎ Change image"
+      : type === "video" ? "✎ Change video"
+      : type === "cta" ? "✎ Edit button"
+      : "✎ Edit text";
     badge.style.left = `${Math.max(6, r.left)}px`;
     badge.style.top = `${Math.max(14, r.top)}px`;
     badge.style.display = "block";
@@ -57,12 +61,13 @@ export function activate(): () => void {
     e.preventDefault();
     e.stopPropagation();
     const r = t.getBoundingClientRect();
+    const editType = t.getAttribute("data-edit-type") || "text";
     window.parent?.postMessage(
       {
         type: "airea-edit-click",
         key: t.getAttribute("data-edit-key"),
-        editType: t.getAttribute("data-edit-type") || "text",
-        value: (t.getAttribute("data-edit-type") || "text") === "image" ? "" : (t.textContent || "").trim(),
+        editType,
+        value: editType === "image" || editType === "video" ? "" : (t.textContent || "").trim(),
         rect: { left: r.left, top: r.top, width: r.width, height: r.height },
       },
       "*"

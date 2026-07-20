@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useMagnetic } from "@/hooks/useMagnetic";
 import { scrollToTarget } from "@/hooks/useSmoothScroll";
+import { useC, editable, parseLink, isEdit } from "@/content/ContentProvider";
 
 /* ---------------- Button ---------------- */
 
@@ -99,6 +100,44 @@ export function Button({
 
   if (magnetic) return <span ref={magRef} className="inline-flex">{el}</span>;
   return el;
+}
+
+/* ---------------- CtaButton ----------------
+ * A fully content-managed Button: label from content key `k`, destination +
+ * visibility from `${k}_link` ({"href", "visible"} — see parseLink). The team
+ * edits label, URL, and show/hide from the admin (panel or click-on-canvas).
+ * Hidden buttons render nothing on the live site, but stay visible (ghosted)
+ * on the edit canvas so they can be clicked and re-enabled. */
+
+type CtaButtonProps = Omit<ButtonProps, "children" | "to" | "href"> & {
+  k: string;
+  defaultLabel: string;
+  defaultHref: string;
+};
+
+export function CtaButton({ k, defaultLabel, defaultHref, ...rest }: CtaButtonProps) {
+  const c = useC();
+  const link = parseLink(c(`${k}_link`), defaultHref);
+  const label = <span {...editable(k, "cta")}>{c(k, defaultLabel)}</span>;
+  const internal = link.href.startsWith("/") || link.href.startsWith("#");
+
+  if (!link.visible && !isEdit()) return null;
+
+  const btn = internal ? (
+    <Button to={link.href} {...rest}>{label}</Button>
+  ) : (
+    <Button href={link.href} {...rest}>{label}</Button>
+  );
+
+  if (!link.visible) {
+    // Edit canvas only: show the hidden button ghosted so it stays editable.
+    return (
+      <span className="inline-flex rounded-full opacity-40 outline-dashed outline-2 outline-offset-2 outline-ink-3" title="Hidden — click to edit & re-enable">
+        {btn}
+      </span>
+    );
+  }
+  return btn;
 }
 
 /* ---------------- Tag / Eyebrow ---------------- */

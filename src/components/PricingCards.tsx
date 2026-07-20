@@ -1,5 +1,5 @@
 import { Check } from "lucide-react";
-import { Button } from "./ui";
+import { CtaButton } from "./ui";
 import { cn } from "@/lib/cn";
 import { SIGN_UP_URL } from "@/lib/site";
 import { useC, editable } from "@/content/ContentProvider";
@@ -52,9 +52,7 @@ export function PricingCards() {
               ))}
             </ul>
             <div className="mt-7">
-              <Button href={SIGN_UP_URL} variant={featured ? "primary" : "ghost"} className="w-full" arrow>
-                <span {...editable(`pricing.${pk}.cta`)}>{c(`pricing.${pk}.cta`)}</span>
-              </Button>
+              <CtaButton k={`pricing.${pk}.cta`} defaultLabel="Start free" defaultHref={SIGN_UP_URL} variant={featured ? "primary" : "ghost"} className="w-full" arrow />
               <p className={cn("mt-3 text-center text-[12px]", featured ? "text-white/50" : "text-ink-3")} {...editable("pricing.card.reassurance")}>
                 {c("pricing.card.reassurance", "14-day free trial · no card")}
               </p>

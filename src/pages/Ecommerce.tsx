@@ -6,6 +6,7 @@ import { OnePhotoCampaign } from "@/sections/OnePhotoCampaign";
 import { Testimonials } from "@/sections/Testimonials";
 import { FinalCTA } from "@/sections/FinalCTA";
 import { useC, resolveAsset, editable } from "@/content/ContentProvider";
+import { PageSections } from "@/components/PageSections";
 import { Seo } from "@/components/Seo";
 import { breadcrumbSchema } from "@/lib/seo";
 
@@ -29,12 +30,8 @@ const BENEFITS = [
 
 export function Ecommerce() {
   const c = useC();
-  return (
-    <>
-      <Seo
-        path="/ecommerce"
-        jsonLd={[breadcrumbSchema([{ name: "Home", path: "/" }, { name: "E-commerce", path: "/ecommerce" }])]}
-      />
+
+  const hero = (
       <SubHero
         eyebrow={<span {...editable("ec.hero.eyebrow")}>{c("ec.hero.eyebrow", "For e-commerce")}</span>}
         title={
@@ -66,7 +63,9 @@ export function Ecommerce() {
           </div>
         }
       />
+  );
 
+  const benefits = (
       <section className="py-20 md:py-28">
         <div className="wrap-wide">
           <SectionHeading
@@ -85,10 +84,18 @@ export function Ecommerce() {
           </div>
         </div>
       </section>
+  );
 
-      <OnePhotoCampaign />
-      <Testimonials />
-      <FinalCTA />
+  return (
+    <>
+      <Seo
+        path="/ecommerce"
+        jsonLd={[breadcrumbSchema([{ name: "Home", path: "/" }, { name: "E-commerce", path: "/ecommerce" }])]}
+      />
+      <PageSections
+        page="ecommerce"
+        sections={{ hero, benefits, onephoto: <OnePhotoCampaign />, testimonials: <Testimonials />, cta: <FinalCTA /> }}
+      />
     </>
   );
 }

@@ -1,9 +1,8 @@
 import type { ReactNode } from "react";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
-import { Button, Eyebrow } from "./ui";
+import { CtaButton, Eyebrow } from "./ui";
 import { SIGN_UP_URL } from "@/lib/site";
-import { useC, editable } from "@/content/ContentProvider";
 
 const EASE = [0.22, 0.61, 0.36, 1] as const;
 
@@ -20,7 +19,6 @@ export function SubHero({
   note?: ReactNode;
   visual?: ReactNode;
 }) {
-  const c = useC();
   return (
     <section className="relative overflow-hidden pb-16 pt-32 md:pb-24 md:pt-40">
       <div className="pointer-events-none absolute inset-0 -z-10 bg-blue-radial" />
@@ -56,12 +54,8 @@ export function SubHero({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: EASE, delay: 0.32 }}
           >
-            <Button href={SIGN_UP_URL} variant="primary" size="lg" magnetic arrow>
-              <span {...editable("global.subhero.cta_primary")}>{c("global.subhero.cta_primary", "Start 14-day free trial")}</span>
-            </Button>
-            <Button to="/how-it-works" variant="ghost" size="lg">
-              <span {...editable("global.subhero.cta_secondary")}>{c("global.subhero.cta_secondary", "See how it works")}</span>
-            </Button>
+            <CtaButton k="global.subhero.cta_primary" defaultLabel="Start 14-day free trial" defaultHref={SIGN_UP_URL} variant="primary" size="lg" magnetic arrow />
+            <CtaButton k="global.subhero.cta_secondary" defaultLabel="See how it works" defaultHref="/how-it-works" variant="ghost" size="lg" />
           </motion.div>
           {note && (
             <motion.p

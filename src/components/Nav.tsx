@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { Logo } from "./Logo";
-import { Button } from "./ui";
+import { CtaButton } from "./ui";
 import { cn } from "@/lib/cn";
 import { SOLUTIONS, SIGN_UP_URL, SIGN_IN_URL } from "@/lib/site";
 import { scrollToTarget } from "@/hooks/useSmoothScroll";
-import { useC, editable } from "@/content/ContentProvider";
+import { useC, editable, parseLink } from "@/content/ContentProvider";
 
 // NOTE: these are keyed by index for content overrides (global.nav.route{i}),
 // so only ever APPEND — inserting in the middle re-labels existing entries.
@@ -145,16 +145,16 @@ export function Nav() {
           </nav>
 
           <div className="hidden items-center gap-2 lg:flex">
-            <a
-              href={SIGN_IN_URL}
-              className="px-3 py-2 text-[13.5px] font-medium text-ink-2 transition-colors hover:text-ink"
-              {...editable("global.nav.login")}
-            >
-              {c("global.nav.login", "Log in")}
-            </a>
-            <Button href={SIGN_UP_URL} variant="primary" magnetic arrow>
-              <span {...editable("global.nav.cta")}>{c("global.nav.cta", "Start free")}</span>
-            </Button>
+            {parseLink(c("global.nav.login_link"), SIGN_IN_URL).visible && (
+              <a
+                href={parseLink(c("global.nav.login_link"), SIGN_IN_URL).href}
+                className="px-3 py-2 text-[13.5px] font-medium text-ink-2 transition-colors hover:text-ink"
+                {...editable("global.nav.login", "cta")}
+              >
+                {c("global.nav.login", "Log in")}
+              </a>
+            )}
+            <CtaButton k="global.nav.cta" defaultLabel="Start free" defaultHref={SIGN_UP_URL} variant="primary" magnetic arrow />
           </div>
 
           {/* mobile toggle */}
@@ -216,16 +216,16 @@ export function Nav() {
             </Link>
           </div>
           <div className="mt-auto flex flex-col gap-3">
-            <Button href={SIGN_UP_URL} variant="primary" size="lg" arrow>
-              <span {...editable("global.nav.cta_mobile")}>{c("global.nav.cta_mobile", "Start 14-day free trial")}</span>
-            </Button>
-            <a
-              href={SIGN_IN_URL}
-              className="text-center text-sm font-medium text-ink-2"
-              {...editable("global.nav.login")}
-            >
-              {c("global.nav.login", "Log in")}
-            </a>
+            <CtaButton k="global.nav.cta_mobile" defaultLabel="Start 14-day free trial" defaultHref={SIGN_UP_URL} variant="primary" size="lg" arrow />
+            {parseLink(c("global.nav.login_link"), SIGN_IN_URL).visible && (
+              <a
+                href={parseLink(c("global.nav.login_link"), SIGN_IN_URL).href}
+                className="text-center text-sm font-medium text-ink-2"
+                {...editable("global.nav.login", "cta")}
+              >
+                {c("global.nav.login", "Log in")}
+              </a>
+            )}
           </div>
         </div>
       </div>

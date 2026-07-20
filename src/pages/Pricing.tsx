@@ -4,6 +4,7 @@ import { PricingCards } from "@/components/PricingCards";
 import { Faq } from "@/components/Faq";
 import { Reveal } from "@/components/Reveal";
 import { FinalCTA } from "@/sections/FinalCTA";
+import { PageSections } from "@/components/PageSections";
 import { PLANS } from "@/lib/site";
 import { useC, editable } from "@/content/ContentProvider";
 import { Seo } from "@/components/Seo";
@@ -30,20 +31,9 @@ function Cell({ v, editKey }: { v: boolean | string; editKey?: string }) {
 
 export function Pricing() {
   const c = useC();
-  return (
-    <>
-      <Seo
-        path="/pricing"
-        type="product"
-        jsonLd={[
-          productSchema(),
-          breadcrumbSchema([
-            { name: "Home", path: "/" },
-            { name: "Pricing", path: "/pricing" },
-          ]),
-        ]}
-      />
-      <section className="relative overflow-hidden pb-12 pt-36 text-center md:pt-44">
+
+  const hero = (
+    <section className="relative overflow-hidden pb-12 pt-36 text-center md:pt-44">
         <div className="pointer-events-none absolute inset-0 -z-10 bg-blue-radial" />
         <div className="pointer-events-none absolute inset-0 -z-10 bg-grid opacity-[0.35] [mask-image:radial-gradient(ellipse_at_top,black,transparent_65%)]" />
         <div className="wrap">
@@ -60,15 +50,18 @@ export function Pricing() {
           </p>
         </div>
       </section>
+  );
 
-      <section className="pb-8">
-        <div className="wrap-wide">
-          <PricingCards />
-        </div>
-      </section>
+  const cards = (
+    <section className="pb-8">
+      <div className="wrap-wide">
+        <PricingCards />
+      </div>
+    </section>
+  );
 
-      {/* comparison */}
-      <section className="py-20 md:py-28">
+  const compare = (
+    <section className="py-20 md:py-28">
         <div className="wrap">
           <SectionHeading
             align="center"
@@ -120,22 +113,40 @@ export function Pricing() {
           </Reveal>
         </div>
       </section>
+  );
 
-      {/* faq */}
-      <section className="pb-24 md:pb-28">
-        <div className="wrap">
-          <SectionHeading
-            align="center"
-            tag={<span {...editable("pricing.faq.tag")}>{c("pricing.faq.tag", "FAQ")}</span>}
-            title={<span {...editable("pricing.faq.title")}>{c("pricing.faq.title", "Questions, answered")}</span>}
-          />
-          <div className="mt-12">
-            <Faq />
-          </div>
+  const faq = (
+    <section className="pb-24 md:pb-28">
+      <div className="wrap">
+        <SectionHeading
+          align="center"
+          tag={<span {...editable("pricing.faq.tag")}>{c("pricing.faq.tag", "FAQ")}</span>}
+          title={<span {...editable("pricing.faq.title")}>{c("pricing.faq.title", "Questions, answered")}</span>}
+        />
+        <div className="mt-12">
+          <Faq />
         </div>
-      </section>
+      </div>
+    </section>
+  );
 
-      <FinalCTA />
+  return (
+    <>
+      <Seo
+        path="/pricing"
+        type="product"
+        jsonLd={[
+          productSchema(),
+          breadcrumbSchema([
+            { name: "Home", path: "/" },
+            { name: "Pricing", path: "/pricing" },
+          ]),
+        ]}
+      />
+      <PageSections
+        page="pricing"
+        sections={{ hero, cards, compare, faq, cta: <FinalCTA /> }}
+      />
     </>
   );
 }

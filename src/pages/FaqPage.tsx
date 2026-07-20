@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Plus, Search } from "lucide-react";
-import { Button, Eyebrow } from "@/components/ui";
+import { CtaButton, Eyebrow } from "@/components/ui";
+import { PageSections } from "@/components/PageSections";
 import { RobotHead } from "@/components/RobotHead";
 import { cn } from "@/lib/cn";
 import { scrollToTarget } from "@/hooks/useSmoothScroll";
@@ -43,16 +44,7 @@ export function FaqPage() {
 
   const total = FAQ_CATEGORIES.reduce((n, cat) => n + cat.items.length, 0);
 
-  return (
-    <>
-      <Seo
-        path="/faq"
-        jsonLd={[
-          faqSchema(FAQ_CATEGORIES.flatMap((cat) => cat.items.map((it) => ({ q: it.q, a: it.a.join(" ") })))),
-          breadcrumbSchema([{ name: "Home", path: "/" }, { name: "FAQ", path: "/faq" }]),
-        ]}
-      />
-      {/* header */}
+  const header = (
       <section className="relative overflow-hidden pb-12 pt-32 md:pt-40">
         <div className="pointer-events-none absolute inset-0 -z-10 bg-blue-radial" />
         <div className="pointer-events-none absolute inset-0 -z-10 bg-grid opacity-[0.35] [mask-image:radial-gradient(ellipse_at_top,black,transparent_65%)]" />
@@ -86,8 +78,9 @@ export function FaqPage() {
           </div>
         </div>
       </section>
+  );
 
-      {/* body */}
+  const body = (
       <section className="pb-24 md:pb-28">
         <div className="wrap-wide grid gap-12 lg:grid-cols-[260px_1fr] lg:gap-16">
           {/* sidebar */}
@@ -190,13 +183,23 @@ export function FaqPage() {
                   .
                 </p>
               </div>
-              <Button href={SIGN_UP_URL} variant="primary" size="lg" magnetic arrow>
-                <span {...editable("faq.contact.cta")}>{c("faq.contact.cta", "Start 14-day free trial")}</span>
-              </Button>
+              <CtaButton k="faq.contact.cta" defaultLabel="Start 14-day free trial" defaultHref={SIGN_UP_URL} variant="primary" size="lg" magnetic arrow />
             </div>
           </div>
         </div>
       </section>
+  );
+
+  return (
+    <>
+      <Seo
+        path="/faq"
+        jsonLd={[
+          faqSchema(FAQ_CATEGORIES.flatMap((cat) => cat.items.map((it) => ({ q: it.q, a: it.a.join(" ") })))),
+          breadcrumbSchema([{ name: "Home", path: "/" }, { name: "FAQ", path: "/faq" }]),
+        ]}
+      />
+      <PageSections page="faq" sections={{ header, body }} />
     </>
   );
 }

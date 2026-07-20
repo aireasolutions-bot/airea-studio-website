@@ -9,6 +9,7 @@ import { BrandDNA } from "@/sections/BrandDNA";
 import { Channels } from "@/sections/Channels";
 import { FinalCTA } from "@/sections/FinalCTA";
 import { useC, resolveAsset, editable } from "@/content/ContentProvider";
+import { PageSections } from "@/components/PageSections";
 import { Seo } from "@/components/Seo";
 import { breadcrumbSchema } from "@/lib/seo";
 
@@ -38,12 +39,8 @@ const TAILORED = [
 
 export function SmallBusiness() {
   const c = useC();
-  return (
-    <>
-      <Seo
-        path="/small-business"
-        jsonLd={[breadcrumbSchema([{ name: "Home", path: "/" }, { name: "Small business", path: "/small-business" }])]}
-      />
+
+  const hero = (
       <SubHero
         eyebrow={<span {...editable("sb.hero.eyebrow")}>{c("sb.hero.eyebrow", "For small business")}</span>}
         title={
@@ -75,7 +72,9 @@ export function SmallBusiness() {
           </div>
         }
       />
+  );
 
+  const benefits = (
       <section className="py-20 md:py-28">
         <div className="wrap-wide">
           <SectionHeading
@@ -94,7 +93,9 @@ export function SmallBusiness() {
           </div>
         </div>
       </section>
+  );
 
+  const tailored = (
       <section className="border-y border-line bg-paper py-20 md:py-28">
         <div className="wrap-wide">
           <SectionHeading
@@ -115,10 +116,18 @@ export function SmallBusiness() {
           </div>
         </div>
       </section>
+  );
 
-      <BrandDNA />
-      <Channels />
-      <FinalCTA />
+  return (
+    <>
+      <Seo
+        path="/small-business"
+        jsonLd={[breadcrumbSchema([{ name: "Home", path: "/" }, { name: "Small business", path: "/small-business" }])]}
+      />
+      <PageSections
+        page="small-business"
+        sections={{ hero, benefits, tailored, branddna: <BrandDNA />, channels: <Channels />, cta: <FinalCTA /> }}
+      />
     </>
   );
 }

@@ -1,5 +1,5 @@
 import { Check } from "lucide-react";
-import { Button } from "@/components/ui";
+import { CtaButton } from "@/components/ui";
 import { RobotHead } from "@/components/RobotHead";
 import { Reveal } from "@/components/Reveal";
 import { SIGN_UP_URL } from "@/lib/site";
@@ -36,24 +36,24 @@ export function FinalCTA() {
               </p>
 
               <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-                <Button
-                  href={SIGN_UP_URL}
+                <CtaButton
+                  k="home.cta.primary"
+                  defaultLabel="Start 14-day free trial"
+                  defaultHref={SIGN_UP_URL}
                   variant="ghost"
                   size="lg"
                   magnetic
                   arrow
                   className="border-transparent bg-white text-ink shadow-lift hover:bg-white"
-                >
-                  <span {...editable("home.cta.primary")}>{c("home.cta.primary")}</span>
-                </Button>
-                <Button
-                  to="/how-it-works"
+                />
+                <CtaButton
+                  k="home.cta.secondary"
+                  defaultLabel="See how it works"
+                  defaultHref="/how-it-works"
                   variant="ghost"
                   size="lg"
                   className="border-white/40 bg-transparent text-white hover:border-white hover:bg-white/10"
-                >
-                  <span {...editable("home.cta.secondary")}>{c("home.cta.secondary", "See how it works")}</span>
-                </Button>
+                />
               </div>
 
               <p className="mt-5 flex items-center justify-center gap-2 text-[13px] text-white/70" {...editable("home.cta.note")}>

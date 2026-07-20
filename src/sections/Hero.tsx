@@ -7,7 +7,7 @@ const GradientCanvas = lazy(() =>
 );
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { RobotHead } from "@/components/RobotHead";
-import { Button, Eyebrow } from "@/components/ui";
+import { CtaButton, Eyebrow } from "@/components/ui";
 import { PLATFORMS, SIGN_UP_URL } from "@/lib/site";
 import { useC, resolveAsset, editable } from "@/content/ContentProvider";
 import { prefersReducedMotion } from "@/lib/gsap";
@@ -96,12 +96,8 @@ export function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: EASE, delay: 0.42 }}
           >
-            <Button href={SIGN_UP_URL} variant="primary" size="lg" magnetic arrow>
-              <span {...editable("home.hero.cta_primary")}>{c("home.hero.cta_primary")}</span>
-            </Button>
-            <Button to="/#campaign" variant="ghost" size="lg" iconLeft={<Play className="h-4 w-4 fill-current" />}>
-              <span {...editable("home.hero.cta_secondary")}>{c("home.hero.cta_secondary")}</span>
-            </Button>
+            <CtaButton k="home.hero.cta_primary" defaultLabel="Start 14-day free trial" defaultHref={SIGN_UP_URL} variant="primary" size="lg" magnetic arrow />
+            <CtaButton k="home.hero.cta_secondary" defaultLabel="Watch it work" defaultHref="/#campaign" variant="ghost" size="lg" iconLeft={<Play className="h-4 w-4 fill-current" />} />
           </motion.div>
 
           <motion.p

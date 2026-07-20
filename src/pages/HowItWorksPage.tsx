@@ -3,8 +3,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check, FolderKanban, Sparkles, Users, Wand2 } from "lucide-react";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { RobotHead } from "@/components/RobotHead";
-import { Button, Eyebrow, Tag } from "@/components/ui";
+import { CtaButton, Eyebrow, Tag } from "@/components/ui";
 import { Reveal } from "@/components/Reveal";
+import { PageSections } from "@/components/PageSections";
 import { FinalCTA } from "@/sections/FinalCTA";
 import { cn } from "@/lib/cn";
 import { SIGN_UP_URL, STEPS as PRODUCT_STEPS } from "@/lib/site";
@@ -179,16 +180,8 @@ function StepExplorer() {
 
 export function HowItWorksPage() {
   const c = useC();
-  return (
-    <>
-      <Seo
-        path="/how-it-works"
-        jsonLd={[
-          howToSchema("How AIREA Studio turns one brief into a full, on-brand campaign", PRODUCT_STEPS),
-          breadcrumbSchema([{ name: "Home", path: "/" }, { name: "How it works", path: "/how-it-works" }]),
-        ]}
-      />
-      {/* hero */}
+
+  const hero = (
       <section className="relative overflow-hidden pb-12 pt-32 text-center md:pt-40">
         <div className="pointer-events-none absolute inset-0 -z-10 bg-blue-radial" />
         <div className="pointer-events-none absolute inset-0 -z-10 bg-grid opacity-[0.35] [mask-image:radial-gradient(ellipse_at_top,black,transparent_65%)]" />
@@ -208,18 +201,15 @@ export function HowItWorksPage() {
             {c("howitworks.hero.sub")}
           </p>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-            <Button href={SIGN_UP_URL} variant="primary" size="lg" magnetic arrow>
-              <span {...editable("howitworks.hero.cta_primary")}>{c("howitworks.hero.cta_primary")}</span>
-            </Button>
-            <Button to="/pricing" variant="ghost" size="lg">
-              <span {...editable("howitworks.hero.cta_secondary")}>{c("howitworks.hero.cta_secondary")}</span>
-            </Button>
+            <CtaButton k="howitworks.hero.cta_primary" defaultLabel="Start your free trial" defaultHref={SIGN_UP_URL} variant="primary" size="lg" magnetic arrow />
+            <CtaButton k="howitworks.hero.cta_secondary" defaultLabel="See pricing" defaultHref="/pricing" variant="ghost" size="lg" />
           </div>
           <p className="mt-4 text-[13px] text-ink-3" {...editable("howitworks.hero.note")}>{c("howitworks.hero.note")}</p>
         </div>
       </section>
+  );
 
-      {/* step explorer */}
+  const workflow = (
       <section className="py-16 md:py-24">
         <div className="wrap-wide">
           <div className="max-w-2xl">
@@ -240,8 +230,9 @@ export function HowItWorksPage() {
           </div>
         </div>
       </section>
+  );
 
-      {/* visual direction */}
+  const creative = (
       <section className="border-y border-line bg-paper py-20 md:py-28">
         <div className="wrap-wide">
           <div className="max-w-2xl mx-auto text-center">
@@ -279,8 +270,9 @@ export function HowItWorksPage() {
           </div>
         </div>
       </section>
+  );
 
-      {/* organize / workspaces */}
+  const organize = (
       <section className="py-20 md:py-28">
         <div className="wrap-wide grid items-center gap-14 lg:grid-cols-2">
           <div>
@@ -330,8 +322,21 @@ export function HowItWorksPage() {
           </Reveal>
         </div>
       </section>
+  );
 
-      <FinalCTA />
+  return (
+    <>
+      <Seo
+        path="/how-it-works"
+        jsonLd={[
+          howToSchema("How AIREA Studio turns one brief into a full, on-brand campaign", PRODUCT_STEPS),
+          breadcrumbSchema([{ name: "Home", path: "/" }, { name: "How it works", path: "/how-it-works" }]),
+        ]}
+      />
+      <PageSections
+        page="how-it-works"
+        sections={{ hero, workflow, creative, organize, cta: <FinalCTA /> }}
+      />
     </>
   );
 }

@@ -43,10 +43,36 @@ const SeoCtx = createContext<(path: string) => SeoOverride>(() => ({}));
 export const useSeo = () => useContext(SeoCtx);
 
 /** Spread onto an element to make it click-to-editable on the visual canvas (?edit=1). */
-export const editable = (key: string, type: "text" | "richtext" | "image" = "text") => ({
+export const editable = (
+  key: string,
+  type: "text" | "richtext" | "image" | "video" | "cta" = "text"
+) => ({
   "data-edit-key": key,
   "data-edit-type": type,
 });
+
+/* ---------------- CTA links ----------------
+ * A button's label lives at key `X` (type text) and its link at `X_link`
+ * (type link), stored as JSON: {"href": "...", "visible": true}. `visible:false`
+ * removes the button from the live site. */
+export type CtaLink = { href: string; visible: boolean };
+
+export function parseLink(raw: string | undefined | null, defaultHref: string): CtaLink {
+  if (!raw) return { href: defaultHref, visible: true };
+  try {
+    const v = JSON.parse(raw);
+    if (v && typeof v === "object") {
+      return {
+        href: typeof v.href === "string" && v.href.trim() ? v.href.trim() : defaultHref,
+        visible: v.visible !== false,
+      };
+    }
+  } catch {
+    // A plain URL string (hand-typed) is also accepted.
+    if (raw.trim()) return { href: raw.trim(), visible: true };
+  }
+  return { href: defaultHref, visible: true };
+}
 
 export function isEdit() {
   return typeof window !== "undefined" && new URLSearchParams(window.location.search).get("edit") === "1";

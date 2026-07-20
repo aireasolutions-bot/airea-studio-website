@@ -84,6 +84,40 @@
   { "key": "pricing.plan3.features", "page": "pricing", "section": "Plan 3 — Scale", "label": "Features (one per line)", "type": "richtext", "value": "10 workspaces & seats\nThe Wall analytics\nPriority models\nRoles & permissions\nShared brand library" },
   { "key": "pricing.plan3.cta", "page": "pricing", "section": "Plan 3 — Scale", "label": "Button", "type": "text", "value": "Start free" },
 
+  { "key": "home.hero.cta_primary_link", "page": "home", "section": "Hero", "label": "Primary button — link", "type": "link", "value": "{\"href\":\"https://app.aireastudio.ai/sign-up\",\"visible\":true}" },
+  { "key": "home.hero.cta_secondary_link", "page": "home", "section": "Hero", "label": "Secondary button — link", "type": "link", "value": "{\"href\":\"/#campaign\",\"visible\":true}" },
+  { "key": "home.cta.primary_link", "page": "home", "section": "Final CTA", "label": "Primary button — link", "type": "link", "value": "{\"href\":\"https://app.aireastudio.ai/sign-up\",\"visible\":true}" },
+  { "key": "home.cta.secondary", "page": "home", "section": "Final CTA", "label": "Secondary button", "type": "text", "value": "See how it works" },
+  { "key": "home.cta.secondary_link", "page": "home", "section": "Final CTA", "label": "Secondary button — link", "type": "link", "value": "{\"href\":\"/how-it-works\",\"visible\":true}" },
+
+  { "key": "howitworks.hero.cta_primary_link", "page": "how-it-works", "section": "Hero", "label": "Primary button — link", "type": "link", "value": "{\"href\":\"https://app.aireastudio.ai/sign-up\",\"visible\":true}" },
+  { "key": "howitworks.hero.cta_secondary_link", "page": "how-it-works", "section": "Hero", "label": "Secondary button — link", "type": "link", "value": "{\"href\":\"/pricing\",\"visible\":true}" },
+
+  { "key": "faq.contact.cta", "page": "faq", "section": "Contact box", "label": "Button", "type": "text", "value": "Start 14-day free trial" },
+  { "key": "faq.contact.cta_link", "page": "faq", "section": "Contact box", "label": "Button — link", "type": "link", "value": "{\"href\":\"https://app.aireastudio.ai/sign-up\",\"visible\":true}" },
+
+  { "key": "pricing.plan1.cta_link", "page": "pricing", "section": "Plan 1 — Starter", "label": "Button — link", "type": "link", "value": "{\"href\":\"https://app.aireastudio.ai/sign-up\",\"visible\":true}" },
+  { "key": "pricing.plan2.cta_link", "page": "pricing", "section": "Plan 2 — Studio (featured)", "label": "Button — link", "type": "link", "value": "{\"href\":\"https://app.aireastudio.ai/sign-up\",\"visible\":true}" },
+  { "key": "pricing.plan3.cta_link", "page": "pricing", "section": "Plan 3 — Scale", "label": "Button — link", "type": "link", "value": "{\"href\":\"https://app.aireastudio.ai/sign-up\",\"visible\":true}" },
+
+  { "key": "global.nav.cta", "page": "global", "section": "Navigation", "label": "Nav button", "type": "text", "value": "Start free" },
+  { "key": "global.nav.cta_link", "page": "global", "section": "Navigation", "label": "Nav button — link", "type": "link", "value": "{\"href\":\"https://app.aireastudio.ai/sign-up\",\"visible\":true}" },
+  { "key": "global.nav.cta_mobile", "page": "global", "section": "Navigation", "label": "Nav button (mobile menu)", "type": "text", "value": "Start 14-day free trial" },
+  { "key": "global.nav.cta_mobile_link", "page": "global", "section": "Navigation", "label": "Nav button (mobile) — link", "type": "link", "value": "{\"href\":\"https://app.aireastudio.ai/sign-up\",\"visible\":true}" },
+  { "key": "global.nav.login", "page": "global", "section": "Navigation", "label": "Log-in link", "type": "text", "value": "Log in" },
+  { "key": "global.nav.login_link", "page": "global", "section": "Navigation", "label": "Log-in link — URL", "type": "link", "value": "{\"href\":\"https://app.aireastudio.ai/sign-in\",\"visible\":true}" },
+  { "key": "global.subhero.cta_primary", "page": "global", "section": "Sub-page hero (Small business & E-commerce)", "label": "Primary button", "type": "text", "value": "Start 14-day free trial" },
+  { "key": "global.subhero.cta_primary_link", "page": "global", "section": "Sub-page hero (Small business & E-commerce)", "label": "Primary button — link", "type": "link", "value": "{\"href\":\"https://app.aireastudio.ai/sign-up\",\"visible\":true}" },
+  { "key": "global.subhero.cta_secondary", "page": "global", "section": "Sub-page hero (Small business & E-commerce)", "label": "Secondary button", "type": "text", "value": "See how it works" },
+  { "key": "global.subhero.cta_secondary_link", "page": "global", "section": "Sub-page hero (Small business & E-commerce)", "label": "Secondary button — link", "type": "link", "value": "{\"href\":\"/how-it-works\",\"visible\":true}" },
+
+  { "key": "layout.home", "page": "home", "section": "Page structure", "label": "Section order & visibility", "type": "layout", "value": "[{\"id\":\"hero\"},{\"id\":\"stats\"},{\"id\":\"agent\"},{\"id\":\"onephoto\"},{\"id\":\"film\"},{\"id\":\"howitworks\"},{\"id\":\"branddna\"},{\"id\":\"channels\"},{\"id\":\"deploy\"},{\"id\":\"wall\"},{\"id\":\"usecases\"},{\"id\":\"testimonials\"},{\"id\":\"pricing\"},{\"id\":\"cta\"}]" },
+  { "key": "layout.pricing", "page": "pricing", "section": "Page structure", "label": "Section order & visibility", "type": "layout", "value": "[{\"id\":\"hero\"},{\"id\":\"cards\"},{\"id\":\"compare\"},{\"id\":\"faq\"},{\"id\":\"cta\"}]" },
+  { "key": "layout.small-business", "page": "small-business", "section": "Page structure", "label": "Section order & visibility", "type": "layout", "value": "[{\"id\":\"hero\"},{\"id\":\"benefits\"},{\"id\":\"tailored\"},{\"id\":\"branddna\"},{\"id\":\"channels\"},{\"id\":\"cta\"}]" },
+  { "key": "layout.ecommerce", "page": "ecommerce", "section": "Page structure", "label": "Section order & visibility", "type": "layout", "value": "[{\"id\":\"hero\"},{\"id\":\"benefits\"},{\"id\":\"onephoto\"},{\"id\":\"testimonials\"},{\"id\":\"cta\"}]" },
+  { "key": "layout.how-it-works", "page": "how-it-works", "section": "Page structure", "label": "Section order & visibility", "type": "layout", "value": "[{\"id\":\"hero\"},{\"id\":\"workflow\"},{\"id\":\"creative\"},{\"id\":\"organize\"},{\"id\":\"cta\"}]" },
+  { "key": "layout.faq", "page": "faq", "section": "Page structure", "label": "Section order & visibility", "type": "layout", "value": "[{\"id\":\"header\"},{\"id\":\"body\"}]" },
+
   { "key": "section.home.stats", "page": "home", "section": "Sections (show / hide)", "label": "Stats strip", "type": "section", "value": "true" },
   { "key": "section.home.agent", "page": "home", "section": "Sections (show / hide)", "label": "Tell the agent", "type": "section", "value": "true" },
   { "key": "section.home.onephoto", "page": "home", "section": "Sections (show / hide)", "label": "One photo · Nine worlds", "type": "section", "value": "true" },

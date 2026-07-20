@@ -1,9 +1,31 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, ExternalLink, Film, ImageIcon, LayoutTemplate, Loader2, Monitor, MousePointerClick, RefreshCw, Rocket, Smartphone, Tablet, X } from "lucide-react";
+import { Reorder } from "framer-motion";
+import {
+  Check,
+  ExternalLink,
+  Eye,
+  EyeOff,
+  Film,
+  GripVertical,
+  ImageIcon,
+  LayoutTemplate,
+  Link2,
+  Loader2,
+  Monitor,
+  MousePointerClick,
+  RefreshCw,
+  Rocket,
+  Smartphone,
+  Tablet,
+  X,
+} from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/cn";
-import { resolveAsset } from "@/content/ContentProvider";
-import { mergePages, pageLabel, pagePath } from "@/lib/pages";
+import { resolveAsset, parseLink, type CtaLink } from "@/content/ContentProvider";
+import blocksData from "@/content/blocks.json";
+import { mergePages, pageLabel, pagePath, SITE_PAGES } from "@/lib/pages";
+import { SIGN_UP_URL, SIGN_IN_URL } from "@/lib/site";
+import { entryKey, resolveLayout, sectionLabel, type LayoutEntry } from "@/lib/sections";
 import { useAdminAuth } from "../auth";
 import { AssetPicker } from "../AssetPicker";
 
@@ -17,6 +39,12 @@ type Block = {
   published_value: string | null;
   sort: number;
 };
+
+// Baked-in defaults (same source the live site falls back to) — used when a
+// key has no row in the database yet.
+const DEFAULTS: Record<string, string> = Object.fromEntries(
+  (blocksData as { key: string; value: string }[]).map((b) => [b.key, b.value])
+);
 
 const DEVICE_W = { desktop: 1280, tablet: 834, mobile: 390 } as const;
 type Device = keyof typeof DEVICE_W;
@@ -32,6 +60,37 @@ const TEMPLATES: Template[] = [
 ];
 const inTemplate = (t: Template, k: string) => t.on === "all" || t.on.includes(k);
 
+// Destinations offered in the URL quick-pick (any URL can still be typed).
+const QUICK_LINKS: { label: string; href: string }[] = [
+  { label: "App — Sign up", href: SIGN_UP_URL },
+  { label: "App — Log in", href: SIGN_IN_URL },
+  ...SITE_PAGES.map((p) => ({ label: `Page — ${p.label}`, href: p.path })),
+  { label: "Home § One photo", href: "/#campaign" },
+  { label: "Home § The Wall", href: "/#wall" },
+  { label: "Home § Final CTA", href: "/#cta" },
+];
+
+// Derive row metadata for keys created on the fly (canvas edits, links, layouts).
+function deriveRow(key: string, type: string, fallbackPage: string): Omit<Block, "draft_value" | "published_value"> {
+  const parts = key.split(".");
+  const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+  if (parts[0] === "layout") {
+    return { key, page: parts[1] ?? fallbackPage, section: "Page structure", label: "Section order & visibility", type: "layout", sort: 0 };
+  }
+  const pageMap: Record<string, string> = {
+    home: "home", pricing: "pricing", sb: "small-business", ec: "ecommerce",
+    howitworks: "how-it-works", faq: "faq", global: "global", sec: fallbackPage,
+  };
+  return {
+    key,
+    page: pageMap[parts[0]] ?? fallbackPage,
+    section: parts[1] ? cap(parts[1]) : "General",
+    label: cap(parts.slice(1).join(" ").replace(/[._]/g, " ")) || key,
+    type,
+    sort: 900,
+  };
+}
+
 export function Editor() {
   const { email } = useAdminAuth();
   const [blocks, setBlocks] = useState<Block[]>([]);
@@ -44,12 +103,13 @@ export function Editor() {
   const [toast, setToast] = useState("");
   const [picker, setPicker] = useState<{ key: string; kind: "image" | "video" } | null>(null);
   const [editOnCanvas, setEditOnCanvas] = useState(true);
-  const [editing, setEditing] = useState<{ key: string; type: string; value: string; x: number; y: number } | null>(null);
+  const [editing, setEditing] = useState<{ key: string; type: string; value: string; x: number; y: number; link?: CtaLink } | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const paneRef = useRef<HTMLDivElement>(null);
   const [pane, setPane] = useState({ w: 0, h: 0 });
   const timers = useRef<Record<string, number>>({});
   const draftRef = useRef<Record<string, string>>({});
+  const blocksRef = useRef<Block[]>([]);
   const scaleRef = useRef(1);
 
   useEffect(() => {
@@ -73,69 +133,66 @@ export function Editor() {
     return () => ro.disconnect();
   }, []);
 
-  const pages = useMemo(() => mergePages(blocks.map((b) => b.page)).map((p) => p.slug), [blocks]);
+  const pages = useMemo(
+    () => mergePages(blocks.map((b) => b.page)).map((p) => p.slug).filter((p) => p !== "global").concat(blocks.some((b) => b.page === "global") || DEFAULTS["global.nav.cta_link"] ? ["global"] : []),
+    [blocks]
+  );
+
+  // Field groups for the current page. Structure rows (section toggles, layouts)
+  // are managed by the Structure panel, not shown as raw fields.
   const sections = useMemo(() => {
     const map = new Map<string, Block[]>();
     blocks
-      .filter((b) => b.page === page)
+      .filter((b) => b.page === page && b.type !== "section" && b.type !== "layout")
       .forEach((b) => map.set(b.section ?? "General", [...(map.get(b.section ?? "General") ?? []), b]));
-    const entries = Array.from(map.entries());
-    entries.sort((a, b) => (a[0].startsWith("Sections") ? -1 : b[0].startsWith("Sections") ? 1 : 0));
-    return entries;
+    return Array.from(map.entries());
   }, [blocks, page]);
 
-  const dirtyKeys = useMemo(() => Object.keys(draft).filter((k) => draft[k] !== published[k]), [draft, published]);
+  const dirtyKeys = useMemo(() => Object.keys(draft).filter((k) => draft[k] !== (published[k] ?? "")), [draft, published]);
 
   draftRef.current = draft;
+  blocksRef.current = blocks;
   const previewSrc = `${pagePath(page)}?preview=1${editOnCanvas ? "&edit=1" : ""}`;
   const refreshPreview = () => iframeRef.current?.contentWindow?.postMessage({ type: "airea-refresh-content" }, "*");
 
-  const onEdit = (key: string, value: string) => {
+  // Write one key's draft value, creating the content row on first write so any
+  // key (canvas edits, links, layouts) is editable without pre-seeding.
+  const writeBlock = async (key: string, value: string, type: string) => {
+    if (!supabase) return;
+    if (blocksRef.current.some((b) => b.key === key)) {
+      await supabase.from("content_blocks").update({ draft_value: value, updated_by: email }).eq("key", key);
+    } else {
+      const row: Block = { ...deriveRow(key, type, page), draft_value: value, published_value: null };
+      await supabase.from("content_blocks").insert(row as any);
+      setBlocks((b) => [...b, row]);
+      setPublished((p) => ({ ...p, [key]: "" }));
+    }
+  };
+
+  // Debounced single-field edit (typing in the panel).
+  const onEdit = (key: string, value: string, type = "text") => {
     setDraft((d) => ({ ...d, [key]: value }));
     setStatus("saving");
     window.clearTimeout(timers.current[key]);
     timers.current[key] = window.setTimeout(async () => {
-      if (!supabase) return;
-      await supabase.from("content_blocks").update({ draft_value: value, updated_by: email }).eq("key", key);
+      await writeBlock(key, value, type);
       setStatus("saved");
       refreshPreview();
       window.setTimeout(() => setStatus("idle"), 1200);
     }, 400);
   };
 
-  const blockExists = (key: string) => blocks.some((b) => b.key === key);
-
-  // Save from the visual canvas. Creates the content block on first edit (so any
-  // tagged element is editable without pre-seeding), otherwise updates the draft.
-  const saveBlock = async (key: string, value: string, type: string) => {
-    setDraft((d) => ({ ...d, [key]: value }));
+  // Immediate multi-key write (canvas saves, structure ops, templates).
+  const writeMany = async (updates: Record<string, { value: string; type: string }>) => {
+    setDraft((d) => ({ ...d, ...Object.fromEntries(Object.entries(updates).map(([k, u]) => [k, u.value])) }));
     setStatus("saving");
-    if (supabase) {
-      if (blockExists(key)) {
-        await supabase.from("content_blocks").update({ draft_value: value, updated_by: email }).eq("key", key);
-      } else {
-        const parts = key.split(".");
-        const pageMap: Record<string, string> = { home: "home", pricing: "pricing", sb: "small-business", ec: "ecommerce", howitworks: "how-it-works", faq: "faq", global: "home" };
-        const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
-        const row: Block = {
-          key,
-          page: pageMap[parts[0]] ?? page,
-          section: parts[1] ? cap(parts[1]) : "General",
-          label: cap(parts.slice(1).join(" ").replace(/[._]/g, " ")) || key,
-          type,
-          draft_value: value,
-          published_value: null,
-          sort: 900,
-        };
-        await supabase.from("content_blocks").insert(row as any);
-        setBlocks((b) => [...b, row]);
-        setPublished((p) => ({ ...p, [key]: "" }));
-      }
-    }
+    for (const [k, u] of Object.entries(updates)) await writeBlock(k, u.value, u.type);
     setStatus("saved");
     refreshPreview();
     window.setTimeout(() => setStatus("idle"), 1200);
   };
+
+  const saveBlock = (key: string, value: string, type: string) => writeMany({ [key]: { value, type } });
 
   // Listen for clicks coming from the visual-edit overlay inside the preview.
   useEffect(() => {
@@ -152,6 +209,7 @@ export function Editor() {
         key,
         type: editType,
         value: draftRef.current[key] ?? value ?? "",
+        link: editType === "cta" ? parseLink(draftRef.current[`${key}_link`] ?? DEFAULTS[`${key}_link`], "") : undefined,
         x: (ib?.left ?? 0) + rect.left * scaleRef.current,
         y: (ib?.top ?? 0) + (rect.top + rect.height) * scaleRef.current,
       });
@@ -176,20 +234,63 @@ export function Editor() {
     window.setTimeout(() => setToast(""), 3500);
   };
 
-  const applyTemplate = async (t: Template) => {
-    const updates: Record<string, string> = {};
-    SECTION_KEYS.forEach((k) => (updates[`section.home.${k}`] = inTemplate(t, k) ? "true" : "false"));
-    setDraft((d) => ({ ...d, ...updates }));
-    setStatus("saving");
-    if (supabase)
-      await Promise.all(
-        Object.entries(updates).map(([k, v]) => supabase!.from("content_blocks").update({ draft_value: v, updated_by: email }).eq("key", k))
-      );
-    setStatus("saved");
-    refreshPreview();
+  /* ---------- structure (order + show/hide), all pages ---------- */
+
+  const layoutKey = `layout.${page}`;
+  const layoutRaw = draft[layoutKey] ?? DEFAULTS[layoutKey];
+  const savedEntries = useMemo(() => resolveLayout(page, layoutRaw), [page, layoutRaw]);
+  // While dragging, reorders buffer locally and commit once on drag end —
+  // otherwise every intermediate swap would hit the database.
+  const [dragEntries, setDragEntries] = useState<LayoutEntry[] | null>(null);
+  const dragRef = useRef<LayoutEntry[] | null>(null);
+  dragRef.current = dragEntries;
+  useEffect(() => setDragEntries(null), [page]);
+  const entries = dragEntries ?? savedEntries;
+
+  const isHidden = (e: LayoutEntry) =>
+    !!e.hidden || (page === "home" && !!e.id && draft[`section.home.${e.id}`] === "false");
+
+  const writeLayout = (next: LayoutEntry[]) => {
+    const updates: Record<string, { value: string; type: string }> = {
+      [layoutKey]: { value: JSON.stringify(next), type: "layout" },
+    };
+    // Keep the home page's legacy per-section toggles in sync (they still gate
+    // the live site until every layout is republished through this system).
+    if (page === "home") {
+      for (const e of next) {
+        if (e.id && SECTION_KEYS.includes(e.id)) {
+          updates[`section.home.${e.id}`] = { value: e.hidden ? "false" : "true", type: "section" };
+        }
+      }
+    }
+    writeMany(updates);
+  };
+
+  const toggleEntry = (key: string) => {
+    const next = entries.map((e) => (entryKey(e) === key ? { ...e, hidden: !isHidden(e) } : e));
+    writeLayout(next);
+  };
+
+  const reorderEntries = (keys: string[]) => {
+    const byKey = new Map(entries.map((e) => [entryKey(e), e]));
+    setDragEntries(keys.map((k) => byKey.get(k)!).filter(Boolean));
+  };
+
+  const commitReorder = () => {
+    const next = dragRef.current;
+    setDragEntries(null);
+    if (next) writeLayout(next);
+  };
+
+  const layoutDirty = (draft[layoutKey] ?? "") !== (published[layoutKey] ?? "");
+
+  const applyTemplate = (t: Template) => {
+    const next = entries.map((e) =>
+      e.id && SECTION_KEYS.includes(e.id) ? { ...e, hidden: !inTemplate(t, e.id) } : e
+    );
+    writeLayout(next);
     setToast(`Applied the “${t.name}” layout — preview updated.`);
     window.setTimeout(() => setToast(""), 3000);
-    window.setTimeout(() => setStatus("idle"), 1200);
   };
 
   // scaled preview math
@@ -206,7 +307,7 @@ export function Editor() {
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">Content</p>
           <h1 className="mt-1 font-display text-[clamp(26px,3.4vw,38px)] tracking-tight text-ink">Site editor</h1>
-          <p className="mt-1 text-[14px] text-ink-2">Edit copy, CTAs, images, and video. Changes preview live — publish when ready.</p>
+          <p className="mt-1 text-[14px] text-ink-2">Edit copy, buttons &amp; links, images, video, and page structure. Changes preview live — publish when ready.</p>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-[12.5px] text-ink-3">
@@ -233,7 +334,7 @@ export function Editor() {
             onClick={() => setPage(p)}
             className={cn("rounded-xl px-3.5 py-1.5 text-[13px] font-semibold transition-colors", page === p ? "bg-blue text-white" : "text-ink-2 hover:text-ink")}
           >
-            {pageLabel(p)}
+            {p === "global" ? "Global (nav & footer)" : pageLabel(p)}
           </button>
         ))}
       </div>
@@ -245,7 +346,7 @@ export function Editor() {
             <h3 className="text-[13px] font-semibold uppercase tracking-wider text-ink-3">Page templates</h3>
           </div>
           <p className="mb-4 mt-1 text-[13px] text-ink-2">
-            Apply a starting layout — it sets which sections appear. Preview live, fine-tune the toggles below, then publish.
+            Apply a starting layout — it sets which sections appear. Preview live, fine-tune in Page structure below, then publish.
           </p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             {TEMPLATES.map((t) => (
@@ -272,33 +373,56 @@ export function Editor() {
       <div className="mt-6 grid gap-6 lg:grid-cols-[360px_1fr]">
         {/* fields */}
         <div className="space-y-5">
+          {/* page structure — every page */}
+          {page !== "global" && entries.length > 0 && (
+            <div className="rounded-2xl border border-line bg-white p-5 shadow-soft">
+              <div className="mb-1 flex items-center justify-between">
+                <h3 className="text-[13px] font-semibold uppercase tracking-wider text-ink-3">Page structure</h3>
+                {layoutDirty && <span className="rounded-full bg-blue-mist px-1.5 py-0.5 text-[9px] font-semibold uppercase text-blue-ink">unpublished</span>}
+              </div>
+              <p className="mb-3 text-[12.5px] text-ink-3">Drag to reorder · eye to show/hide</p>
+              <Reorder.Group axis="y" values={entries.map(entryKey)} onReorder={reorderEntries} className="space-y-1.5">
+                {entries.map((e) => {
+                  const k = entryKey(e);
+                  const hidden = isHidden(e);
+                  return (
+                    <Reorder.Item
+                      key={k}
+                      value={k}
+                      onDragEnd={commitReorder}
+                      className={cn(
+                        "flex select-none items-center gap-2.5 rounded-xl border bg-canvas px-3 py-2.5",
+                        hidden ? "border-line-2 opacity-60" : "border-line-2"
+                      )}
+                    >
+                      <GripVertical className="h-4 w-4 shrink-0 cursor-grab text-ink-3 active:cursor-grabbing" />
+                      <span className={cn("flex-1 truncate text-[13.5px] font-medium", hidden ? "text-ink-3 line-through decoration-ink-3/50" : "text-ink")}>
+                        {sectionLabel(page, e)}
+                      </span>
+                      <button
+                        onClick={() => toggleEntry(k)}
+                        title={hidden ? "Show section" : "Hide section"}
+                        className={cn("grid h-7 w-7 shrink-0 place-items-center rounded-lg transition-colors", hidden ? "text-ink-3 hover:bg-ink/5 hover:text-ink" : "text-blue hover:bg-blue-mist")}
+                      >
+                        {hidden ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </Reorder.Item>
+                  );
+                })}
+              </Reorder.Group>
+            </div>
+          )}
+
           {sections.map(([section, items]) => (
             <div key={section} className="rounded-2xl border border-line bg-white p-5 shadow-soft">
               <h3 className="mb-4 text-[13px] font-semibold uppercase tracking-wider text-ink-3">{section}</h3>
               <div className="space-y-4">
                 {items.map((b) => {
-                  const dirty = draft[b.key] !== published[b.key];
-                  if (b.type === "section") {
-                    const visible = draft[b.key] !== "false";
-                    return (
-                      <button
-                        key={b.key}
-                        onClick={() => onEdit(b.key, visible ? "false" : "true")}
-                        className="flex w-full items-center justify-between gap-3 rounded-xl border border-line-2 bg-canvas px-3.5 py-2.5 text-left"
-                      >
-                        <span className="flex items-center gap-2 text-[13.5px] font-medium text-ink">
-                          {b.label}
-                          {dirty && <span className="rounded-full bg-blue-mist px-1.5 py-0.5 text-[9px] font-semibold uppercase text-blue-ink">unpublished</span>}
-                        </span>
-                        <span className={cn("relative h-5 w-9 shrink-0 rounded-full transition-colors", visible ? "bg-blue" : "bg-line-2")}>
-                          <span className={cn("absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-all", visible ? "left-[1.1rem]" : "left-0.5")} />
-                        </span>
-                      </button>
-                    );
-                  }
+                  const dirty = draft[b.key] !== (published[b.key] ?? "");
                   return (
                     <div key={b.key}>
                       <div className="mb-1.5 flex items-center gap-2 text-[12.5px] font-medium text-ink-2">
+                        {b.type === "link" && <Link2 className="h-3.5 w-3.5 text-ink-3" />}
                         {b.label}
                         {dirty && (
                           <span className="rounded-full bg-blue-mist px-1.5 py-0.5 text-[9px] font-semibold uppercase text-blue-ink">unpublished</span>
@@ -327,11 +451,16 @@ export function Editor() {
                             Change
                           </button>
                         </div>
+                      ) : b.type === "link" ? (
+                        <LinkField
+                          value={parseLink(draft[b.key], "")}
+                          onChange={(l) => onEdit(b.key, JSON.stringify(l), "link")}
+                        />
                       ) : b.type === "richtext" ? (
                         <textarea
                           data-key={b.key}
                           value={draft[b.key] ?? ""}
-                          onChange={(e) => onEdit(b.key, e.target.value)}
+                          onChange={(e) => onEdit(b.key, e.target.value, b.type)}
                           rows={3}
                           className="w-full resize-y rounded-xl border border-line-2 bg-canvas px-3.5 py-2.5 text-[14px] text-ink outline-none focus:border-blue"
                         />
@@ -339,7 +468,7 @@ export function Editor() {
                         <input
                           data-key={b.key}
                           value={draft[b.key] ?? ""}
-                          onChange={(e) => onEdit(b.key, e.target.value)}
+                          onChange={(e) => onEdit(b.key, e.target.value, b.type)}
                           className="w-full rounded-xl border border-line-2 bg-canvas px-3.5 py-2.5 text-[14px] text-ink outline-none focus:border-blue"
                         />
                       )}
@@ -418,11 +547,13 @@ export function Editor() {
         <>
           <div className="fixed inset-0 z-[59]" onClick={() => setEditing(null)} />
           <div
-            className="fixed z-[60] w-[min(360px,92vw)] rounded-2xl border border-line bg-white p-3 shadow-card"
-            style={{ left: Math.max(8, Math.min(editing.x, window.innerWidth - 372)), top: Math.max(8, Math.min(editing.y + 8, window.innerHeight - 210)) }}
+            className="fixed z-[60] w-[min(400px,92vw)] rounded-2xl border border-line bg-white p-3 shadow-card"
+            style={{ left: Math.max(8, Math.min(editing.x, window.innerWidth - 412)), top: Math.max(8, Math.min(editing.y + 8, window.innerHeight - (editing.type === "cta" ? 330 : 210))) }}
           >
             <div className="mb-1.5 flex items-center justify-between gap-2">
-              <span className="truncate font-mono text-[10.5px] uppercase tracking-wider text-ink-3">Edit · {editing.key.split(".").slice(-1)[0]}</span>
+              <span className="truncate font-mono text-[10.5px] uppercase tracking-wider text-ink-3">
+                {editing.type === "cta" ? "Edit button" : "Edit"} · {editing.key.split(".").slice(-1)[0]}
+              </span>
               <button onClick={() => setEditing(null)} className="grid h-6 w-6 shrink-0 place-items-center rounded text-ink-3 hover:bg-ink/5">
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -433,13 +564,17 @@ export function Editor() {
               onChange={(e) => setEditing({ ...editing, value: e.target.value })}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                  saveBlock(editing.key, editing.value, editing.type);
-                  setEditing(null);
+                  saveEditing();
                 }
               }}
-              rows={editing.type === "richtext" ? 4 : 2}
+              rows={editing.type === "richtext" ? 4 : editing.type === "cta" ? 1 : 2}
               className="w-full resize-y rounded-xl border border-line-2 bg-canvas px-3 py-2 text-[14px] text-ink outline-none focus:border-blue"
             />
+            {editing.type === "cta" && editing.link && (
+              <div className="mt-2 space-y-2">
+                <LinkField value={editing.link} onChange={(l) => setEditing({ ...editing, link: l })} />
+              </div>
+            )}
             <div className="mt-2 flex items-center justify-between">
               <span className="text-[10.5px] text-ink-3">⌘↵ to save</span>
               <div className="flex gap-2">
@@ -447,10 +582,7 @@ export function Editor() {
                   Cancel
                 </button>
                 <button
-                  onClick={() => {
-                    saveBlock(editing.key, editing.value, editing.type);
-                    setEditing(null);
-                  }}
+                  onClick={saveEditing}
                   className="rounded-full bg-blue px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-blue-ink"
                 >
                   Save
@@ -467,6 +599,57 @@ export function Editor() {
           {toast}
         </div>
       )}
+    </div>
+  );
+
+  function saveEditing() {
+    if (!editing) return;
+    const updates: Record<string, { value: string; type: string }> = {
+      [editing.key]: { value: editing.value, type: editing.type === "cta" ? "text" : editing.type },
+    };
+    if (editing.type === "cta" && editing.link) {
+      updates[`${editing.key}_link`] = { value: JSON.stringify(editing.link), type: "link" };
+    }
+    writeMany(updates);
+    setEditing(null);
+  }
+}
+
+/* URL + visibility editor for a CTA link value. Empty URL = keep the site's
+ * built-in destination for that button. */
+function LinkField({ value, onChange }: { value: CtaLink; onChange: (l: CtaLink) => void }) {
+  return (
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        <input
+          value={value.href}
+          placeholder="https://… or /page (empty = site default)"
+          onChange={(e) => onChange({ ...value, href: e.target.value })}
+          className="w-full rounded-xl border border-line-2 bg-canvas px-3.5 py-2.5 text-[13.5px] text-ink outline-none focus:border-blue"
+        />
+        <select
+          value=""
+          onChange={(e) => e.target.value && onChange({ ...value, href: e.target.value })}
+          className="w-[124px] shrink-0 rounded-xl border border-line-2 bg-canvas px-2 py-2.5 text-[12.5px] text-ink-2 outline-none focus:border-blue"
+          title="Quick pick a destination"
+        >
+          <option value="">Quick pick…</option>
+          {QUICK_LINKS.map((q) => (
+            <option key={q.label} value={q.href}>
+              {q.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <button
+        onClick={() => onChange({ ...value, visible: !value.visible })}
+        className="flex w-full items-center justify-between gap-3 rounded-xl border border-line-2 bg-canvas px-3.5 py-2 text-left"
+      >
+        <span className="text-[13px] font-medium text-ink">{value.visible ? "Button is shown" : "Button is hidden"}</span>
+        <span className={cn("relative h-5 w-9 shrink-0 rounded-full transition-colors", value.visible ? "bg-blue" : "bg-line-2")}>
+          <span className={cn("absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-all", value.visible ? "left-[1.1rem]" : "left-0.5")} />
+        </span>
+      </button>
     </div>
   );
 }
