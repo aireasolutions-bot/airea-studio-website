@@ -81,6 +81,10 @@ Marketing copy, CTA labels, and images are often driven by editable content bloc
 - Use \`<CtaButton k="page.section.cta_x" defaultLabel="…" defaultHref="…" variant… />\` (from \`@/components/ui\`) for any call-to-action button. Its label lives at content key \`k\` (type text) and its destination + visibility at \`\${k}_link\` (type link, JSON \`{"href":"…","visible":true}\`) — the team can then edit label, URL, and show/hide from the admin with zero code. Internal hrefs start with "/" or "#"; anything else is external.
 - When you add a new CTA, also add BOTH rows (label + \`_link\`) to \`src/content/blocks.json\` with sensible defaults.
 
+# Pricing (data-driven)
+- The pricing page (plan cards + comparison table) renders from the \`pricing.data\` content block (JSON: \`{plans:[{id,name,price,cadence,blurb,features[],ctaLabel,ctaHref,featured,badge}], compare:{rows:[{label,values:[{t:"check"|"dash"|"text",v?}]}]}}\`), managed by the team in the admin's **Pricing Studio** (/admin/pricing). Parsing/normalizing lives in \`src/lib/pricing.ts\`; \`PricingCards.tsx\` and \`src/pages/Pricing.tsx\` render from it (2–4 plans supported). If that block doesn't exist yet, legacy \`pricing.plan1..3.*\` keys are used.
+- DON'T hard-code pricing copy into components — pricing changes belong in the data (tell the user to use Pricing Studio), unless they explicitly ask you to change the pricing page's DESIGN.
+
 # Page structure (sections, order, show/hide — every page)
 - Each page renders through \`<PageSections page="slug" sections={{ id: <Node/>, … }}>\` (\`src/components/PageSections.tsx\`), ordered/hidden by the \`layout.<slug>\` content block (JSON array of \`{"id","hidden"}\`), which the team manages in the admin's Structure panel.
 - The manifest of every page's sections lives in \`src/lib/sections.ts\` (\`SECTION_MANIFESTS\`). When you ADD a section to a page: give it an id in the page's \`sections\` map AND add \`{id, label}\` to that page's manifest AND append it to the \`layout.<slug>\` default in blocks.json. It then automatically appears in the admin.

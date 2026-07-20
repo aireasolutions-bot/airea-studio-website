@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import {
+  CircleDollarSign,
   FilePenLine,
   Images,
   LayoutDashboard,
@@ -23,6 +24,7 @@ const NAV = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/admin/agent", label: "Build with AI", icon: Sparkles, accent: true },
   { to: "/admin/editor", label: "Site editor", icon: FilePenLine },
+  { to: "/admin/pricing", label: "Pricing Studio", icon: CircleDollarSign },
   { to: "/admin/assets", label: "Assets", icon: Images },
   { to: "/admin/comments", label: "Review", icon: MessagesSquare },
   { to: "/admin/seo", label: "SEO", icon: Search },

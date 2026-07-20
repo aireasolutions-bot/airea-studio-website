@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Reorder } from "framer-motion";
+import { Reorder, useDragControls } from "framer-motion";
 import {
   Check,
   ExternalLink,
@@ -138,15 +138,26 @@ export function Editor() {
     [blocks]
   );
 
+  // Once the Pricing Studio manages pricing (pricing.data row exists), its
+  // legacy per-key fields disappear from this panel in favor of the Studio.
+  const pricingManaged = useMemo(() => blocks.some((b) => b.key === "pricing.data"), [blocks]);
+
   // Field groups for the current page. Structure rows (section toggles, layouts)
   // are managed by the Structure panel, not shown as raw fields.
   const sections = useMemo(() => {
     const map = new Map<string, Block[]>();
     blocks
-      .filter((b) => b.page === page && b.type !== "section" && b.type !== "layout")
+      .filter((b) => b.page === page && b.type !== "section" && b.type !== "layout" && b.type !== "json")
+      .filter(
+        (b) =>
+          !(
+            pricingManaged &&
+            (b.key.startsWith("pricing.plan") || b.key.startsWith("pricing.compare.row") || b.key === "pricing.card.badge")
+          )
+      )
       .forEach((b) => map.set(b.section ?? "General", [...(map.get(b.section ?? "General") ?? []), b]));
     return Array.from(map.entries());
-  }, [blocks, page]);
+  }, [blocks, page, pricingManaged]);
 
   const dirtyKeys = useMemo(() => Object.keys(draft).filter((k) => draft[k] !== (published[k] ?? "")), [draft, published]);
 
@@ -382,35 +393,31 @@ export function Editor() {
               </div>
               <p className="mb-3 text-[12.5px] text-ink-3">Drag to reorder · eye to show/hide</p>
               <Reorder.Group axis="y" values={entries.map(entryKey)} onReorder={reorderEntries} className="space-y-1.5">
-                {entries.map((e) => {
-                  const k = entryKey(e);
-                  const hidden = isHidden(e);
-                  return (
-                    <Reorder.Item
-                      key={k}
-                      value={k}
-                      onDragEnd={commitReorder}
-                      className={cn(
-                        "flex select-none items-center gap-2.5 rounded-xl border bg-canvas px-3 py-2.5",
-                        hidden ? "border-line-2 opacity-60" : "border-line-2"
-                      )}
-                    >
-                      <GripVertical className="h-4 w-4 shrink-0 cursor-grab text-ink-3 active:cursor-grabbing" />
-                      <span className={cn("flex-1 truncate text-[13.5px] font-medium", hidden ? "text-ink-3 line-through decoration-ink-3/50" : "text-ink")}>
-                        {sectionLabel(page, e)}
-                      </span>
-                      <button
-                        onClick={() => toggleEntry(k)}
-                        title={hidden ? "Show section" : "Hide section"}
-                        className={cn("grid h-7 w-7 shrink-0 place-items-center rounded-lg transition-colors", hidden ? "text-ink-3 hover:bg-ink/5 hover:text-ink" : "text-blue hover:bg-blue-mist")}
-                      >
-                        {hidden ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </Reorder.Item>
-                  );
-                })}
+                {entries.map((e) => (
+                  <StructureRow
+                    key={entryKey(e)}
+                    id={entryKey(e)}
+                    label={sectionLabel(page, e)}
+                    hidden={isHidden(e)}
+                    onToggle={() => toggleEntry(entryKey(e))}
+                    onDragEnd={commitReorder}
+                  />
+                ))}
               </Reorder.Group>
             </div>
+          )}
+
+          {page === "pricing" && pricingManaged && (
+            <a
+              href="/admin/pricing"
+              className="flex items-center justify-between gap-3 rounded-2xl border border-blue/30 bg-blue-mist/40 p-4 transition-colors hover:border-blue"
+            >
+              <div>
+                <div className="text-[13.5px] font-semibold text-ink">Plans &amp; comparison → Pricing Studio</div>
+                <div className="text-[12.5px] text-ink-2">Add/remove plans, edit the table, and publish from the dedicated studio.</div>
+              </div>
+              <ExternalLink className="h-4 w-4 shrink-0 text-blue" />
+            </a>
           )}
 
           {sections.map(([section, items]) => (
@@ -613,6 +620,41 @@ export function Editor() {
     writeMany(updates);
     setEditing(null);
   }
+}
+
+/* One row in the Structure panel — drags only from its grip handle so the
+ * show/hide button stays cleanly clickable. */
+function StructureRow({ id, label, hidden, onToggle, onDragEnd }: { id: string; label: string; hidden: boolean; onToggle: () => void; onDragEnd: () => void }) {
+  const controls = useDragControls();
+  return (
+    <Reorder.Item
+      value={id}
+      dragListener={false}
+      dragControls={controls}
+      onDragEnd={onDragEnd}
+      className={cn("flex select-none items-center gap-2.5 rounded-xl border bg-canvas px-3 py-2.5", hidden ? "border-line-2 opacity-60" : "border-line-2")}
+    >
+      <span
+        onPointerDown={(e) => {
+          e.preventDefault();
+          controls.start(e);
+        }}
+        className="grid shrink-0 cursor-grab touch-none place-items-center text-ink-3 active:cursor-grabbing"
+      >
+        <GripVertical className="h-4 w-4" />
+      </span>
+      <span className={cn("flex-1 truncate text-[13.5px] font-medium", hidden ? "text-ink-3 line-through decoration-ink-3/50" : "text-ink")}>
+        {label}
+      </span>
+      <button
+        onClick={onToggle}
+        title={hidden ? "Show section" : "Hide section"}
+        className={cn("grid h-7 w-7 shrink-0 place-items-center rounded-lg transition-colors", hidden ? "text-ink-3 hover:bg-ink/5 hover:text-ink" : "text-blue hover:bg-blue-mist")}
+      >
+        {hidden ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      </button>
+    </Reorder.Item>
+  );
 }
 
 /* URL + visibility editor for a CTA link value. Empty URL = keep the site's

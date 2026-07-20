@@ -5,32 +5,23 @@ import { Faq } from "@/components/Faq";
 import { Reveal } from "@/components/Reveal";
 import { FinalCTA } from "@/sections/FinalCTA";
 import { PageSections } from "@/components/PageSections";
-import { PLANS } from "@/lib/site";
 import { useC, editable } from "@/content/ContentProvider";
+import { resolvePricing, type CompareCell } from "@/lib/pricing";
 import { Seo } from "@/components/Seo";
 import { productSchema, breadcrumbSchema } from "@/lib/seo";
 
-const COMPARE: { label: string; values: (boolean | string)[] }[] = [
-  { label: "Brand workspaces", values: ["1", "3", "10"] },
-  { label: "Campaigns / month", values: ["30", "Unlimited", "Unlimited"] },
-  { label: "Brand DNA training", values: [true, true, true] },
-  { label: "Social & email channels", values: [true, true, true] },
-  { label: "Paid ads — Meta & Google", values: [false, true, true] },
-  { label: "AI review & editing", values: [false, true, true] },
-  { label: "1-click publish to Meta", values: [false, true, true] },
-  { label: "The Wall analytics", values: [false, false, true] },
-  { label: "Roles & permissions", values: [false, false, true] },
-  { label: "Priority models & support", values: [false, false, true] },
-];
-
-function Cell({ v, editKey }: { v: boolean | string; editKey?: string }) {
-  if (v === true) return <Check className="mx-auto h-4.5 w-4.5 text-blue" />;
-  if (v === false) return <Minus className="mx-auto h-4 w-4 text-ink-3/50" />;
-  return <span className="text-[13.5px] text-ink" {...(editKey ? editable(editKey) : {})}>{v}</span>;
+function Cell({ cell }: { cell: CompareCell }) {
+  if (cell.t === "check") return <Check className="mx-auto h-4.5 w-4.5 text-blue" />;
+  if (cell.t === "dash") return <Minus className="mx-auto h-4 w-4 text-ink-3/50" />;
+  return <span className="text-[13.5px] text-ink">{cell.v}</span>;
 }
 
 export function Pricing() {
   const c = useC();
+  // Plans + comparison come from the Pricing Studio data (legacy keys until
+  // the team first publishes from the Studio).
+  const pricing = resolvePricing(c);
+  const featuredCol = pricing.plans.findIndex((p) => p.featured);
 
   const hero = (
     <section className="relative overflow-hidden pb-12 pt-36 text-center md:pt-44">
@@ -75,10 +66,10 @@ export function Pricing() {
                   <th className="p-4 text-[13px] font-semibold uppercase tracking-wide text-ink-3">
                     <span {...editable("pricing.compare.col_feature")}>{c("pricing.compare.col_feature", "Feature")}</span>
                   </th>
-                  {PLANS.map((p, i) => (
+                  {pricing.plans.map((p, i) => (
                     <th
-                      key={p.name}
-                      className={`p-4 text-center ${i === 1 ? "bg-blue-mist/50" : ""}`}
+                      key={p.id}
+                      className={`p-4 text-center ${i === featuredCol ? "bg-blue-mist/50" : ""}`}
                     >
                       <div className="text-[15px] font-semibold text-ink">{p.name}</div>
                       <div className="text-[12px] text-ink-3">
@@ -90,20 +81,15 @@ export function Pricing() {
                 </tr>
               </thead>
               <tbody>
-                {COMPARE.map((row, r) => (
-                  <tr key={row.label} className="border-b border-line last:border-0">
-                    <td className="p-4 text-[14px] text-ink-2" {...editable(`pricing.compare.row${r}.label`)}>
-                      {c(`pricing.compare.row${r}.label`, row.label)}
-                    </td>
-                    {row.values.map((v, i) => (
+                {pricing.compare.rows.map((row, r) => (
+                  <tr key={r} className="border-b border-line last:border-0">
+                    <td className="p-4 text-[14px] text-ink-2">{row.label}</td>
+                    {row.values.map((cell, i) => (
                       <td
                         key={i}
-                        className={`p-4 text-center ${i === 1 ? "bg-blue-mist/40" : ""}`}
+                        className={`p-4 text-center ${i === featuredCol ? "bg-blue-mist/40" : ""}`}
                       >
-                        <Cell
-                          v={typeof v === "string" ? c(`pricing.compare.row${r}.v${i}`, v) : v}
-                          editKey={typeof v === "string" ? `pricing.compare.row${r}.v${i}` : undefined}
-                        />
+                        <Cell cell={cell} />
                       </td>
                     ))}
                   </tr>

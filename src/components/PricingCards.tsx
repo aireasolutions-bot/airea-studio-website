@@ -1,50 +1,47 @@
 import { Check } from "lucide-react";
-import { CtaButton } from "./ui";
+import { Button } from "./ui";
 import { cn } from "@/lib/cn";
-import { SIGN_UP_URL } from "@/lib/site";
 import { useC, editable } from "@/content/ContentProvider";
+import { resolvePricing } from "@/lib/pricing";
 
-const PLAN_KEYS = ["plan1", "plan2", "plan3"] as const;
-
+/* Plan cards render from the pricing data (Pricing Studio in the admin —
+ * `pricing.data` block, with legacy per-key fallback). The grid adapts to
+ * however many plans the team publishes (2–4). */
 export function PricingCards() {
   const c = useC();
+  const { plans } = resolvePricing(c);
+  const cols =
+    plans.length <= 2 ? "lg:grid-cols-2 lg:mx-auto lg:max-w-3xl" : plans.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4";
+
   return (
-    <div className="grid gap-5 lg:grid-cols-3">
-      {PLAN_KEYS.map((pk) => {
-        const featured = pk === "plan2";
-        const features = c(`pricing.${pk}.features`)
-          .split("\n")
-          .map((s) => s.trim())
-          .filter(Boolean);
+    <div className={cn("grid gap-5", cols)}>
+      {plans.map((p) => {
+        const featured = !!p.featured;
+        const internal = p.ctaHref.startsWith("/") || p.ctaHref.startsWith("#");
         return (
           <div
-            key={pk}
+            key={p.id}
             className={cn(
-              "relative flex flex-col rounded-3xl border p-7 transition-all duration-300",
+              "relative flex flex-col rounded-3xl border transition-all duration-300",
+              plans.length === 4 ? "p-6" : "p-7",
               featured
                 ? "border-blue bg-ink text-white shadow-lift lg:-translate-y-3"
                 : "border-line bg-white text-ink shadow-soft hover:-translate-y-1 hover:shadow-card"
             )}
           >
-            {featured && (
+            {featured && p.badge && (
               <span className="absolute right-6 top-6 rounded-full bg-blue px-3 py-1 text-[11px] font-semibold text-white" {...editable("pricing.card.badge")}>
-                {c("pricing.card.badge", "Most popular")}
+                {p.badge}
               </span>
             )}
-            <div className={cn("text-[14px] font-semibold", featured ? "text-blue-sky" : "text-blue")} {...editable(`pricing.${pk}.name`)}>
-              {c(`pricing.${pk}.name`)}
-            </div>
+            <div className={cn("text-[14px] font-semibold", featured ? "text-blue-sky" : "text-blue")}>{p.name}</div>
             <div className="mt-3 flex items-end gap-1">
-              <span className="font-display text-5xl leading-none" {...editable(`pricing.${pk}.price`)}>{c(`pricing.${pk}.price`)}</span>
-              <span className={cn("mb-1 text-[14px]", featured ? "text-white/60" : "text-ink-3")} {...editable(`pricing.${pk}.cadence`)}>
-                {c(`pricing.${pk}.cadence`)}
-              </span>
+              <span className="font-display text-5xl leading-none">{p.price}</span>
+              <span className={cn("mb-1 text-[14px]", featured ? "text-white/60" : "text-ink-3")}>{p.cadence}</span>
             </div>
-            <p className={cn("mt-3 text-[14px]", featured ? "text-white/70" : "text-ink-2")} {...editable(`pricing.${pk}.blurb`)}>
-              {c(`pricing.${pk}.blurb`)}
-            </p>
-            <ul className="mt-6 flex-1 space-y-3" {...editable(`pricing.${pk}.features`)}>
-              {features.map((f, i) => (
+            <p className={cn("mt-3 text-[14px]", featured ? "text-white/70" : "text-ink-2")}>{p.blurb}</p>
+            <ul className="mt-6 flex-1 space-y-3">
+              {p.features.map((f, i) => (
                 <li key={i} className="flex items-start gap-2.5 text-[14px]">
                   <Check className={cn("mt-0.5 h-4 w-4 shrink-0", featured ? "text-blue-sky" : "text-blue")} />
                   <span className={featured ? "text-white/85" : "text-ink-2"}>{f}</span>
@@ -52,7 +49,14 @@ export function PricingCards() {
               ))}
             </ul>
             <div className="mt-7">
-              <CtaButton k={`pricing.${pk}.cta`} defaultLabel="Start free" defaultHref={SIGN_UP_URL} variant={featured ? "primary" : "ghost"} className="w-full" arrow />
+              <Button
+                {...(internal ? { to: p.ctaHref } : { href: p.ctaHref })}
+                variant={featured ? "primary" : "ghost"}
+                className="w-full"
+                arrow
+              >
+                {p.ctaLabel}
+              </Button>
               <p className={cn("mt-3 text-center text-[12px]", featured ? "text-white/50" : "text-ink-3")} {...editable("pricing.card.reassurance")}>
                 {c("pricing.card.reassurance", "14-day free trial · no card")}
               </p>
