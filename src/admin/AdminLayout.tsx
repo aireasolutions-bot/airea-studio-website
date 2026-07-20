@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import {
   CircleDollarSign,
   FilePenLine,
+  Palette,
   Images,
   LayoutDashboard,
   LogOut,
@@ -25,6 +26,7 @@ const NAV = [
   { to: "/admin/agent", label: "Build with AI", icon: Sparkles, accent: true },
   { to: "/admin/editor", label: "Site editor", icon: FilePenLine },
   { to: "/admin/pricing", label: "Pricing Studio", icon: CircleDollarSign },
+  { to: "/admin/design", label: "Design", icon: Palette },
   { to: "/admin/assets", label: "Assets", icon: Images },
   { to: "/admin/comments", label: "Review", icon: MessagesSquare },
   { to: "/admin/seo", label: "SEO", icon: Search },
@@ -102,6 +104,12 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 export function AdminLayout() {
   const [open, setOpen] = useState(false);
+
+  // The admin chrome always uses the house design — clear any site design
+  // tokens that were applied while browsing the public site in this tab.
+  useEffect(() => {
+    import("@/lib/design").then((m) => m.clearDesign());
+  }, []);
 
   return (
     <div className="min-h-screen bg-paper">

@@ -20,7 +20,7 @@ export function RobotHead({ className, size = 140, float = true, glow = true }: 
           className="absolute inset-0 -z-10 rounded-full blur-2xl"
           style={{
             background:
-              "radial-gradient(circle at 50% 45%, rgba(0,71,255,0.38), rgba(0,71,255,0) 65%)",
+              "radial-gradient(circle at 50% 45%, rgb(var(--c-blue)/0.38), rgb(var(--c-blue)/0) 65%)",
           }}
         />
       )}

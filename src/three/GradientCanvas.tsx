@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { cn } from "@/lib/cn";
@@ -18,6 +18,10 @@ const fragment = /* glsl */ `
   uniform float uTime;
   uniform vec2 uMouse;
   uniform vec2 uRes;
+  uniform vec3 uWhite;
+  uniform vec3 uMist;
+  uniform vec3 uSky;
+  uniform vec3 uBlue;
 
   vec3 mod289(vec3 x){return x - floor(x*(1.0/289.0))*289.0;}
   vec2 mod289(vec2 x){return x - floor(x*(1.0/289.0))*289.0;}
@@ -59,10 +63,10 @@ const fragment = /* glsl */ `
     float n = fbm(p*1.8 + q*1.1 + uMouse*0.25);
     float n2 = fbm(p*3.2 - q*0.6 + t*0.5);
 
-    vec3 white = vec3(0.980,0.980,0.980);
-    vec3 mist  = vec3(0.905,0.935,1.0);
-    vec3 sky   = vec3(0.357,0.608,1.0);
-    vec3 blue  = vec3(0.0,0.278,1.0);
+    vec3 white = uWhite;
+    vec3 mist  = uMist;
+    vec3 sky   = uSky;
+    vec3 blue  = uBlue;
 
     vec3 col = white;
     col = mix(col, mist, smoothstep(0.05,0.75,n));
@@ -81,20 +85,58 @@ const fragment = /* glsl */ `
   }
 `;
 
+// Brand colors flow in from the design-system CSS variables (RGB triplets),
+// so the hero gradient re-themes with the admin's Design page.
+function cssColor(name: string, fallback: [number, number, number]): THREE.Color {
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const parts = v.split(/\s+/).map(Number);
+  if (parts.length === 3 && parts.every((n) => Number.isFinite(n))) {
+    return new THREE.Color(parts[0] / 255, parts[1] / 255, parts[2] / 255);
+  }
+  return new THREE.Color(...fallback);
+}
+
+function brandUniformColors() {
+  return {
+    white: cssColor("--c-canvas", [0.98, 0.98, 0.98]),
+    mist: cssColor("--c-blue-mist", [0.905, 0.935, 1.0]),
+    sky: cssColor("--c-blue-sky", [0.357, 0.608, 1.0]),
+    blue: cssColor("--c-blue", [0.0, 0.278, 1.0]),
+  };
+}
+
 function GradientPlane({ interactive }: { interactive: boolean }) {
   const mat = useRef<THREE.ShaderMaterial>(null);
   const { viewport, size } = useThree();
   const mouse = useRef(new THREE.Vector2(0, 0));
   const target = useRef(new THREE.Vector2(0, 0));
 
-  const uniforms = useMemo(
-    () => ({
+  const uniforms = useMemo(() => {
+    const c = brandUniformColors();
+    return {
       uTime: { value: 0 },
       uMouse: { value: new THREE.Vector2(0, 0) },
       uRes: { value: new THREE.Vector2(1, 1) },
-    }),
-    []
-  );
+      uWhite: { value: c.white },
+      uMist: { value: c.mist },
+      uSky: { value: c.sky },
+      uBlue: { value: c.blue },
+    };
+  }, []);
+
+  // Re-read the palette whenever the Design system applies new tokens.
+  useEffect(() => {
+    const update = () => {
+      if (!mat.current) return;
+      const c = brandUniformColors();
+      mat.current.uniforms.uWhite.value.copy(c.white);
+      mat.current.uniforms.uMist.value.copy(c.mist);
+      mat.current.uniforms.uSky.value.copy(c.sky);
+      mat.current.uniforms.uBlue.value.copy(c.blue);
+    };
+    window.addEventListener("airea-design-applied", update);
+    return () => window.removeEventListener("airea-design-applied", update);
+  }, []);
 
   useFrame((state, delta) => {
     if (!mat.current) return;

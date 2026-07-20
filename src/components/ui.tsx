@@ -23,11 +23,11 @@ type ButtonProps = {
 
 const VARIANTS: Record<NonNullable<ButtonProps["variant"]>, string> = {
   primary:
-    "bg-blue text-white shadow-[0_12px_30px_-10px_rgba(0,71,255,0.65)] hover:bg-blue-ink hover:shadow-[0_18px_44px_-12px_rgba(0,71,255,0.75)]",
+    "bg-blue text-white shadow-[0_12px_30px_-10px_rgb(var(--c-blue)/0.65)] hover:bg-blue-ink hover:shadow-[0_18px_44px_-12px_rgb(var(--c-blue)/0.75)]",
   ghost:
     "bg-white text-ink border border-line-2 hover:border-ink-3 shadow-[0_1px_2px_rgba(16,24,40,0.05)]",
   dark: "bg-ink text-white hover:bg-black",
-  soft: "bg-blue-mist text-blue-ink hover:bg-[#dce6ff]",
+  soft: "bg-blue-mist text-blue-ink hover:brightness-95",
 };
 
 export function Button({
@@ -44,7 +44,7 @@ export function Button({
 }: ButtonProps) {
   const magRef = useMagnetic<HTMLSpanElement>(0.3);
   const classes = cn(
-    "group inline-flex items-center justify-center gap-2 rounded-full font-semibold leading-none transition-all duration-300 ease-out will-change-transform",
+    "group inline-flex items-center justify-center gap-2 [border-radius:var(--btn-radius,9999px)] font-semibold leading-none transition-all duration-300 ease-out will-change-transform",
     size === "lg" ? "px-7 py-4 text-[15px]" : "px-5 py-3 text-[14px]",
     VARIANTS[variant],
     className

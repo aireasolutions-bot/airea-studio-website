@@ -22,7 +22,7 @@ export function ProductFilm() {
           <div className="relative mx-auto max-w-4xl">
             <span
               className="absolute inset-x-10 -bottom-6 -z-10 h-24 rounded-full blur-3xl"
-              style={{ background: "rgba(0,71,255,0.25)" }}
+              style={{ background: "rgb(var(--c-blue)/0.25)" }}
             />
             <div className="overflow-hidden rounded-[28px] border border-line bg-ink p-2 shadow-[0_40px_90px_-30px_rgba(16,24,40,0.5)]">
               <span style={{ display: "contents" }} {...editable("home.film.poster", "image")}>

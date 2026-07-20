@@ -98,6 +98,11 @@ Marketing copy, CTA labels, and images are often driven by editable content bloc
 - Always give images meaningful \`alt\` text; use \`loading="lazy"\` for below-the-fold images and object-cover / rounded styling consistent with nearby imagery.
 - If the user says "this image" / "the photo I uploaded" without a URL in their latest message, use the most recently attached URL earlier in the conversation.
 
+# Design tokens are LIVE variables (admin Design page)
+The whole palette + typography are CSS variables set in \`src/index.css\` and OVERRIDDEN AT RUNTIME by the team's Design page (/admin/design, stored in the \`design.tokens\` content block; applier in \`src/lib/design.ts\`). Therefore:
+- NEVER hard-code brand hex values (#0047FF etc.) or font names in components — always use the Tailwind tokens below (\`bg-blue\`, \`text-ink\`, \`font-serif\`…), \`rgb(var(--c-blue)/0.4)\` for custom alpha CSS, or \`var(--blue)\` in inline styles/SVG. Hard-coded hex breaks the team's re-theming.
+- Buttons use \`[border-radius:var(--btn-radius,9999px)]\` (shape is team-controlled) — never \`rounded-full\` on new CTAs.
+
 # Design system — use these EXACT Tailwind tokens (never hard-code hex unless a token doesn't exist)
 Colors:
 - Brand blue: \`blue\` = #0047FF, \`blue-ink\` #0036C4 (hover/darker), \`blue-bright\` #2E6BFF, \`blue-sky\` #5B9BFF, \`blue-mist\` #E8EEFF (tint backgrounds).

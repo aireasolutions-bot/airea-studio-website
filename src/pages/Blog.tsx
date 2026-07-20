@@ -13,7 +13,7 @@ function CoverArt({ post, className }: { post: BlogCard; className?: string }) {
     return <img src={post.cover_image} alt="" loading="lazy" className={`h-full w-full object-cover ${className || ""}`} />;
   // Branded fallback when no cover image is set yet.
   return (
-    <div className={`relative grid h-full w-full place-items-center overflow-hidden bg-[radial-gradient(120%_120%_at_20%_0%,#0047FF_0%,#0033B8_55%,#001A63_100%)] ${className || ""}`}>
+    <div className={`relative grid h-full w-full place-items-center overflow-hidden bg-[radial-gradient(120%_120%_at_20%_0%,rgb(var(--c-blue))_0%,rgb(var(--c-blue-ink))_55%,#001A63_100%)] ${className || ""}`}>
       <div className="pointer-events-none absolute inset-0 bg-grid opacity-20" />
       <span className="select-none font-display text-[15px] font-semibold uppercase tracking-[0.28em] text-white/85">
         {post.category || "AIREA"}

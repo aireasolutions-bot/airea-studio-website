@@ -15,7 +15,7 @@ export function FinalCTA() {
             className="noise relative overflow-hidden rounded-[40px] px-6 py-20 text-center md:px-16 md:py-28"
             style={{
               background:
-                "radial-gradient(120% 120% at 50% 0%, #2E6BFF 0%, #0047FF 45%, #0036C4 100%)",
+                "radial-gradient(120% 120% at 50% 0%, rgb(var(--c-blue-bright)) 0%, rgb(var(--c-blue)) 45%, rgb(var(--c-blue-ink)) 100%)",
             }}
           >
             <div className="pointer-events-none absolute inset-0 bg-grid opacity-[0.12] [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)]" />

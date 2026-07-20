@@ -130,7 +130,7 @@ export function DeployEverywhere() {
           <div className="relative z-20 flex flex-col items-center">
             <button
               onClick={replay}
-              className="group relative inline-flex items-center gap-2 rounded-2xl bg-blue px-10 py-5 text-2xl font-bold text-white shadow-[0_20px_50px_-15px_rgba(0,71,255,0.7)] transition-transform duration-300 hover:scale-[1.03] active:scale-95"
+              className="group relative inline-flex items-center gap-2 rounded-2xl bg-blue px-10 py-5 text-2xl font-bold text-white shadow-[0_20px_50px_-15px_rgb(var(--c-blue)/0.7)] transition-transform duration-300 hover:scale-[1.03] active:scale-95"
             >
               <span className="absolute inset-0 animate-pulse-ring rounded-2xl" />
               <span {...editable("home.deploy.button")}>{c("home.deploy.button", "Deploy")}</span>
@@ -146,7 +146,7 @@ export function DeployEverywhere() {
             className="pointer-events-none absolute left-1/2 top-24 -z-0 hidden h-40 w-[680px] -translate-x-1/2 md:block"
             viewBox="0 0 680 160"
             fill="none"
-            stroke="#0047FF"
+            stroke="var(--blue)"
             strokeWidth="1.5"
             style={{ opacity: on ? 0.5 : 0, transition: "opacity .6s" }}
           >

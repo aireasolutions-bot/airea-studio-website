@@ -154,7 +154,7 @@ function StepExplorer() {
       <div className="relative lg:sticky lg:top-24">
         <span
           className="absolute inset-0 -z-10 rounded-[3rem] blur-3xl"
-          style={{ background: "radial-gradient(circle at 50% 40%, rgba(0,71,255,0.2), transparent 65%)" }}
+          style={{ background: "radial-gradient(circle at 50% 40%, rgb(var(--c-blue)/0.2), transparent 65%)" }}
         />
         <div className="flex justify-center">
           <AnimatePresence mode="wait">
@@ -314,7 +314,7 @@ export function HowItWorksPage() {
           <Reveal className="relative mx-auto" delay={0.05}>
             <span
               className="absolute inset-0 -z-10 rounded-[3rem] blur-3xl"
-              style={{ background: "radial-gradient(circle at 50% 40%, rgba(0,71,255,0.18), transparent 65%)" }}
+              style={{ background: "radial-gradient(circle at 50% 40%, rgb(var(--c-blue)/0.18), transparent 65%)" }}
             />
             <div className="contents" {...editable("howitworks.organize.image", "image")}>
               <PhoneFrame src={resolveAsset(c("howitworks.organize.image", "/assets/product/control-center.png"))} width={300} />

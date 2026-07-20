@@ -6,6 +6,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { Assets } from "./pages/Assets";
 import { Editor } from "./pages/Editor";
 import { PricingStudio } from "./pages/PricingStudio";
+import { Design } from "./pages/Design";
 import { AgentBuilder } from "./pages/AgentBuilder";
 import { Comments } from "./pages/Comments";
 import { Publish } from "./pages/Publish";
@@ -30,6 +31,7 @@ export function AdminApp() {
           <Route path="agent" element={<AgentBuilder />} />
           <Route path="editor" element={<Editor />} />
           <Route path="pricing" element={<PricingStudio />} />
+          <Route path="design" element={<Design />} />
           <Route path="assets" element={<Assets />} />
           <Route path="comments" element={<Comments />} />
           <Route path="seo" element={<SeoConsole />} />

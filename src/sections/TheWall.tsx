@@ -50,7 +50,7 @@ export function TheWall() {
             className="absolute inset-0 -z-10 rounded-[3rem] blur-3xl"
             style={{
               background:
-                "radial-gradient(circle at 50% 40%, rgba(0,71,255,0.2), transparent 65%)",
+                "radial-gradient(circle at 50% 40%, rgb(var(--c-blue)/0.2), transparent 65%)",
             }}
           />
           <Reveal>

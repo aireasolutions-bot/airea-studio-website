@@ -166,7 +166,7 @@ export function BlogPost() {
             )}
 
             {/* CTA */}
-            <div className="mt-14 overflow-hidden rounded-[28px] border border-line bg-[radial-gradient(120%_140%_at_0%_0%,#0047FF_0%,#0033B8_100%)] p-8 text-white md:p-10">
+            <div className="mt-14 overflow-hidden rounded-[28px] border border-line bg-[radial-gradient(120%_140%_at_0%_0%,rgb(var(--c-blue))_0%,rgb(var(--c-blue-ink))_100%)] p-8 text-white md:p-10">
               <h2 className="font-display text-[clamp(22px,3vw,32px)] leading-tight tracking-[-0.01em]">
                 Put this into practice — without lifting a finger
               </h2>

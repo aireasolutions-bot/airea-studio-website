@@ -3,37 +3,40 @@ export default {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
+      // All brand colors resolve through CSS variables (RGB triplets set in
+      // src/index.css and overridden at runtime by the admin's Design page) —
+      // <alpha-value> keeps every /opacity utility working.
       colors: {
-        canvas: "#FAFAFA",
-        paper: "#F3F2EF",
+        canvas: "rgb(var(--c-canvas) / <alpha-value>)",
+        paper: "rgb(var(--c-paper) / <alpha-value>)",
         ink: {
-          DEFAULT: "#1A1A1A",
-          2: "#55514B",
-          3: "#8A867F",
+          DEFAULT: "rgb(var(--c-ink) / <alpha-value>)",
+          2: "rgb(var(--c-ink-2) / <alpha-value>)",
+          3: "rgb(var(--c-ink-3) / <alpha-value>)",
         },
         blue: {
-          DEFAULT: "#0047FF",
-          ink: "#0036C4",
-          bright: "#2E6BFF",
-          sky: "#5B9BFF",
-          mist: "#E8EEFF",
+          DEFAULT: "rgb(var(--c-blue) / <alpha-value>)",
+          ink: "rgb(var(--c-blue-ink) / <alpha-value>)",
+          bright: "rgb(var(--c-blue-bright) / <alpha-value>)",
+          sky: "rgb(var(--c-blue-sky) / <alpha-value>)",
+          mist: "rgb(var(--c-blue-mist) / <alpha-value>)",
         },
         line: {
-          DEFAULT: "#E6E4DF",
-          2: "#D9D6CF",
+          DEFAULT: "rgb(var(--c-line) / <alpha-value>)",
+          2: "rgb(var(--c-line-2) / <alpha-value>)",
         },
         critical: "#E63946",
       },
       fontFamily: {
-        serif: ["Instrument Serif", "Georgia", "Times New Roman", "serif"],
+        serif: ["var(--font-serif)", "Georgia", "Times New Roman", "serif"],
         sans: [
-          "Inter",
+          "var(--font-sans)",
           "-apple-system",
           "BlinkMacSystemFont",
           "Segoe UI",
           "sans-serif",
         ],
-        mono: ["JetBrains Mono", "ui-monospace", "SF Mono", "Menlo", "monospace"],
+        mono: ["var(--font-mono)", "ui-monospace", "SF Mono", "Menlo", "monospace"],
       },
       spacing: {
         "4.5": "1.125rem",
@@ -49,8 +52,8 @@ export default {
       },
       boxShadow: {
         soft: "0 1px 2px rgba(16,24,40,0.04), 0 8px 24px rgba(16,24,40,0.06)",
-        lift: "0 24px 60px -24px rgba(0,71,255,0.28)",
-        glow: "0 0 0 1px rgba(0,71,255,0.12), 0 18px 50px -18px rgba(0,71,255,0.45)",
+        lift: "0 24px 60px -24px rgb(var(--c-blue) / 0.28)",
+        glow: "0 0 0 1px rgb(var(--c-blue) / 0.12), 0 18px 50px -18px rgb(var(--c-blue) / 0.45)",
         card: "0 2px 4px rgba(16,24,40,0.04), 0 20px 48px -24px rgba(16,24,40,0.18)",
       },
       transitionTimingFunction: {
@@ -63,9 +66,9 @@ export default {
           "50%": { transform: "translateY(-12px)" },
         },
         "pulse-ring": {
-          "0%": { boxShadow: "0 0 0 0 rgba(0,71,255,0.45)" },
-          "70%": { boxShadow: "0 0 0 16px rgba(0,71,255,0)" },
-          "100%": { boxShadow: "0 0 0 0 rgba(0,71,255,0)" },
+          "0%": { boxShadow: "0 0 0 0 rgb(var(--c-blue) / 0.45)" },
+          "70%": { boxShadow: "0 0 0 16px rgb(var(--c-blue) / 0)" },
+          "100%": { boxShadow: "0 0 0 0 rgb(var(--c-blue) / 0)" },
         },
         shimmer: {
           "0%": { backgroundPosition: "-200% 0" },

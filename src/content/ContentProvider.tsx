@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import blocksData from "./blocks.json";
+import { applyDesign, parseDesign } from "@/lib/design";
 
 type Block = { key: string; value: string };
 type Dict = Record<string, string>;
@@ -175,6 +176,13 @@ export function ContentProvider({ children }: { children: ReactNode }) {
       active = false;
     };
   }, [preview]);
+
+  // Design system: apply the published (or, in preview, draft) design tokens
+  // sitewide. Live values also cache locally so repeat visits skip the flash.
+  const designRaw = overrides["design.tokens"];
+  useEffect(() => {
+    applyDesign(parseDesign(designRaw), { cache: !preview });
+  }, [designRaw, preview]);
 
   // Visual click-to-edit overlay — only on the canvas (?edit=1), lazy-loaded so it
   // never weighs down the normal public bundle.

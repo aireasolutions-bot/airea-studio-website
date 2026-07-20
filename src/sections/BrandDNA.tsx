@@ -57,7 +57,7 @@ export function BrandDNA() {
             viewBox="0 0 100 100"
             className="absolute inset-0 h-full w-full"
             fill="none"
-            stroke="#0047FF"
+            stroke="var(--blue)"
             strokeWidth="0.5"
           >
             <line className="dna-flow" x1="50" y1="50" x2="50" y2="9" />

@@ -38,7 +38,7 @@ export function Hero() {
       className="relative overflow-hidden pb-16 pt-28 md:pb-24 md:pt-36"
       style={{
         background:
-          "radial-gradient(120% 85% at 50% -8%, #eaf0ff 0%, #f4f6ff 38%, #fafafa 64%)",
+          "radial-gradient(120% 85% at 50% -8%, rgb(var(--c-blue-mist)) 0%, rgb(var(--c-blue-mist)/0.45) 38%, rgb(var(--c-canvas)) 64%)",
       }}
     >
       <Suspense fallback={null}>
@@ -134,7 +134,7 @@ export function Hero() {
         >
           <span
             className="pointer-events-none absolute inset-0 -z-10 scale-[1.6] rounded-full"
-            style={{ background: "radial-gradient(circle, rgba(0,71,255,0.12), transparent 60%)" }}
+            style={{ background: "radial-gradient(circle, rgb(var(--c-blue)/0.12), transparent 60%)" }}
           />
 
           <motion.div
