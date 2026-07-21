@@ -131,7 +131,12 @@ export function Design() {
     })();
   }, []);
 
+  // Attach only once the data (and therefore the pane element) is rendered —
+  // this page shows a loader first, so an on-mount-only observer would find
+  // nothing and the preview iframe would stay collapsed at 0px.
+  const ready = !!data;
   useEffect(() => {
+    if (!ready) return;
     const el = paneRef.current;
     if (!el) return;
     const update = () => setPane({ w: el.clientWidth, h: el.clientHeight });
@@ -139,7 +144,7 @@ export function Design() {
     const ro = new ResizeObserver(update);
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [ready]);
 
   const draftJson = useMemo(() => (data ? JSON.stringify(data) : ""), [data]);
   const isHouse = draftJson === JSON.stringify(DESIGN_DEFAULTS);
@@ -243,12 +248,12 @@ export function Design() {
     }
   };
 
-  // preview scaling
+  // preview scaling (fallbacks keep the iframe visible even pre-measure)
   const previewW = device === "desktop" ? 1280 : 390;
   const innerW = Math.max(0, pane.w - 24);
   const innerH = Math.max(0, pane.h - 24);
   const scale = innerW ? Math.min(1, innerW / previewW) : 0.5;
-  const frameH = scale ? innerH / scale : 600;
+  const frameH = innerH && scale ? innerH / scale : 900;
 
   if (!data) {
     return (
