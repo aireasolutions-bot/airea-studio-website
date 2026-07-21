@@ -192,6 +192,16 @@ const FACE_STYLE_ID = "airea-design-faces";
 const BG_STYLE_ID = "airea-design-bg";
 const CACHE_KEY = "airea-design-cache-v1";
 
+/* @font-face fetches are CORS-restricted, and R2's public r2.dev URL sends no
+ * access-control headers (bucket CORS policies only apply to custom domains).
+ * Uploaded brand fonts are therefore loaded through a same-origin proxy path —
+ * see the /brandfonts rewrite in vercel.json (and the dev proxy in
+ * vite.config.ts). Anything not on that R2 path is used as-is. */
+export function fontSrc(url: string): string {
+  const m = url.match(/\/assets\/fonts\/([^?#]+)/);
+  return m ? `/brandfonts/${m[1]}` : url;
+}
+
 function familyOf(id: string, customs: CustomFont[], fb: string): string {
   if (id.startsWith("custom:")) {
     const f = customs.find((x) => `custom:${x.id}` === id);
@@ -268,7 +278,7 @@ export function applyDesign(tokens: DesignTokens | null, opts: { cache?: boolean
     style.textContent = usedCustoms
       .map(
         (f) =>
-          `@font-face{font-family:"${f.label.replace(/"/g, "")}";src:url("${f.url}") format("${f.format}");font-display:swap;font-weight:100 900;}`
+          `@font-face{font-family:"${f.label.replace(/"/g, "")}";src:url("${fontSrc(f.url)}") format("${f.format}");font-display:swap;font-weight:100 900;}`
       )
       .join("\n");
   } else {

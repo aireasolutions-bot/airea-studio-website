@@ -1,5 +1,12 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+  "rewrites": [
+    {
+      "//": "Brand fonts uploaded in the admin live in R2, but @font-face is a CORS-restricted fetch and R2's public r2.dev URL sends no access-control headers (its CORS policy only applies to custom domains). Proxying them under our own origin removes the cross-origin request entirely. Must stay ABOVE the SPA catch-all.",
+      "source": "/brandfonts/:path*",
+      "destination": "https://pub-5cdbd1e945544b179386519484eb7db1.r2.dev/assets/fonts/:path*"
+    },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
   "headers": [
     {
       "source": "/pricing.md",

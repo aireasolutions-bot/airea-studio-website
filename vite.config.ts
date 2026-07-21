@@ -54,6 +54,11 @@ export default defineConfig(({ mode }) => {
     server: {
       host: true,
       port: 5173,
+      // Mirror the production /brandfonts proxy (see vercel.json) so custom
+      // brand fonts also load in local dev without CORS.
+      proxy: base
+        ? { "/brandfonts": { target: `${base.replace(/\/+$/, "")}/assets/fonts`, changeOrigin: true, rewrite: (p) => p.replace(/^\/brandfonts/, "") } }
+        : undefined,
     },
   };
 });

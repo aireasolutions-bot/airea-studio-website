@@ -19,6 +19,7 @@ import {
   deriveAccentFamily,
   DESIGN_DEFAULTS,
   FONT_CHOICES,
+  fontSrc,
   hexToRgb,
   normalizeDesign,
   parseDesign,
@@ -88,6 +89,29 @@ export function Design() {
       document.head.appendChild(link);
     }
   }, []);
+
+  // Register uploaded fonts in the admin too, so their picker cards render in
+  // the real typeface (the site's own @font-face lives on the public pages).
+  const customs = data?.fonts.customs;
+  useEffect(() => {
+    const id = "airea-admin-custom-faces";
+    let style = document.getElementById(id) as HTMLStyleElement | null;
+    if (!customs?.length) {
+      style?.remove();
+      return;
+    }
+    if (!style) {
+      style = document.createElement("style");
+      style.id = id;
+      document.head.appendChild(style);
+    }
+    style.textContent = customs
+      .map(
+        (f) =>
+          `@font-face{font-family:"${f.label.replace(/"/g, "")}";src:url("${fontSrc(f.url)}") format("${f.format}");font-display:swap;font-weight:100 900;}`
+      )
+      .join("\n");
+  }, [customs]);
 
   useEffect(() => {
     if (!supabase) return;
@@ -610,7 +634,9 @@ function FontPicker({
               value === `custom:${f.id}` ? "border-blue bg-blue-mist/40" : "border-line-2 hover:border-ink-3"
             )}
           >
-            <span className={cn("block truncate text-ink", sampleClass)}>{sample}</span>
+            <span className={cn("block truncate text-ink", sampleClass)} style={{ fontFamily: `"${f.label}"` }}>
+              {sample}
+            </span>
             <span className="mt-1.5 flex items-center gap-1.5 text-[11px] text-ink-3">
               <span className="rounded bg-blue-mist px-1 py-px text-[9px] font-bold uppercase text-blue-ink">Custom</span>
               {f.label}
