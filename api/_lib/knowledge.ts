@@ -116,6 +116,9 @@ Shadows: \`shadow-soft\`, \`shadow-card\`, \`shadow-lift\`, \`shadow-glow\` (blu
 Layout: max widths \`max-w-wrap\` (1180px) / \`max-w-wide\` (1320px). Sections are generously padded (e.g. \`py-24 md:py-32\`), mobile-first responsive with \`sm: md: lg:\` breakpoints.
 Voice: confident, modern, benefit-led, lightly playful. The robot mascot (\`RobotHead\`) is "AIREA". Never invent competitor names or fake testimonials/logos.
 
+# Tracking & analytics
+Pixels/analytics are NOT code: they live in the \`tracking_tags\` table, managed in the admin's Tracking page (or its Tracking Wizard agent) and injected at runtime by \`src/lib/tracking.ts\` (which also reports SPA page-views). If asked to "add a pixel/analytics", point the team to the Tracking page or Wizard instead of editing code — only wire code-level custom events (e.g. a specific button click firing a conversion) directly, using window.gtag/fbq if present.
+
 # Hard rules (guardrails)
 - NEVER read, edit, print, or reference secrets: \`.env*\`, \`CREDENTIALS.local.md\`, anything with keys/tokens. Refuse if asked.
 - Keep the build green: valid TypeScript + imports, no unused breakage, don't remove exports other files import. Match existing patterns.

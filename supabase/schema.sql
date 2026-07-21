@@ -153,3 +153,53 @@ create policy p_agent_convos on public.agent_conversations
   with check (public.is_admin() and lower(user_email) = lower(coalesce(auth.jwt() ->> 'email', '')));
 create index if not exists idx_agent_convos_user_updated
   on public.agent_conversations (user_email, updated_at desc);
+-- ---------- tracking tags (pixels & analytics) ----------
+create table if not exists public.tracking_tags (
+  id          uuid primary key default gen_random_uuid(),
+  provider    text not null,                    -- ga4|gtm|google-ads|meta|tiktok|linkedin|pinterest|snap|clarity|hotjar|x|custom
+  label       text not null,
+  config      jsonb not null default '{}'::jsonb, -- e.g. {"id":"G-XXXX"}
+  custom_head text,
+  custom_body text,
+  enabled     boolean not null default false,
+  notes       text,
+  created_by  text,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+drop trigger if exists t_tt_updated on public.tracking_tags;
+create trigger t_tt_updated before update on public.tracking_tags
+  for each row execute function public.touch_updated_at();
+
+-- Owners/admins only for raw custom HTML tags; members manage typed providers.
+create or replace function public.is_admin_manager()
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from public.admin_users a
+    where lower(a.email) = lower(coalesce(auth.jwt() ->> 'email', ''))
+      and a.role in ('owner','admin')
+  );
+$$;
+grant execute on function public.is_admin_manager() to anon, authenticated;
+
+alter table public.tracking_tags enable row level security;
+drop policy if exists p_tracking_read on public.tracking_tags;
+create policy p_tracking_read on public.tracking_tags
+  for select using (public.is_admin());
+drop policy if exists p_tracking_write on public.tracking_tags;
+create policy p_tracking_write on public.tracking_tags
+  for insert with check (public.is_admin() and (provider <> 'custom' or public.is_admin_manager()));
+drop policy if exists p_tracking_update on public.tracking_tags;
+create policy p_tracking_update on public.tracking_tags
+  for update using (public.is_admin() and (provider <> 'custom' or public.is_admin_manager()))
+  with check (public.is_admin() and (provider <> 'custom' or public.is_admin_manager()));
+drop policy if exists p_tracking_delete on public.tracking_tags;
+create policy p_tracking_delete on public.tracking_tags
+  for delete using (public.is_admin() and (provider <> 'custom' or public.is_admin_manager()));
+
+-- Public read of ENABLED tags only (view runs with owner rights, bypassing RLS by design).
+create or replace view public.active_tracking_tags as
+  select id, provider, config, custom_head, custom_body
+  from public.tracking_tags where enabled;
+grant select on public.active_tracking_tags to anon, authenticated;
