@@ -52,6 +52,18 @@ public/assets/  brand/ robot/ platforms/ product/ campaigns/ video/ generated/
 `#FAFAFA` canvas · `#1A1A1A` ink · `#0047FF` Studio Blue · Instrument Serif
 (display) · Inter (body) · JetBrains Mono (labels).
 
+## Custom brand fonts (`/brandfonts` proxy)
+
+Fonts uploaded in the admin's **Design** page go to R2 under `assets/fonts/`,
+but `@font-face` is always a CORS-restricted fetch and R2's public `r2.dev`
+URL sends no `access-control-*` headers (bucket CORS policies only apply to
+R2 **custom domains**). So fonts are served through a same-origin proxy:
+`/brandfonts/*` → R2 `assets/fonts/*`, configured in `vercel.json` (must stay
+above the SPA catch-all rewrite) and mirrored for local dev in
+`vite.config.ts`. `fontSrc()` in `src/lib/design.ts` maps the stored URL onto
+that path. Note `vercel.json` is strict JSON — no comment keys, they fail the
+build.
+
 ## Notes
 
 - **Robot mascot** uses `public/assets/robot/head.png`. Additional Higgsfield-
