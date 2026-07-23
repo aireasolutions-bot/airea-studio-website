@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Plus, Search } from "lucide-react";
-import { CtaButton, Eyebrow } from "@/components/ui";
+import { CtaButton, EditableEyebrow } from "@/components/ui";
 import { PageSections } from "@/components/PageSections";
 import { RobotHead } from "@/components/RobotHead";
 import { cn } from "@/lib/cn";
@@ -53,7 +53,7 @@ export function FaqPage() {
             <RobotHead size={96} />
           </div>
           <div className="flex justify-center">
-            <Eyebrow><span {...editable("faq.eyebrow")}>{c("faq.eyebrow")}</span></Eyebrow>
+            <EditableEyebrow k="faq.eyebrow" defaultLabel="Help center" />
           </div>
           <h1 className="mx-auto mt-6 max-w-3xl font-display text-[clamp(40px,6.5vw,72px)] leading-[1.02] tracking-[-0.02em] text-ink" {...editable("faq.title")}>
             {c("faq.title")}

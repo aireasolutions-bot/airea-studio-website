@@ -140,6 +140,36 @@ export function CtaButton({ k, defaultLabel, defaultHref, ...rest }: CtaButtonPr
   return btn;
 }
 
+/* ---------------- EditableEyebrow ----------------
+ * A content-managed Eyebrow: clearing its text in the admin hides the whole
+ * pill on the live site. On the edit canvas it stays as a ghost so it can be
+ * clicked and brought back. */
+
+export function EditableEyebrow({ k, defaultLabel, className }: { k: string; defaultLabel: string; className?: string }) {
+  const c = useC();
+  const v = c(k, defaultLabel).trim();
+  if (!v) {
+    if (!isEdit()) return null;
+    return (
+      <span
+        {...editable(k)}
+        title="Eyebrow hidden — click to edit & bring it back"
+        className={cn(
+          "inline-flex items-center rounded-full px-3.5 py-1.5 text-[12.5px] font-medium text-ink-3 opacity-50 outline-dashed outline-2 outline-offset-2 outline-ink-3",
+          className
+        )}
+      >
+        Eyebrow hidden
+      </span>
+    );
+  }
+  return (
+    <Eyebrow className={className}>
+      <span {...editable(k)}>{v}</span>
+    </Eyebrow>
+  );
+}
+
 /* ---------------- Tag / Eyebrow ---------------- */
 
 export function Tag({ children, className }: { children: ReactNode; className?: string }) {

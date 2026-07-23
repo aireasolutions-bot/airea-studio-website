@@ -3,7 +3,7 @@ import { SubHero } from "@/components/SubHero";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { RobotHead } from "@/components/RobotHead";
 import { FeatureTriple } from "@/components/FeatureTriple";
-import { SectionHeading } from "@/components/ui";
+import { EditableEyebrow, SectionHeading } from "@/components/ui";
 import { Reveal } from "@/components/Reveal";
 import { BrandDNA } from "@/sections/BrandDNA";
 import { Channels } from "@/sections/Channels";
@@ -42,7 +42,7 @@ export function SmallBusiness() {
 
   const hero = (
       <SubHero
-        eyebrow={<span {...editable("sb.hero.eyebrow")}>{c("sb.hero.eyebrow", "For small business")}</span>}
+        eyebrow={<EditableEyebrow k="sb.hero.eyebrow" defaultLabel="For small business" />}
         title={
           <>
             <span {...editable("sb.hero.title_lead")}>{c("sb.hero.title_lead", "Small teams. ")}</span>

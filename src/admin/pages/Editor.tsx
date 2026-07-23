@@ -232,17 +232,29 @@ export function Editor() {
   const publish = async () => {
     if (!supabase || dirtyKeys.length === 0) return;
     setPublishing(true);
-    await Promise.all(dirtyKeys.map((k) => supabase!.from("content_blocks").update({ published_value: draft[k] }).eq("key", k)));
-    await supabase.from("publish_log").insert({
-      summary: `Published ${dirtyKeys.length} change${dirtyKeys.length > 1 ? "s" : ""}`,
-      changed_keys: dirtyKeys,
-      status: "success",
-      published_by: email,
-    });
-    setPublished((p) => ({ ...p, ...Object.fromEntries(dirtyKeys.map((k) => [k, draft[k]])) }));
+    // Surface failures instead of assuming success — a swallowed error here
+    // means someone thinks they published when they didn't.
+    const results = await Promise.all(
+      dirtyKeys.map(async (k) => ({ k, error: (await supabase!.from("content_blocks").update({ published_value: draft[k] }).eq("key", k)).error }))
+    );
+    const failed = results.filter((r) => r.error);
+    const ok = results.filter((r) => !r.error).map((r) => r.k);
+    if (ok.length) {
+      await supabase.from("publish_log").insert({
+        summary: `Published ${ok.length} change${ok.length > 1 ? "s" : ""}`,
+        changed_keys: ok,
+        status: failed.length ? "error" : "success",
+        published_by: email,
+      });
+      setPublished((p) => ({ ...p, ...Object.fromEntries(ok.map((k) => [k, draft[k]])) }));
+    }
     setPublishing(false);
-    setToast("Published — your changes are live.");
-    window.setTimeout(() => setToast(""), 3500);
+    if (failed.length) {
+      window.alert(`${failed.length} of ${dirtyKeys.length} changes could not be published (your drafts are safe). First error: ${failed[0].error!.message}`);
+    } else {
+      setToast("Published — your changes are live.");
+      window.setTimeout(() => setToast(""), 3500);
+    }
   };
 
   /* ---------- structure (order + show/hide), all pages ---------- */

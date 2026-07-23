@@ -1,5 +1,5 @@
 import { Check, Minus } from "lucide-react";
-import { Eyebrow, SectionHeading } from "@/components/ui";
+import { EditableEyebrow, SectionHeading } from "@/components/ui";
 import { PricingCards } from "@/components/PricingCards";
 import { Faq } from "@/components/Faq";
 import { Reveal } from "@/components/Reveal";
@@ -29,7 +29,7 @@ export function Pricing() {
         <div className="pointer-events-none absolute inset-0 -z-10 bg-grid opacity-[0.35] [mask-image:radial-gradient(ellipse_at_top,black,transparent_65%)]" />
         <div className="wrap">
           <div className="flex justify-center">
-            <Eyebrow><span {...editable("pricing.hero.eyebrow")}>{c("pricing.hero.eyebrow", "Pricing")}</span></Eyebrow>
+            <EditableEyebrow k="pricing.hero.eyebrow" defaultLabel="Pricing" />
           </div>
           <h1 className="mx-auto mt-6 max-w-3xl font-display text-[clamp(40px,6.5vw,76px)] leading-[1] tracking-[-0.02em] text-ink">
             <span {...editable("pricing.hero.title_lead")}>{c("pricing.hero.title_lead", "Pricing that scales ")}</span>

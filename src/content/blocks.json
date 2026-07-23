@@ -84,6 +84,8 @@
   { "key": "pricing.plan3.features", "page": "pricing", "section": "Plan 3 — Scale", "label": "Features (one per line)", "type": "richtext", "value": "10 workspaces & seats\nThe Wall analytics\nPriority models\nRoles & permissions\nShared brand library" },
   { "key": "pricing.plan3.cta", "page": "pricing", "section": "Plan 3 — Scale", "label": "Button", "type": "text", "value": "Start free" },
 
+  { "key": "home.hero.publishto_label", "page": "home", "section": "Hero", "label": "Publishes-to strip — label (empty hides the strip)", "type": "text", "value": "Publishes to" },
+  { "key": "home.hero.platforms", "page": "home", "section": "Hero", "label": "Platforms shown (meta, facebook, instagram, google — comma-separated, empty hides)", "type": "text", "value": "meta, facebook, instagram, google" },
   { "key": "home.hero.cta_primary_link", "page": "home", "section": "Hero", "label": "Primary button — link", "type": "link", "value": "{\"href\":\"https://app.aireastudio.ai/sign-up\",\"visible\":true}" },
   { "key": "home.hero.cta_secondary_link", "page": "home", "section": "Hero", "label": "Secondary button — link", "type": "link", "value": "{\"href\":\"/#campaign\",\"visible\":true}" },
   { "key": "home.cta.primary_link", "page": "home", "section": "Final CTA", "label": "Primary button — link", "type": "link", "value": "{\"href\":\"https://app.aireastudio.ai/sign-up\",\"visible\":true}" },

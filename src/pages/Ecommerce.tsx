@@ -1,7 +1,7 @@
 import { LayoutGrid, Maximize, Sparkles } from "lucide-react";
 import { SubHero } from "@/components/SubHero";
 import { FeatureTriple } from "@/components/FeatureTriple";
-import { SectionHeading } from "@/components/ui";
+import { EditableEyebrow, SectionHeading } from "@/components/ui";
 import { OnePhotoCampaign } from "@/sections/OnePhotoCampaign";
 import { Testimonials } from "@/sections/Testimonials";
 import { FinalCTA } from "@/sections/FinalCTA";
@@ -33,7 +33,7 @@ export function Ecommerce() {
 
   const hero = (
       <SubHero
-        eyebrow={<span {...editable("ec.hero.eyebrow")}>{c("ec.hero.eyebrow", "For e-commerce")}</span>}
+        eyebrow={<EditableEyebrow k="ec.hero.eyebrow" defaultLabel="For e-commerce" />}
         title={
           <>
             <span {...editable("ec.hero.title_lead")}>{c("ec.hero.title_lead", "One product photo. ")}</span>

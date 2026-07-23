@@ -203,3 +203,9 @@ create or replace view public.active_tracking_tags as
   select id, provider, config, custom_head, custom_body
   from public.tracking_tags where enabled;
 grant select on public.active_tracking_tags to anon, authenticated;
+
+-- Admins can WRITE the publish audit log from the browser (was select-only,
+-- so browser-side publish logging was silently denied by RLS).
+drop policy if exists p_publish_insert on public.publish_log;
+create policy p_publish_insert on public.publish_log
+  for insert with check (public.is_admin());

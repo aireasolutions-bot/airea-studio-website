@@ -187,7 +187,12 @@ export function Design() {
       } as any);
       setRowExists(true);
     } else {
-      await supabase.from("content_blocks").update({ draft_value: json, published_value: json, updated_by: email }).eq("key", KEY);
+      const { error: err } = await supabase.from("content_blocks").update({ draft_value: json, published_value: json, updated_by: email }).eq("key", KEY);
+      if (err) {
+        setPublishing(false);
+        setError(`Couldn't publish the design (your draft is safe): ${err.message}`);
+        return;
+      }
     }
     await supabase.from("publish_log").insert({
       summary: "Published site design (typography, colors, shape, background)",

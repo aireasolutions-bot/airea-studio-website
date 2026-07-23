@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check, FolderKanban, Sparkles, Users, Wand2 } from "lucide-react";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { RobotHead } from "@/components/RobotHead";
-import { CtaButton, Eyebrow, Tag } from "@/components/ui";
+import { CtaButton, EditableEyebrow, Eyebrow, Tag } from "@/components/ui";
 import { Reveal } from "@/components/Reveal";
 import { PageSections } from "@/components/PageSections";
 import { FinalCTA } from "@/sections/FinalCTA";
@@ -190,7 +190,7 @@ export function HowItWorksPage() {
             <RobotHead size={104} />
           </div>
           <div className="flex justify-center">
-            <Eyebrow><span {...editable("howitworks.hero.eyebrow")}>{c("howitworks.hero.eyebrow")}</span></Eyebrow>
+            <EditableEyebrow k="howitworks.hero.eyebrow" defaultLabel="How it works" />
           </div>
           <h1 className="mx-auto mt-6 max-w-4xl font-display text-[clamp(40px,6.5vw,76px)] leading-[1.0] tracking-[-0.02em] text-ink">
             <span {...editable("howitworks.hero.title_lead")}>{c("howitworks.hero.title_lead")}</span>

@@ -85,6 +85,11 @@ Marketing copy, CTA labels, and images are often driven by editable content bloc
 - The pricing page (plan cards + comparison table) renders from the \`pricing.data\` content block (JSON: \`{plans:[{id,name,price,cadence,blurb,features[],ctaLabel,ctaHref,featured,badge}], compare:{rows:[{label,values:[{t:"check"|"dash"|"text",v?}]}]}}\`), managed by the team in the admin's **Pricing Studio** (/admin/pricing). Parsing/normalizing lives in \`src/lib/pricing.ts\`; \`PricingCards.tsx\` and \`src/pages/Pricing.tsx\` render from it (2–4 plans supported). If that block doesn't exist yet, legacy \`pricing.plan1..3.*\` keys are used.
 - DON'T hard-code pricing copy into components — pricing changes belong in the data (tell the user to use Pricing Studio), unless they explicitly ask you to change the pricing page's DESIGN.
 
+# Small content conventions
+- Hero eyebrows use \`<EditableEyebrow k="…" defaultLabel="…"/>\` — an EMPTY content value hides the pill entirely (team clears the field to hide it).
+- The home hero's "Publishes to" strip is content-managed: \`home.hero.publishto_label\` (empty hides label) + \`home.hero.platforms\` (comma list matched against PLATFORMS in src/lib/site.ts; empty hides the strip).
+- Publishing CONTENT happens in the admin's Publish Center (/admin/publish) or each editor's own Publish button — content publishes are instant (no redeploy). Your code edits publish separately via the Build-with-AI publish flow (GitHub commit → Vercel deploy).
+
 # Page structure (sections, order, show/hide — every page)
 - Each page renders through \`<PageSections page="slug" sections={{ id: <Node/>, … }}>\` (\`src/components/PageSections.tsx\`), ordered/hidden by the \`layout.<slug>\` content block (JSON array of \`{"id","hidden"}\`), which the team manages in the admin's Structure panel.
 - The manifest of every page's sections lives in \`src/lib/sections.ts\` (\`SECTION_MANIFESTS\`). When you ADD a section to a page: give it an id in the page's \`sections\` map AND add \`{id, label}\` to that page's manifest AND append it to the \`layout.<slug>\` default in blocks.json. It then automatically appears in the admin.

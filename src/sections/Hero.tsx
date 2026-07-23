@@ -7,9 +7,9 @@ const GradientCanvas = lazy(() =>
 );
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { RobotHead } from "@/components/RobotHead";
-import { CtaButton, Eyebrow } from "@/components/ui";
+import { CtaButton, EditableEyebrow } from "@/components/ui";
 import { PLATFORMS, SIGN_UP_URL } from "@/lib/site";
-import { useC, resolveAsset, editable } from "@/content/ContentProvider";
+import { useC, resolveAsset, editable, isEdit } from "@/content/ContentProvider";
 import { prefersReducedMotion } from "@/lib/gsap";
 
 const EASE = [0.22, 0.61, 0.36, 1] as const;
@@ -50,12 +50,11 @@ export function Hero() {
         {/* copy */}
         <div className="relative z-10 max-w-xl">
           <motion.div
-            {...editable("home.hero.eyebrow")}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: EASE }}
           >
-            <Eyebrow>{c("home.hero.eyebrow")}</Eyebrow>
+            <EditableEyebrow k="home.hero.eyebrow" defaultLabel="The AI marketing OS" />
           </motion.div>
 
           <h1 className="mt-6 font-display text-[clamp(44px,7vw,84px)] leading-[0.98] tracking-[-0.02em] text-ink">
@@ -111,20 +110,43 @@ export function Hero() {
             {c("home.hero.note")}
           </motion.p>
 
-          {/* trust strip */}
-          <motion.div
-            className="mt-10 flex items-center gap-5"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.72 }}
-          >
-            <span className="tag text-ink-3">Publishes to</span>
-            <div className="flex items-center gap-5 grayscale opacity-70">
-              {PLATFORMS.map((p) => (
-                <img key={p.name} src={p.src} alt={p.name} className="h-5 w-auto" />
-              ))}
-            </div>
-          </motion.div>
+          {/* trust strip — label + platform list are content-managed; empty
+              platforms (or empty label with no platforms) hides the strip */}
+          {(() => {
+            const label = c("home.hero.publishto_label", "Publishes to").trim();
+            const wanted = c("home.hero.platforms", "meta, facebook, instagram, google")
+              .split(",")
+              .map((s) => s.trim().toLowerCase())
+              .filter(Boolean);
+            // Forgiving match: "google" hits "Google Ads", etc.
+            const shown = PLATFORMS.filter((p) => wanted.some((w) => p.name.toLowerCase().includes(w)));
+            if (shown.length === 0 && !isEdit()) return null;
+            return (
+              <motion.div
+                className="mt-10 flex items-center gap-5"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.72 }}
+              >
+                {shown.length === 0 ? (
+                  <span {...editable("home.hero.platforms")} className="tag rounded-full px-2 py-1 text-ink-3 opacity-50 outline-dashed outline-2 outline-offset-2 outline-ink-3" title="Strip hidden — click to edit platforms">
+                    Platform strip hidden
+                  </span>
+                ) : (
+                  <>
+                    {label && (
+                      <span className="tag text-ink-3" {...editable("home.hero.publishto_label")}>{label}</span>
+                    )}
+                    <div className="flex items-center gap-5 grayscale opacity-70" {...editable("home.hero.platforms")}>
+                      {shown.map((p) => (
+                        <img key={p.name} src={p.src} alt={p.name} className="h-5 w-auto" />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </motion.div>
+            );
+          })()}
         </div>
 
         {/* visual — anchored to the phone so it scales cleanly on every screen */}

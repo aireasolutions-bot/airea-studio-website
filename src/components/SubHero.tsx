@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
-import { CtaButton, Eyebrow } from "./ui";
+import { CtaButton } from "./ui";
 import { SIGN_UP_URL } from "@/lib/site";
 
 const EASE = [0.22, 0.61, 0.36, 1] as const;
@@ -30,7 +30,7 @@ export function SubHero({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: EASE }}
           >
-            <Eyebrow>{eyebrow}</Eyebrow>
+            {eyebrow}
           </motion.div>
           <motion.h1
             className="mt-6 font-display text-[clamp(40px,6.5vw,76px)] leading-[0.98] tracking-[-0.02em] text-ink"
