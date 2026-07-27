@@ -61,6 +61,7 @@ export function HowItWorks() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -16, scale: 0.97 }}
                     transition={{ duration: 0.5, ease: [0.22, 0.61, 0.36, 1] }}
+                    {...editable(`home.howitworks.step${active}.image`, "image")}
                   >
                     <PhoneFrame src={resolveAsset(c(`home.howitworks.step${active}.image`, STEPS[active].image))} width={300} />
                   </motion.div>
@@ -118,7 +119,7 @@ export function HowItWorks() {
                   {c(`home.howitworks.step${i}.body`, step.body)}
                 </p>
                 {/* inline media on mobile */}
-                <div className="mt-7 lg:hidden">
+                <div className="mt-7 lg:hidden" {...editable(`home.howitworks.step${i}.image`, "image")}>
                   <PhoneFrame src={resolveAsset(c(`home.howitworks.step${i}.image`, step.image))} width={260} />
                 </div>
               </div>

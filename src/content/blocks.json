@@ -113,6 +113,13 @@
   { "key": "global.subhero.cta_secondary", "page": "global", "section": "Sub-page hero (Small business & E-commerce)", "label": "Secondary button", "type": "text", "value": "See how it works" },
   { "key": "global.subhero.cta_secondary_link", "page": "global", "section": "Sub-page hero (Small business & E-commerce)", "label": "Secondary button — link", "type": "link", "value": "{\"href\":\"/how-it-works\",\"visible\":true}" },
 
+  { "key": "home.howitworks.step0.image", "page": "home", "section": "How it works", "label": "Step 1 — screenshot", "type": "image", "value": "/assets/product/brand-dna-url.png" },
+  { "key": "home.howitworks.step1.image", "page": "home", "section": "How it works", "label": "Step 2 — screenshot", "type": "image", "value": "/assets/product/campaign-name.png" },
+  { "key": "home.howitworks.step2.image", "page": "home", "section": "How it works", "label": "Step 3 — screenshot", "type": "image", "value": "/assets/product/media-meta.png" },
+  { "key": "home.howitworks.step3.image", "page": "home", "section": "How it works", "label": "Step 4 — screenshot", "type": "image", "value": "/assets/product/creative-direction.png" },
+  { "key": "home.howitworks.step4.image", "page": "home", "section": "How it works", "label": "Step 5 — screenshot", "type": "image", "value": "/assets/product/review-edit-image.png" },
+  { "key": "home.howitworks.step5.image", "page": "home", "section": "How it works", "label": "Step 6 — screenshot", "type": "image", "value": "/assets/product/deploy.png" },
+
   { "key": "layout.home", "page": "home", "section": "Page structure", "label": "Section order & visibility", "type": "layout", "value": "[{\"id\":\"hero\"},{\"id\":\"stats\"},{\"id\":\"agent\"},{\"id\":\"onephoto\"},{\"id\":\"film\"},{\"id\":\"howitworks\"},{\"id\":\"branddna\"},{\"id\":\"channels\"},{\"id\":\"deploy\"},{\"id\":\"wall\"},{\"id\":\"usecases\"},{\"id\":\"testimonials\"},{\"id\":\"pricing\"},{\"id\":\"cta\"}]" },
   { "key": "layout.pricing", "page": "pricing", "section": "Page structure", "label": "Section order & visibility", "type": "layout", "value": "[{\"id\":\"hero\"},{\"id\":\"cards\"},{\"id\":\"compare\"},{\"id\":\"faq\"},{\"id\":\"cta\"}]" },
   { "key": "layout.small-business", "page": "small-business", "section": "Page structure", "label": "Section order & visibility", "type": "layout", "value": "[{\"id\":\"hero\"},{\"id\":\"benefits\"},{\"id\":\"tailored\"},{\"id\":\"branddna\"},{\"id\":\"channels\"},{\"id\":\"cta\"}]" },

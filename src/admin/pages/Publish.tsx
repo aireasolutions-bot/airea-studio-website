@@ -35,6 +35,15 @@ type Row = {
   published_value: string | null;
 };
 
+type LogEntry = {
+  id: string;
+  summary: string | null;
+  changed_keys: string[] | null;
+  status: string;
+  published_by: string | null;
+  created_at: string;
+};
+
 const S = (v: unknown) => (v == null ? "" : String(v));
 
 // A human one-liner for what publishing this key changes.
@@ -82,6 +91,8 @@ export function Publish() {
   const [confirming, setConfirming] = useState<Commit | null>(null);
   const [working, setWorking] = useState(false);
   const [toast, setToast] = useState<{ msg: string; url?: string } | null>(null);
+  const [log, setLog] = useState<LogEntry[]>([]);
+  const [logOpen, setLogOpen] = useState<string | null>(null);
 
   const loadContent = async () => {
     if (!supabase) return;
@@ -92,6 +103,12 @@ export function Publish() {
       .order("page")
       .order("sort");
     setRows((data as Row[]) ?? []);
+    const { data: logRows } = await supabase
+      .from("publish_log")
+      .select("id,summary,changed_keys,status,published_by,created_at")
+      .order("created_at", { ascending: false })
+      .limit(30);
+    setLog((logRows as LogEntry[]) ?? []);
     setLoadingContent(false);
   };
 
@@ -240,6 +257,55 @@ export function Publish() {
               </div>
             ))}
           </div>
+        )}
+      </div>
+
+      {/* ---------- content publish history ---------- */}
+      <div className="mt-6 rounded-2xl border border-line bg-white p-5 shadow-soft">
+        <h2 className="flex items-center gap-2 text-[13px] font-semibold uppercase tracking-wider text-ink-3">
+          <History className="h-4 w-4" /> Content publish history
+        </h2>
+        <p className="mt-1 text-[12.5px] text-ink-3">Every content publish — who, when, and exactly what went live.</p>
+        {log.length === 0 ? (
+          <p className="mt-3 rounded-xl border border-dashed border-line-2 bg-canvas p-5 text-center text-[13px] text-ink-3">
+            No content publishes recorded yet.
+          </p>
+        ) : (
+          <ol className="mt-3 space-y-1.5">
+            {log.map((e) => {
+              const open = logOpen === e.id;
+              const keys = e.changed_keys ?? [];
+              return (
+                <li key={e.id} className="rounded-xl border border-line-2 bg-canvas">
+                  <button onClick={() => setLogOpen(open ? null : e.id)} className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left">
+                    <span className={cn("grid h-7 w-7 shrink-0 place-items-center rounded-full", e.status === "success" ? "bg-blue-mist text-blue-ink" : "bg-critical/10 text-critical")}>
+                      {e.status === "success" ? <Check className="h-3.5 w-3.5" /> : <AlertTriangle className="h-3.5 w-3.5" />}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[13.5px] font-medium text-ink">{e.summary || "Published content"}</span>
+                      <span className="block text-[11.5px] text-ink-3">
+                        {e.published_by || "unknown"} · {timeAgo(e.created_at)} · {new Date(e.created_at).toLocaleString()}
+                      </span>
+                    </span>
+                    <span className="shrink-0 text-[11.5px] font-medium text-ink-3">{keys.length} item{keys.length === 1 ? "" : "s"} {open ? "▴" : "▾"}</span>
+                  </button>
+                  {open && keys.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 border-t border-line px-3.5 py-2.5">
+                      {keys.map((k) => {
+                        const row = rows.find((r) => r.key === k);
+                        const label = row ? `${row.page === "global" ? "Global" : pageLabel(row.page)} · ${row.type === "layout" ? "Page structure" : row.label || k}` : k;
+                        return (
+                          <span key={k} className="rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-ink-2 ring-1 ring-line">
+                            {label}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
         )}
       </div>
 
