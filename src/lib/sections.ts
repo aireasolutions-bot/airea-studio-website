@@ -71,6 +71,9 @@ export const SECTION_MANIFESTS: Record<string, SectionDef[]> = {
     { id: "header", label: "Header & search" },
     { id: "body", label: "Questions & contact" },
   ],
+  "privacy-policy": [
+    { id: "policy", label: "Policy content" },
+  ],
 };
 
 export function sectionLabel(page: string, entry: LayoutEntry): string {

@@ -35,7 +35,7 @@ const COLS = [
   {
     title: "Legal",
     links: [
-      { label: "Privacy", to: "/" },
+      { label: "Privacy Policy", to: "/privacy-policy" },
       { label: "Terms", to: "/" },
       { label: "Security", to: "/" },
     ],

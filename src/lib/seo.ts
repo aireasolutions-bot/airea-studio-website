@@ -62,6 +62,13 @@ export const PAGE_SEO: Record<string, PageSeo> = {
     priority: 0.7,
     changefreq: "monthly",
   },
+  "/privacy-policy": {
+    title: "Privacy Policy — AIREA Studio",
+    description:
+      "Read the AIREA Studio Privacy Policy to learn how we collect, use, share, and protect information across our website, product, and related services.",
+    priority: 0.4,
+    changefreq: "monthly",
+  },
 };
 
 export const pageSeo = (path: string): PageSeo =>
