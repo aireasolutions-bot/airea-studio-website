@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, FolderKanban, Sparkles, Users, Wand2 } from "lucide-react";
-import { PhoneFrame } from "@/components/PhoneFrame";
 import { RobotHead } from "@/components/RobotHead";
-import { CtaButton, EditableEyebrow, Eyebrow, Tag } from "@/components/ui";
+import { CtaButton, EditableEyebrow, Tag } from "@/components/ui";
 import { Reveal } from "@/components/Reveal";
 import { PageSections } from "@/components/PageSections";
 import { FinalCTA } from "@/sections/FinalCTA";
@@ -61,6 +60,24 @@ const VISUAL_OPTIONS = [
   { tag: "Option B", icon: Sparkles, title: "I'll direct it", body: "Describe the creative direction yourself and the Agent runs with it." },
   { tag: "Option C", icon: Check, title: "Use my images", body: "Use your uploaded product images exactly as they are — no changes." },
 ];
+
+type ProductScreenshotProps = {
+  src: string;
+  alt: string;
+  className?: string;
+};
+
+function ProductScreenshot({ src, alt, className }: ProductScreenshotProps) {
+  return (
+    <img
+      src={src}
+      alt={alt}
+      loading="lazy"
+      draggable={false}
+      className={cn("block w-full rounded-3xl border border-line bg-white shadow-card", className)}
+    />
+  );
+}
 
 function StepExplorer() {
   const c = useC();
@@ -150,7 +167,7 @@ function StepExplorer() {
         })}
       </div>
 
-      {/* phone */}
+      {/* product screenshot */}
       <div className="relative lg:sticky lg:top-24">
         <span
           className="absolute inset-0 -z-10 rounded-[3rem] blur-3xl"
@@ -161,14 +178,15 @@ function StepExplorer() {
             <motion.div
               key={active}
               {...editable(`howitworks.step${active}.image`, "image")}
+              className="w-full max-w-[420px]"
               initial={{ opacity: 0, y: 18, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -14, scale: 0.97 }}
               transition={{ duration: 0.45, ease: EASE }}
             >
-              <PhoneFrame
+              <ProductScreenshot
                 src={resolveAsset(c(`howitworks.step${active}.image`, STEPS[active].image))}
-                width={290}
+                alt={`${c(`howitworks.step${active}.title`, STEPS[active].title)} product screenshot`}
               />
             </motion.div>
           </AnimatePresence>
@@ -311,13 +329,16 @@ export function HowItWorksPage() {
               ))}
             </Reveal>
           </div>
-          <Reveal className="relative mx-auto" delay={0.05}>
+          <Reveal className="relative mx-auto w-full max-w-[460px]" delay={0.05}>
             <span
               className="absolute inset-0 -z-10 rounded-[3rem] blur-3xl"
               style={{ background: "radial-gradient(circle at 50% 40%, rgb(var(--c-blue)/0.18), transparent 65%)" }}
             />
-            <div className="contents" {...editable("howitworks.organize.image", "image")}>
-              <PhoneFrame src={resolveAsset(c("howitworks.organize.image", "/assets/product/control-center.png"))} width={300} />
+            <div {...editable("howitworks.organize.image", "image")}>
+              <ProductScreenshot
+                src={resolveAsset(c("howitworks.organize.image", "/assets/product/control-center.png"))}
+                alt="AIREA Studio workspace control center screenshot"
+              />
             </div>
           </Reveal>
         </div>
