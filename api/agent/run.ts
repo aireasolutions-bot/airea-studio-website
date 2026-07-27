@@ -5,7 +5,7 @@
 import { requireAdmin } from "../_lib/admin.js";
 import { logActivity, reqMeta } from "../_lib/activity.js";
 import { chat, openaiConfigured, getModel, getReasoningModel, getReasoningEffort, respondWithSearch } from "../_lib/openai.js";
-import { listTree, readFile, githubConfigured } from "../_lib/github.js";
+import { listTree, readFile, searchCode, commitFiles, githubConfigured } from "../_lib/github.js";
 import { buildSystemPrompt, TOOLS } from "../_lib/knowledge.js";
 import { buildTrackingPrompt, TRACKING_TOOLS, listTags, upsertTag, deleteTag } from "../_lib/tracking-knowledge.js";
 
@@ -13,7 +13,7 @@ import { buildTrackingPrompt, TRACKING_TOOLS, listTags, upsertTag, deleteTag } f
 // it room. (Requires a Vercel plan that allows >60s; drops to plan max otherwise.)
 export const config = { maxDuration: 300 };
 
-const MAX_STEPS = 12;
+const MAX_STEPS = 16;
 
 // Fold any attached image URLs into the user message as explicit, copy-exact text
 // so the model embeds the real CDN links (text-only keeps it model-agnostic).
@@ -69,8 +69,20 @@ export default async function handler(req: any, res: any) {
     let tree: string[] = [];
     try {
       tree = await listTree();
-    } catch {
-      /* tree is best-effort */
+    } catch (e: any) {
+      // For the website agent the repo is its whole world — fail fast with a
+      // fixable message instead of letting the model shrug "can't reach the
+      // repo". (The tracking agent works fine without the tree.)
+      if (agent === "website") {
+        const status = String(e?.message || "").match(/(\d{3})/)?.[1] ?? "error";
+        res.status(502).json({
+          error:
+            status === "401" || status === "403"
+              ? `GitHub rejected the site's access token (HTTP ${status}) — it has likely expired. An owner needs to create a new GitHub personal access token with repo access and update GITHUB_TOKEN in Vercel → Project → Settings → Environment Variables, then redeploy. Content editing (Site editor, Pricing, Design, Tracking) is unaffected.`
+              : `Couldn't reach the site's GitHub repository (${e?.message || "unknown error"}). Try again in a minute; if it persists, check GITHUB_TOKEN in Vercel.`,
+        });
+        return;
+      }
     }
 
     const messages: any[] = [
@@ -89,6 +101,7 @@ export default async function handler(req: any, res: any) {
     const edits: Record<string, any> = {};
     const tagChanges: { op: string; label: string; enabled: boolean }[] = [];
     const transcript: { type: string; label: string }[] = [];
+    let published: { sha: string; url: string; files: number } | null = null;
     let reply = "";
 
     for (let step = 0; step < MAX_STEPS; step++) {
@@ -144,6 +157,52 @@ export default async function handler(req: any, res: any) {
             fileCache[p] = String(args.content ?? "");
             result = `Staged edit to ${p}.`;
             transcript.push({ type: "edit", label: `Proposed changes to ${p}` });
+          } else if (name === "search_code") {
+            const q = String(args.query || "");
+            try {
+              const hits = await searchCode(q);
+              result = hits.length
+                ? hits.map((h) => `${h.path}\n  ${h.snippet.replace(/\n/g, " ").trim()}`).join("\n")
+                : "No matches.";
+            } catch (e: any) {
+              result = `Search failed: ${e?.message}`;
+            }
+            transcript.push({ type: "scan", label: `Searched code for “${q.slice(0, 40)}”` });
+          } else if (name === "list_assets") {
+            try {
+              const q = String(args.query || "").replace(/[%_]/g, "");
+              const filter = q ? `&or=(filename.ilike.*${encodeURIComponent(q)}*,folder.ilike.*${encodeURIComponent(q)}*,key.ilike.*${encodeURIComponent(q)}*)` : "";
+              const r = await fetch(
+                `${process.env.SUPABASE_URL}/rest/v1/assets?select=filename,url,type,folder,width,height&order=created_at.desc&limit=60${filter}`,
+                { headers: { apikey: process.env.SUPABASE_SERVICE_ROLE || "", Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE || ""}` } }
+              );
+              const rows = r.ok ? await r.json() : [];
+              result = Array.isArray(rows) && rows.length
+                ? rows.map((a: any) => `${a.filename} (${a.type}${a.width ? `, ${a.width}×${a.height}` : ""}, folder: ${a.folder || "-"})\n  ${a.url}`).join("\n")
+                : "The asset hub is empty (or no matches).";
+            } catch (e: any) {
+              result = `Couldn't read the asset hub: ${e?.message}`;
+            }
+            transcript.push({ type: "scan", label: "Browsed the Asset hub" });
+          } else if (name === "publish_site") {
+            // Merge earlier unpublished staged edits with this run's, current run winning.
+            const byPath = new Map<string, { path: string; content: string }>();
+            for (const e of pendingEdits) if (e?.path) byPath.set(e.path, { path: e.path, content: String(e.content ?? "") });
+            for (const e of Object.values(edits) as any[]) byPath.set(e.path, { path: e.path, content: e.content });
+            const files = Array.from(byPath.values());
+            if (!files.length) {
+              result = "Nothing is staged — make edits first.";
+            } else {
+              try {
+                const msg = String(args.message || "Website agent update").slice(0, 120);
+                const commit = await commitFiles(files, `${msg}\n\nPublished by the AIREA website agent for ${auth.email}`);
+                published = { sha: commit.sha, url: commit.url, files: files.length };
+                result = `Published ${files.length} file(s) to production: ${commit.url}. Vercel is deploying — live in ~1-2 minutes.`;
+                transcript.push({ type: "publish", label: `Published ${files.length} file${files.length > 1 ? "s" : ""} to production` });
+              } catch (e: any) {
+                result = `Publish failed: ${e?.message}`;
+              }
+            }
           } else if (name === "list_tags") {
             try {
               result = JSON.stringify(await listTags());
@@ -212,11 +271,21 @@ export default async function handler(req: any, res: any) {
             ? `Website agent staged ${editCount} edit${editCount > 1 ? "s" : ""} (${mode})`
             : `Ran the website agent (${mode})`,
       durationMs: Date.now() - started,
-      metadata: { model, mode, edits: editCount, tagChanges },
+      metadata: { model, mode, edits: editCount, tagChanges, published },
       ...reqMeta(req),
     });
+    if (published) {
+      await logActivity({
+        actor: auth.email,
+        action: "agent.publish",
+        category: "publish",
+        summary: `Website agent published ${published.files} file${published.files > 1 ? "s" : ""} to production`,
+        metadata: { sha: published.sha, url: published.url },
+        ...reqMeta(req),
+      });
+    }
 
-    res.status(200).json({ reply, transcript, edits: Object.values(edits), tagChanges, model, mode });
+    res.status(200).json({ reply, transcript, edits: Object.values(edits), tagChanges, published, model, mode });
   } catch (e: any) {
     res.status(500).json({ error: e?.message || "Agent run failed" });
   }

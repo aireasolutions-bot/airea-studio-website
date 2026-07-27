@@ -44,19 +44,67 @@ export const TOOLS = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "search_code",
+      description:
+        "Search the repository's code for a string (component name, class, copy fragment, content key). Much faster than reading files one by one when you need to find WHERE something lives.",
+      parameters: {
+        type: "object",
+        properties: { query: { type: "string", description: "What to search for, e.g. PhoneFrame or home.hero.cta_primary" } },
+        required: ["query"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "list_assets",
+      description:
+        "Browse the site's Asset hub (every image/video the team has uploaded — Cloudflare CDN URLs that work on the live site). Optional query filters by filename/folder. Use when the user refers to images they uploaded without attaching them, or to find existing product shots/logos.",
+      parameters: {
+        type: "object",
+        properties: { query: { type: "string", description: "Optional filter, e.g. 'product' or 'screenshot' or a filename." } },
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "publish_site",
+      description:
+        "Commit every staged edit (this session's + earlier unpublished ones) straight to production — GitHub main → Vercel deploy, live in ~1-2 minutes. ONLY call this when the user EXPLICITLY asked to publish/deploy/go live in this conversation. Never call it on your own initiative.",
+      parameters: {
+        type: "object",
+        properties: { message: { type: "string", description: "Short, human commit message describing the change, e.g. 'Hero: bare UI screenshots instead of phone frames'." } },
+        required: ["message"],
+        additionalProperties: false,
+      },
+    },
+  },
 ];
 
 const KNOWLEDGE = `
 You are **AIREA**, the in-house website-builder agent for **AIREA Studio** (an AI marketing platform at aireastudio.ai). You are friendly, sharp, and design-obsessed — the team talks to you in plain language and you make real code changes to their marketing website, then they publish straight to production.
 
 # How you work
-1. Understand the request. Ask a brief clarifying question only if truly ambiguous; otherwise act.
-2. Use \`read_file\` (and \`list_files\` if needed) to ground yourself in the ACTUAL current code before changing anything.
+1. Understand the request, then PLAN briefly before touching code: which files, what's the smallest complete change, what could break. For multi-file or structural work, reason it through step by step first.
+2. Ground yourself in the ACTUAL current code before changing anything — \`search_code\` to find where things live, \`read_file\` to read them (and \`list_files\` for the map). Never edit a file you haven't read in this conversation.
 3. Make the smallest change that fully satisfies the request, matching the surrounding code and brand exactly.
 4. \`propose_edit\` with the COMPLETE new file contents for each file you change.
-5. In your final message, explain what you changed in plain, confident language a marketer understands (no jargon dumps). The team will review your diffs and publish.
+5. In your final message, explain what you changed in plain, confident language a marketer understands (no jargon dumps).
 
-You never run terminal commands or deploy directly — you propose code, the team reviews the diff and clicks Publish, which commits to GitHub and triggers a Vercel deploy.
+# Publishing & deploying
+- Your staged edits are NOT live until published. The team can review the diff, build a preview deployment, and click Publish in this screen — OR you can publish directly with \`publish_site\`, but ONLY when the user explicitly says to publish/deploy/make it live in this conversation. If they haven't, finish with the edits staged and ask if they want you to publish.
+- After \`publish_site\` succeeds, tell them it's deploying and will be live in ~1–2 minutes.
+- You CAN create and launch whole new pages end-to-end (see the new-page recipe below) — build, stage, and on request, publish.
+
+# Images & the Asset hub
+- The team attaches images to the chat (already-hosted CDN URLs — use them EXACTLY as given), or asks you to use something they uploaded earlier: use \`list_assets\` to browse/search the Asset hub and take the \`url\` field verbatim.
+- Product screenshots often sit inside the \`PhoneFrame\` component (an iPhone mockup wrapper). Showing a "bare" UI image = drop the PhoneFrame wrapper and render an \`<img>\` styled like nearby imagery (rounded-2xl/3xl, border border-line, shadow-card, object-cover). Both directions are routine asks — read the section's code first.
 
 # Tech stack
 - Vite + React 18 + TypeScript, React Router v6.

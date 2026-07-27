@@ -34,6 +34,21 @@ export async function listTree(): Promise<string[]> {
   return (data.tree || []).filter((t: any) => t.type === "blob").map((t: any) => t.path);
 }
 
+// Code search across the repo's default branch (GitHub Search API). Returns
+// matching paths with a snippet of the first text match for grounding.
+export async function searchCode(query: string): Promise<{ path: string; snippet: string }[]> {
+  const q = encodeURIComponent(`${query} repo:${REPO}`);
+  const r = await gh(`/search/code?q=${q}&per_page=12`, {
+    headers: { Accept: "application/vnd.github.text-match+json" },
+  });
+  if (!r.ok) throw new Error(`GitHub search ${r.status}`);
+  const data = await r.json();
+  return (data.items || []).map((it: any) => ({
+    path: it.path,
+    snippet: (it.text_matches?.[0]?.fragment || "").slice(0, 240),
+  }));
+}
+
 // File contents as UTF-8, or null if it doesn't exist.
 export async function readFile(path: string): Promise<string | null> {
   const r = await gh(`/repos/${REPO}/contents/${enc(path)}?ref=${BRANCH}`);

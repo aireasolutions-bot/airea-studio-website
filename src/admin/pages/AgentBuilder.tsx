@@ -505,7 +505,14 @@ export function AgentBuilder() {
         ...m,
         { id: uid(), role: "assistant", content: res.reply || "Done.", transcript: res.transcript, edits: res.edits },
       ]);
-      if (res.edits?.length) {
+      const pub = (res as { published?: { sha: string; url: string; files: number } }).published;
+      if (pub) {
+        // The agent published directly (user asked it to) — staged edits are live now.
+        setStaged([]);
+        setPreview(null);
+        cancelPreviewPoll();
+        setPublishOk({ url: pub.url });
+      } else if (res.edits?.length) {
         setStaged((prev) => mergeEdits(prev, res.edits));
         setPreview(null); // staged set changed → previous preview is stale
         cancelPreviewPoll();
