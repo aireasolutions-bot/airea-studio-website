@@ -12,6 +12,7 @@ export const SITE_PAGES: SitePage[] = [
   { slug: "how-it-works", path: "/how-it-works", label: "How it works" },
   { slug: "faq", path: "/faq", label: "FAQ" },
   { slug: "privacy-policy", path: "/privacy-policy", label: "Privacy Policy" },
+  { slug: "terms-of-service", path: "/terms-of-service", label: "Terms of Service" },
 ];
 
 const humanize = (slug: string) =>

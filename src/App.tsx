@@ -10,6 +10,7 @@ import { FaqPage } from "@/pages/FaqPage";
 import { Blog } from "@/pages/Blog";
 import { BlogPost } from "@/pages/BlogPost";
 import { PrivacyPolicy } from "@/pages/PrivacyPolicy";
+import { TermsOfService } from "@/pages/TermsOfService";
 import { Test } from "@/pages/Test";
 import { Test1 } from "@/pages/Test1";
 import { Test2 } from "@/pages/Test2";
@@ -26,6 +27,7 @@ const PAGE_COMPONENTS: Record<string, ComponentType> = {
   "how-it-works": HowItWorksPage,
   faq: FaqPage,
   "privacy-policy": PrivacyPolicy,
+  "terms-of-service": TermsOfService,
 };
 
 // Admin portal is a separate, lazy-loaded bundle — never weighs down the public site.

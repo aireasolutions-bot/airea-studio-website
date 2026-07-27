@@ -69,6 +69,13 @@ export const PAGE_SEO: Record<string, PageSeo> = {
     priority: 0.4,
     changefreq: "monthly",
   },
+  "/terms-of-service": {
+    title: "Terms of Service — AIREA Studio",
+    description:
+      "Read the AIREA Studio Terms of Service for the legal terms governing access to and use of the AIREA Studio platform and services.",
+    priority: 0.4,
+    changefreq: "monthly",
+  },
 };
 
 export const pageSeo = (path: string): PageSeo =>
