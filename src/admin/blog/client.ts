@@ -57,6 +57,18 @@ export async function listPosts(): Promise<AdminBlogPost[]> {
   return (data as AdminBlogPost[]) || [];
 }
 
+// Create a post from scratch (the manual "New post" flow — pasted-in articles).
+export async function createPost(fields: Partial<AdminBlogPost>): Promise<AdminBlogPost> {
+  if (!supabase) throw new Error("Not connected.");
+  const { data, error } = await supabase
+    .from("blog_posts")
+    .insert({ status: "draft", author: "AIREA Studio", ...fields })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data as AdminBlogPost;
+}
+
 export async function updatePost(id: string, patch: Partial<AdminBlogPost>): Promise<AdminBlogPost> {
   if (!supabase) throw new Error("Not connected.");
   const { data, error } = await supabase

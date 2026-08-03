@@ -1,11 +1,29 @@
 import { type ReactNode } from "react";
 
-// Minimal, safe Markdown → React renderer for blog bodies (our own agent's output).
-// Supports #/##/### headings, paragraphs, unordered + ordered lists, blockquotes,
-// fenced code, --- rules, and inline **bold**, *italic*, `code`, and [links](url).
-// Renders real React nodes (never dangerouslySetInnerHTML) so it's injection-safe.
+// Minimal, safe Markdown → React renderer for blog bodies (agent-written or
+// pasted-in). Supports #/##/### headings, paragraphs, unordered + ordered lists,
+// blockquotes, fenced code, --- rules, images/videos `![caption](url)` (video
+// files — .mp4/.webm/.mov — become players), and inline **bold**, *italic*,
+// `code`, and [links](url). Renders real React nodes (never
+// dangerouslySetInnerHTML) so it's injection-safe.
 
-const INLINE = /(\[([^\]]+)\]\(([^)\s]+)\))|(\*\*([^*]+)\*\*)|(\*([^*]+)\*)|(`([^`]+)`)/g;
+const VIDEO_URL = /\.(mp4|webm|mov|m4v)(\?|#|$)/i;
+
+function Media({ src, caption, k }: { src: string; caption?: string; k: string }) {
+  return (
+    <figure key={k} className="my-8">
+      {VIDEO_URL.test(src) ? (
+        <video src={src} controls playsInline preload="metadata" className="w-full rounded-2xl border border-line shadow-soft" />
+      ) : (
+        <img src={src} alt={caption || ""} loading="lazy" className="w-full rounded-2xl border border-line shadow-soft" />
+      )}
+      {caption && <figcaption className="mt-2.5 text-center text-[13px] text-ink-3">{caption}</figcaption>}
+    </figure>
+  );
+}
+
+const INLINE =
+  /(!\[([^\]]*)\]\(([^)\s]+)\))|(\[([^\]]+)\]\(([^)\s]+)\))|(\*\*([^*]+)\*\*)|(\*([^*]+)\*)|(`([^`]+)`)/g;
 
 function inline(text: string, kp: string): ReactNode[] {
   const out: ReactNode[] = [];
@@ -17,7 +35,17 @@ function inline(text: string, kp: string): ReactNode[] {
     if (m.index > last) out.push(text.slice(last, m.index));
     const key = `${kp}-${i++}`;
     if (m[1]) {
-      const href = m[3];
+      // image/video inside a paragraph — inline elements only (<figure> can't
+      // legally nest in <p>)
+      out.push(
+        VIDEO_URL.test(m[3]) ? (
+          <video key={key} src={m[3]} controls playsInline preload="metadata" className="my-3 inline-block w-full rounded-xl border border-line" />
+        ) : (
+          <img key={key} src={m[3]} alt={m[2] || ""} loading="lazy" className="my-3 inline-block max-h-[480px] rounded-xl border border-line" />
+        )
+      );
+    } else if (m[4]) {
+      const href = m[6];
       const external = /^https?:\/\//.test(href) && !href.includes("aireastudio.ai");
       out.push(
         <a
@@ -26,21 +54,21 @@ function inline(text: string, kp: string): ReactNode[] {
           className="font-medium text-blue underline decoration-blue/30 underline-offset-2 transition-colors hover:decoration-blue"
           {...(external ? { target: "_blank", rel: "noopener nofollow" } : {})}
         >
-          {m[2]}
+          {m[5]}
         </a>
       );
-    } else if (m[4]) {
+    } else if (m[7]) {
       out.push(
         <strong key={key} className="font-semibold text-ink">
-          {m[5]}
+          {m[8]}
         </strong>
       );
-    } else if (m[6]) {
-      out.push(<em key={key}>{m[7]}</em>);
-    } else if (m[8]) {
+    } else if (m[9]) {
+      out.push(<em key={key}>{m[10]}</em>);
+    } else if (m[11]) {
       out.push(
         <code key={key} className="rounded bg-ink/[0.06] px-1.5 py-0.5 font-mono text-[0.88em] text-ink">
-          {m[9]}
+          {m[12]}
         </code>
       );
     }
@@ -50,8 +78,9 @@ function inline(text: string, kp: string): ReactNode[] {
   return out;
 }
 
-const BLOCK_START = /^(#{1,6}\s|>|\s*[-*+]\s|\s*\d+\.\s|```)/;
+const BLOCK_START = /^(#{1,6}\s|>|\s*[-*+]\s|\s*\d+\.\s|```|!\[)/;
 const RULE = /^(-{3,}|\*{3,}|_{3,})$/;
+const MEDIA_BLOCK = /^!\[([^\]]*)\]\(([^)\s]+)\)\s*$/;
 
 export function Markdown({ content }: { content: string }) {
   const lines = (content || "").replace(/\r\n/g, "\n").split("\n");
@@ -81,6 +110,14 @@ export function Markdown({ content }: { content: string }) {
           <code className="font-mono text-ink-2">{buf.join("\n")}</code>
         </pre>
       );
+      continue;
+    }
+
+    // image / video on its own line
+    const media = MEDIA_BLOCK.exec(line.trim());
+    if (media) {
+      blocks.push(<Media key={key} k={`m${key++}`} src={media[2]} caption={media[1] || undefined} />);
+      i++;
       continue;
     }
 

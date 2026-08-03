@@ -7,8 +7,11 @@ import {
   ExternalLink,
   Eye,
   FileText,
+  Film,
+  ImagePlus,
   Newspaper,
   Pencil,
+  Plus,
   Rocket,
   Search,
   Sparkles,
@@ -18,10 +21,13 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Markdown } from "@/components/Markdown";
+import { resolveAsset } from "@/content/ContentProvider";
 import { logEvent } from "../activity/client";
+import { AssetPicker } from "../AssetPicker";
 import { BlogAgent } from "../blog/BlogAgent";
 import {
   BLOG_CATEGORIES,
+  createPost,
   deletePost,
   getSettings,
   listPosts,
@@ -32,6 +38,34 @@ import {
   type BlogSettings,
   type BlogStatus,
 } from "../blog/client";
+
+const slugify = (s: string) =>
+  s.toLowerCase().replace(/['’]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
+
+// A blank post for the manual "New post" flow (id "" = not saved yet).
+const blankPost = (): AdminBlogPost => ({
+  id: "",
+  slug: "",
+  title: "",
+  excerpt: null,
+  body: "",
+  status: "draft",
+  cover_image: null,
+  seo_title: null,
+  seo_description: null,
+  keywords: null,
+  category: null,
+  tags: [],
+  sources: [],
+  research: null,
+  author: "AIREA Studio",
+  reading_minutes: null,
+  word_count: null,
+  published_at: null,
+  scheduled_for: null,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+});
 
 function timeAgo(iso?: string | null): string {
   if (!iso) return "";
@@ -327,6 +361,13 @@ export function Blog() {
           {/* posts */}
           <div>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => setEditing(blankPost())}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-blue px-4 py-2 text-[13px] font-semibold text-white shadow-soft transition-colors hover:bg-blue-ink"
+                >
+                  <Plus className="h-4 w-4" /> New post
+                </button>
               <div className="flex gap-1 rounded-full border border-line bg-white p-1">
                 {(["all", "draft", "published"] as const).map((t) => (
                   <button
@@ -340,6 +381,7 @@ export function Blog() {
                     {t} <span className={cn("ml-0.5", tab === t ? "text-white/70" : "text-ink-3")}>{counts[t]}</span>
                   </button>
                 ))}
+              </div>
               </div>
               <div className="flex items-center gap-2 rounded-full border border-line-2 bg-white px-3.5 py-2">
                 <Search className="h-4 w-4 text-ink-3" />
@@ -362,7 +404,7 @@ export function Blog() {
               <div className="rounded-3xl border border-dashed border-line-2 bg-white p-12 text-center">
                 <FileText className="mx-auto h-8 w-8 text-ink-3" />
                 <p className="mt-3 font-medium text-ink">{query ? "No posts match your search." : "No posts yet."}</p>
-                <p className="text-[13.5px] text-ink-3">{query ? "Try a different term." : "Switch to the AIREA Agent to write your first article."}</p>
+                <p className="text-[13.5px] text-ink-3">{query ? "Try a different term." : "Hit “New post” to paste in an article, or let the AIREA Agent write one."}</p>
               </div>
             ) : (
               <div className="overflow-hidden rounded-2xl border border-line bg-white">
@@ -471,6 +513,10 @@ function PostEditor({
   });
   const [saving, setSaving] = useState(false);
   const [view, setView] = useState<"write" | "preview">("write");
+  const [picker, setPicker] = useState<null | { kind: "image" | "video"; target: "body" | "cover" }>(null);
+  const [slugTouched, setSlugTouched] = useState(!!post.slug);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const isNew = !post.id;
   const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
   useEffect(() => {
@@ -479,13 +525,36 @@ function PostEditor({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
+  // Insert `![caption](url)` markdown at the cursor — the renderer shows images
+  // as figures and video files (.mp4/.webm/.mov) as players.
+  const insertMedia = (assetKey: string) => {
+    const url = resolveAsset(assetKey);
+    if (picker?.target === "cover") {
+      set("cover_image", url);
+      return;
+    }
+    const md = `\n\n![](${url})\n\n`;
+    const el = bodyRef.current;
+    const pos = el ? el.selectionStart : form.body.length;
+    setForm((f) => ({ ...f, body: f.body.slice(0, pos) + md + f.body.slice(pos) }));
+    setView("write");
+    window.setTimeout(() => {
+      el?.focus();
+      el?.setSelectionRange(pos + md.length, pos + md.length);
+    }, 0);
+  };
+
   const save = async (publish?: boolean) => {
+    if (!form.title.trim()) {
+      onFlash("err", "Give the post a title first.");
+      return;
+    }
     setSaving(true);
     try {
       const words = form.body.trim().split(/\s+/).filter(Boolean).length;
       const patch: Partial<AdminBlogPost> = {
         title: form.title.trim(),
-        slug: form.slug.trim(),
+        slug: slugify(form.slug.trim() || form.title),
         category: form.category.trim() || null,
         excerpt: form.excerpt.trim() || null,
         body: form.body,
@@ -501,18 +570,19 @@ function PostEditor({
         patch.status = "published";
         patch.published_at = post.published_at || new Date().toISOString();
       }
-      const updated = await updatePost(post.id, patch);
+      const updated = isNew ? await createPost(patch) : await updatePost(post.id, patch);
       logEvent({
-        action: publish ? "blog.publish" : "blog.edit",
+        action: publish ? "blog.publish" : isNew ? "blog.create" : "blog.edit",
         category: "content",
         target: updated.slug,
         targetType: "blog",
-        summary: `${publish ? "Published" : "Edited"} blog: ${updated.title}`,
+        summary: `${publish ? "Published" : isNew ? "Created" : "Edited"} blog: ${updated.title}`,
       });
       onSaved(updated);
       if (publish) onFlash("ok", "Published — live on the site.");
     } catch (e: any) {
-      onFlash("err", e?.message || "Couldn't save.");
+      const msg = String(e?.message || "Couldn't save.");
+      onFlash("err", /duplicate|unique/i.test(msg) ? "That slug is already used by another post — change the slug and save again." : msg);
     } finally {
       setSaving(false);
     }
@@ -527,7 +597,7 @@ function PostEditor({
         <div className="flex items-center justify-between gap-3 border-b border-line px-6 py-4">
           <div className="flex items-center gap-3">
             <StatusChip status={post.status} />
-            <h3 className="font-display text-lg text-ink">Edit post</h3>
+            <h3 className="font-display text-lg text-ink">{isNew ? "New post" : "Edit post"}</h3>
           </div>
           <div className="flex items-center gap-2">
             {post.status === "published" && (
@@ -543,12 +613,27 @@ function PostEditor({
 
         <div className="max-h-[calc(100vh-220px)] space-y-5 overflow-y-auto px-6 py-5">
           <Field label="Title">
-            <input value={form.title} onChange={(e) => set("title", e.target.value)} className={inputCls} />
+            <input
+              value={form.title}
+              onChange={(e) => {
+                const v = e.target.value;
+                setForm((f) => ({ ...f, title: v, slug: isNew && !slugTouched ? slugify(v) : f.slug }));
+              }}
+              placeholder="Paste or write your headline"
+              className={inputCls}
+            />
           </Field>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Slug" hint={`/blog/${form.slug || "…"}`}>
-              <input value={form.slug} onChange={(e) => set("slug", e.target.value)} className={inputCls} />
+              <input
+                value={form.slug}
+                onChange={(e) => {
+                  setSlugTouched(true);
+                  set("slug", e.target.value);
+                }}
+                className={inputCls}
+              />
             </Field>
             <Field label="Category">
               <input list="blog-cats" value={form.category} onChange={(e) => set("category", e.target.value)} className={inputCls} />
@@ -564,28 +649,59 @@ function PostEditor({
             <textarea value={form.excerpt} onChange={(e) => set("excerpt", e.target.value)} rows={2} className={cn(inputCls, "resize-none")} />
           </Field>
 
-          <Field label="Cover image URL" hint="Optional — paste an R2/CDN image URL">
-            <input value={form.cover_image} onChange={(e) => set("cover_image", e.target.value)} placeholder="https://…" className={inputCls} />
+          <Field label="Cover image" hint="Optional — pick from the Asset hub or paste a URL">
+            <div className="flex gap-2">
+              <input value={form.cover_image} onChange={(e) => set("cover_image", e.target.value)} placeholder="https://…" className={inputCls} />
+              <button
+                onClick={() => setPicker({ kind: "image", target: "cover" })}
+                className="shrink-0 rounded-xl border border-line-2 px-3.5 text-[13px] font-semibold text-ink transition-colors hover:border-blue hover:text-blue"
+              >
+                Pick
+              </button>
+            </div>
           </Field>
           {form.cover_image && <img src={form.cover_image} alt="" className="max-h-40 w-full rounded-xl border border-line object-cover" />}
 
           <div>
             <div className="mb-1.5 flex items-center justify-between">
               <span className="text-[12.5px] font-semibold text-ink-2">Body (Markdown)</span>
-              <div className="flex gap-1 rounded-lg border border-line p-0.5">
-                {(["write", "preview"] as const).map((v) => (
-                  <button
-                    key={v}
-                    onClick={() => setView(v)}
-                    className={cn("rounded-md px-2.5 py-1 text-[12px] font-semibold capitalize", view === v ? "bg-blue text-white" : "text-ink-2 hover:text-ink")}
-                  >
-                    {v}
-                  </button>
-                ))}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPicker({ kind: "image", target: "body" })}
+                  title="Insert an image from the Asset hub at the cursor"
+                  className="inline-flex items-center gap-1 rounded-lg border border-line-2 px-2.5 py-1 text-[12px] font-semibold text-ink transition-colors hover:border-blue hover:text-blue"
+                >
+                  <ImagePlus className="h-3.5 w-3.5" /> Image
+                </button>
+                <button
+                  onClick={() => setPicker({ kind: "video", target: "body" })}
+                  title="Insert a video from the Asset hub at the cursor"
+                  className="inline-flex items-center gap-1 rounded-lg border border-line-2 px-2.5 py-1 text-[12px] font-semibold text-ink transition-colors hover:border-blue hover:text-blue"
+                >
+                  <Film className="h-3.5 w-3.5" /> Video
+                </button>
+                <div className="flex gap-1 rounded-lg border border-line p-0.5">
+                  {(["write", "preview"] as const).map((v) => (
+                    <button
+                      key={v}
+                      onClick={() => setView(v)}
+                      className={cn("rounded-md px-2.5 py-1 text-[12px] font-semibold capitalize", view === v ? "bg-blue text-white" : "text-ink-2 hover:text-ink")}
+                    >
+                      {v}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
             {view === "write" ? (
-              <textarea value={form.body} onChange={(e) => set("body", e.target.value)} rows={16} className={cn(inputCls, "resize-y font-mono text-[13px] leading-relaxed")} />
+              <textarea
+                ref={bodyRef}
+                value={form.body}
+                onChange={(e) => set("body", e.target.value)}
+                rows={16}
+                placeholder={"Paste your article here — Markdown or plain text both work.\n\n# Headings, **bold**, lists, quotes…\nUse the Image / Video buttons above to drop media anywhere in the article."}
+                className={cn(inputCls, "resize-y font-mono text-[13px] leading-relaxed")}
+              />
             ) : (
               <div className="max-h-[420px] overflow-y-auto rounded-2xl border border-line bg-canvas px-5 py-4">
                 <Markdown content={form.body} />
@@ -641,6 +757,16 @@ function PostEditor({
           </div>
         </div>
       </div>
+
+      <AssetPicker
+        open={picker !== null}
+        kind={picker?.kind ?? "image"}
+        onClose={() => setPicker(null)}
+        onSelect={(assetKey) => {
+          insertMedia(assetKey);
+          setPicker(null);
+        }}
+      />
     </div>
   );
 }
