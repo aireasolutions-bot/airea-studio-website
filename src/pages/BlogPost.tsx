@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, Clock, ExternalLink } from "lucide-react";
+import { Link, useParams, useSearchParams } from "react-router-dom";
+import { ArrowLeft, Clock, ExternalLink, PenLine } from "lucide-react";
 import { Button, Eyebrow } from "@/components/ui";
 import { Seo } from "@/components/Seo";
 import { Markdown } from "@/components/Markdown";
 import { breadcrumbSchema } from "@/lib/seo";
 import { SIGN_UP_URL } from "@/lib/site";
-import { fetchPostBySlug, articleSchema, formatDate, type BlogPost as Post } from "@/lib/blog";
+import { fetchPostBySlug, fetchPostForPreview, articleSchema, formatDate, type BlogPost as Post } from "@/lib/blog";
 
 export function BlogPost() {
   const { slug = "" } = useParams();
+  const [params] = useSearchParams();
+  const preview = params.get("preview") === "1";
   const [post, setPost] = useState<Post | null | undefined>(undefined); // undefined = loading
   const [error, setError] = useState<string | null>(null);
 
@@ -17,13 +19,13 @@ export function BlogPost() {
     let live = true;
     setPost(undefined);
     setError(null);
-    fetchPostBySlug(slug)
+    (preview ? fetchPostForPreview(slug) : fetchPostBySlug(slug))
       .then((p) => live && setPost(p))
       .catch((e) => live && setError(e?.message || "Couldn't load this article."));
     return () => {
       live = false;
     };
-  }, [slug]);
+  }, [slug, preview]);
 
   // loading
   if (post === undefined && !error) {
@@ -49,7 +51,10 @@ export function BlogPost() {
           <div>
             <h1 className="font-display text-4xl text-ink">{error ? "Something went wrong" : "Article not found"}</h1>
             <p className="mx-auto mt-3 max-w-md text-ink-2">
-              {error || "This article may have moved or is no longer published."}
+              {error ||
+                (preview
+                  ? "This is a draft preview link — it only works for the admin team. Sign in to the admin in this browser, then reload this page."
+                  : "This article may have moved or is no longer published.")}
             </p>
             <Link to="/blog" className="mt-6 inline-flex items-center gap-1.5 font-semibold text-blue">
               <ArrowLeft className="h-4 w-4" /> Back to the journal
@@ -61,6 +66,7 @@ export function BlogPost() {
   }
 
   const p = post as Post;
+  const isDraftView = p.status !== "published";
   const sources = Array.isArray(p.sources) ? p.sources.filter((s) => s?.url) : [];
 
   return (
@@ -71,6 +77,7 @@ export function BlogPost() {
         title={p.seo_title || p.title}
         description={p.seo_description || p.excerpt || undefined}
         image={p.cover_image || undefined}
+        noindex={isDraftView}
         jsonLd={[
           articleSchema(p),
           breadcrumbSchema([
@@ -80,6 +87,12 @@ export function BlogPost() {
           ]),
         ]}
       />
+
+      {isDraftView && (
+        <div className="fixed bottom-4 left-1/2 z-[200] flex -translate-x-1/2 items-center gap-2 rounded-full bg-amber-500 px-4 py-2 text-[12px] font-semibold text-white shadow-card">
+          <PenLine className="h-3.5 w-3.5" /> Draft preview — only signed-in admins can see this page
+        </div>
+      )}
 
       <article className="relative pb-24 pt-32 md:pt-40">
         <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[420px] bg-blue-radial" />

@@ -121,28 +121,35 @@ export function Markdown({ content }: { content: string }) {
       continue;
     }
 
-    // headings
+    // headings — a clearly distinct ladder: # big serif, ## smaller serif,
+    // ### sans semibold, #### small sans (the article's h1 is the post title).
     const h = /^(#{1,6})\s+(.*)$/.exec(line);
     if (h) {
       const level = h[1].length;
       const txt = h[2];
-      if (level <= 2)
+      if (level === 1)
         blocks.push(
-          <h2 key={key} className="mb-4 mt-12 font-display text-[clamp(24px,3vw,32px)] tracking-[-0.01em] text-ink">
+          <h2 key={key} className="mb-5 mt-14 font-display text-[clamp(30px,3.6vw,40px)] leading-tight tracking-[-0.015em] text-ink">
             {inline(txt, `h${key++}`)}
           </h2>
         );
-      else if (level === 3)
+      else if (level === 2)
         blocks.push(
-          <h3 key={key} className="mb-3 mt-8 font-display text-[20px] text-ink">
+          <h3 key={key} className="mb-4 mt-11 font-display text-[clamp(23px,2.6vw,29px)] leading-tight tracking-[-0.01em] text-ink">
             {inline(txt, `h${key++}`)}
           </h3>
         );
-      else
+      else if (level === 3)
         blocks.push(
-          <h4 key={key} className="mb-2 mt-6 text-[16px] font-semibold text-ink">
+          <h4 key={key} className="mb-3 mt-8 text-[19px] font-semibold text-ink">
             {inline(txt, `h${key++}`)}
           </h4>
+        );
+      else
+        blocks.push(
+          <h5 key={key} className="mb-2 mt-6 text-[15.5px] font-semibold uppercase tracking-wide text-ink-2">
+            {inline(txt, `h${key++}`)}
+          </h5>
         );
       i++;
       continue;
@@ -170,12 +177,24 @@ export function Markdown({ content }: { content: string }) {
       continue;
     }
 
-    // unordered list
+    // unordered list — blank lines between items don't split the list
     if (/^\s*[-*+]\s+/.test(line)) {
       const items: string[] = [];
-      while (i < lines.length && /^\s*[-*+]\s+/.test(lines[i])) {
-        items.push(lines[i].replace(/^\s*[-*+]\s+/, ""));
-        i++;
+      while (i < lines.length) {
+        if (/^\s*[-*+]\s+/.test(lines[i])) {
+          items.push(lines[i].replace(/^\s*[-*+]\s+/, ""));
+          i++;
+          continue;
+        }
+        if (!lines[i].trim()) {
+          let j = i;
+          while (j < lines.length && !lines[j].trim()) j++;
+          if (j < lines.length && /^\s*[-*+]\s+/.test(lines[j])) {
+            i = j;
+            continue;
+          }
+        }
+        break;
       }
       const k = key++;
       blocks.push(
@@ -190,16 +209,30 @@ export function Markdown({ content }: { content: string }) {
       continue;
     }
 
-    // ordered list
+    // ordered list — survives blank lines between items and honors the typed
+    // starting number, so long spaced-out lists never restart at 1
     if (/^\s*\d+\.\s+/.test(line)) {
       const items: string[] = [];
-      while (i < lines.length && /^\s*\d+\.\s+/.test(lines[i])) {
-        items.push(lines[i].replace(/^\s*\d+\.\s+/, ""));
-        i++;
+      const startNum = parseInt(/^\s*(\d+)\./.exec(line)?.[1] ?? "1", 10) || 1;
+      while (i < lines.length) {
+        if (/^\s*\d+\.\s+/.test(lines[i])) {
+          items.push(lines[i].replace(/^\s*\d+\.\s+/, ""));
+          i++;
+          continue;
+        }
+        if (!lines[i].trim()) {
+          let j = i;
+          while (j < lines.length && !lines[j].trim()) j++;
+          if (j < lines.length && /^\s*\d+\.\s+/.test(lines[j])) {
+            i = j;
+            continue;
+          }
+        }
+        break;
       }
       const k = key++;
       blocks.push(
-        <ol key={k} className="my-5 list-decimal space-y-2 pl-5 marker:font-semibold marker:text-ink-3">
+        <ol key={k} start={startNum} className="my-5 list-decimal space-y-2 pl-5 marker:font-semibold marker:text-ink-3">
           {items.map((it, j) => (
             <li key={j} className="pl-1 text-[16.5px] leading-relaxed text-ink-2">
               {inline(it, `ol${k}-${j}`)}

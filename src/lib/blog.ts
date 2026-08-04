@@ -59,6 +59,16 @@ export async function fetchPostBySlug(slug: string): Promise<BlogPost | null> {
   return (data as BlogPost) || null;
 }
 
+// Draft preview (?preview=1 share links): no status filter — row-level security
+// decides. Signed-in admins can read drafts; everyone else simply gets nothing,
+// so these links are safe to share and only work for the admin team.
+export async function fetchPostForPreview(slug: string): Promise<BlogPost | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase.from("blog_posts").select("*").eq("slug", slug).maybeSingle();
+  if (error) throw error;
+  return (data as BlogPost) || null;
+}
+
 export function formatDate(iso?: string | null): string {
   if (!iso) return "";
   try {

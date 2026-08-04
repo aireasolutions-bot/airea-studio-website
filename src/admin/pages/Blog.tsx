@@ -9,6 +9,7 @@ import {
   FileText,
   Film,
   ImagePlus,
+  Link2,
   Newspaper,
   Pencil,
   Plus,
@@ -435,10 +436,24 @@ export function Blog() {
                       </div>
                     </div>
                     <div className="flex shrink-0 items-center gap-1">
-                      {post.status === "published" && (
+                      {post.status === "published" ? (
                         <a href={`/blog/${post.slug}`} target="_blank" rel="noreferrer" title="View live" className="grid h-9 w-9 place-items-center rounded-lg text-ink-3 hover:bg-ink/5 hover:text-ink">
                           <ExternalLink className="h-4 w-4" />
                         </a>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            const url = `${window.location.origin}/blog/${post.slug}?preview=1`;
+                            navigator.clipboard.writeText(url).then(
+                              () => flash("ok", "Preview link copied — it only works for signed-in admins."),
+                              () => flash("err", url)
+                            );
+                          }}
+                          title="Copy admin-only preview link"
+                          className="grid h-9 w-9 place-items-center rounded-lg text-ink-3 hover:bg-ink/5 hover:text-ink"
+                        >
+                          <Link2 className="h-4 w-4" />
+                        </button>
                       )}
                       <button onClick={() => setEditing(post)} title="Edit" className="grid h-9 w-9 place-items-center rounded-lg text-ink-3 hover:bg-ink/5 hover:text-ink">
                         <Pencil className="h-4 w-4" />
@@ -512,7 +527,11 @@ function PostEditor({
     tags: (post.tags || []).join(", "),
   });
   const [saving, setSaving] = useState(false);
-  const [view, setView] = useState<"write" | "preview">("write");
+  // Side-by-side write + preview by default on wide screens — no toggling
+  // back and forth while styling long articles.
+  const [view, setView] = useState<"write" | "split" | "preview">(() =>
+    typeof window !== "undefined" && window.innerWidth >= 1280 ? "split" : "write"
+  );
   const [picker, setPicker] = useState<null | { kind: "image" | "video"; target: "body" | "cover" }>(null);
   const [slugTouched, setSlugTouched] = useState(!!post.slug);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
@@ -593,17 +612,33 @@ function PostEditor({
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/40 p-4 backdrop-blur-sm sm:p-8" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="my-4 w-full max-w-3xl overflow-hidden rounded-3xl border border-line bg-white shadow-card">
+      <div className="my-4 w-full max-w-6xl overflow-hidden rounded-3xl border border-line bg-white shadow-card">
         <div className="flex items-center justify-between gap-3 border-b border-line px-6 py-4">
           <div className="flex items-center gap-3">
             <StatusChip status={post.status} />
             <h3 className="font-display text-lg text-ink">{isNew ? "New post" : "Edit post"}</h3>
           </div>
           <div className="flex items-center gap-2">
-            {post.status === "published" && (
+            {post.status === "published" ? (
               <a href={`/blog/${form.slug}`} target="_blank" rel="noreferrer" className="hidden items-center gap-1.5 rounded-full border border-line-2 px-3 py-1.5 text-[12.5px] font-semibold text-ink hover:border-ink-3 sm:inline-flex">
                 <Eye className="h-3.5 w-3.5" /> View
               </a>
+            ) : (
+              !isNew && (
+                <button
+                  onClick={() => {
+                    const url = `${window.location.origin}/blog/${post.slug}?preview=1`;
+                    navigator.clipboard.writeText(url).then(
+                      () => onFlash("ok", "Preview link copied — it only works for signed-in admins."),
+                      () => onFlash("err", url)
+                    );
+                  }}
+                  title="Share this draft with the team — the link renders the article on the real site, visible to signed-in admins only"
+                  className="hidden items-center gap-1.5 rounded-full border border-line-2 px-3 py-1.5 text-[12.5px] font-semibold text-ink hover:border-blue hover:text-blue sm:inline-flex"
+                >
+                  <Link2 className="h-3.5 w-3.5" /> Copy preview link
+                </button>
+              )
             )}
             <button onClick={onClose} className="grid h-9 w-9 place-items-center rounded-lg text-ink-3 hover:bg-ink/5 hover:text-ink">
               <X className="h-5 w-5" />
@@ -681,7 +716,7 @@ function PostEditor({
                   <Film className="h-3.5 w-3.5" /> Video
                 </button>
                 <div className="flex gap-1 rounded-lg border border-line p-0.5">
-                  {(["write", "preview"] as const).map((v) => (
+                  {(["write", "split", "preview"] as const).map((v) => (
                     <button
                       key={v}
                       onClick={() => setView(v)}
@@ -693,17 +728,30 @@ function PostEditor({
                 </div>
               </div>
             </div>
-            {view === "write" ? (
+            {view === "split" ? (
+              <div className="grid gap-3 lg:grid-cols-2">
+                <textarea
+                  ref={bodyRef}
+                  value={form.body}
+                  onChange={(e) => set("body", e.target.value)}
+                  placeholder={"Paste your article here — Markdown or plain text both work.\n\n# Headings, **bold**, lists, quotes…\nUse the Image / Video buttons above to drop media anywhere in the article."}
+                  className={cn(inputCls, "h-[560px] resize-none font-mono text-[13px] leading-relaxed")}
+                />
+                <div className="h-[560px] overflow-y-auto rounded-2xl border border-line bg-canvas px-5 py-4">
+                  <Markdown content={form.body} />
+                </div>
+              </div>
+            ) : view === "write" ? (
               <textarea
                 ref={bodyRef}
                 value={form.body}
                 onChange={(e) => set("body", e.target.value)}
-                rows={16}
+                rows={20}
                 placeholder={"Paste your article here — Markdown or plain text both work.\n\n# Headings, **bold**, lists, quotes…\nUse the Image / Video buttons above to drop media anywhere in the article."}
                 className={cn(inputCls, "resize-y font-mono text-[13px] leading-relaxed")}
               />
             ) : (
-              <div className="max-h-[420px] overflow-y-auto rounded-2xl border border-line bg-canvas px-5 py-4">
+              <div className="max-h-[560px] overflow-y-auto rounded-2xl border border-line bg-canvas px-5 py-4">
                 <Markdown content={form.body} />
               </div>
             )}
