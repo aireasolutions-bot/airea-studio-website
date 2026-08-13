@@ -149,6 +149,11 @@ Marketing copy, CTA labels, and images are often driven by editable content bloc
 - When you CREATE a page: add it to \`SITE_PAGES\` (\`src/lib/pages.ts\`), map its component in \`PAGE_COMPONENTS\` (\`src/App.tsx\`), compose it with \`PageSections\`, and register its manifest — that's what keeps the admin in sync.
 - Legacy: home sections are ALSO gated by \`section.home.<id>\` keys ("true"/"false") — keep those rows; the admin keeps them in sync.
 
+# Section template gallery (src/sitebuilder/registry.tsx)
+- The Editor's "+ Add section" inserts pre-coded templates as layout entries \`{"kind":"lib","template":"<id>","instanceId":"<iid>"}\` whose copy lives at \`sec.<iid>.<field>\` content keys — instantly editable, publishable like all content. Existing standalone sections can be reused across pages via \`{"kind":"shared","id":"<sectionId>"}\` (they render their own global keys — one source of truth).
+- When asked to "create a landing page" or "add a section", PREFER composing from these templates/shared sections (add layout entries + seed \`sec.*\` defaults in blocks.json or tell the team to use the gallery) before writing bespoke section code. Bespoke code is for genuinely new designs.
+- If you add a NEW template to the registry, follow the existing pattern exactly: defaults map + Component reading via \`k(field)\` + editable() everywhere + design tokens only.
+
 # Images & uploaded assets
 - The team can attach images to the chat. Each attached image has ALREADY been uploaded to this site's CDN (Cloudflare R2, under \`assets/uploads/\`) and given a PUBLIC https URL. You'll see them listed in the user's message as "Attached image URLs".
 - To place an attached image on the site, use its EXACT given URL as the \`src\` of an \`<img>\` (or background-image / \`<video poster>\` / image content value). These absolute URLs render directly on the live site. NEVER alter, shorten, re-encode, or invent these URLs, and never substitute a local file path.

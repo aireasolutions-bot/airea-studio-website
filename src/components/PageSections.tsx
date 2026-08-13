@@ -1,6 +1,7 @@
-import { Fragment, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { useC } from "@/content/ContentProvider";
-import { resolveLayout } from "@/lib/sections";
+import { resolveLayout, entryKey } from "@/lib/sections";
+import { TemplateInstance, sharedById } from "@/sitebuilder/registry";
 
 /* Renders a page's sections in the order (and visibility) the team set in the
  * admin's Structure panel — stored as the `layout.<page>` content block and
@@ -20,14 +21,25 @@ export function PageSections({ page, sections }: { page: string; sections: Recor
   return (
     <>
       {entries.map((e) => {
-        if (e.kind === "lib") return null; // template instances land in Phase E
-        const id = e.id!;
-        const node = sections[id];
-        if (!node || e.hidden || legacyHidden(id)) return null;
+        if (e.hidden) return null;
+        const key = entryKey(e);
+        let node: ReactNode = null;
+        if (e.kind === "lib" && e.template && e.instanceId) {
+          // A section added from the template gallery.
+          node = <TemplateInstance template={e.template} instanceId={e.instanceId} />;
+        } else if (e.kind === "shared" && e.id) {
+          // A section adopted from another page (renders its own global keys).
+          const shared = sharedById(e.id);
+          node = shared ? <shared.Component /> : null;
+        } else if (e.id) {
+          if (legacyHidden(e.id)) return null;
+          node = sections[e.id] ?? null;
+        }
+        if (!node) return null;
         // display:contents keeps layout identical; the marker lets the admin's
         // preview sync scrolling with the fields panel (see previewSync.ts).
         return (
-          <div key={id} style={{ display: "contents" }} data-airea-section={id}>
+          <div key={key} style={{ display: "contents" }} data-airea-section={e.id ?? key}>
             {node}
           </div>
         );

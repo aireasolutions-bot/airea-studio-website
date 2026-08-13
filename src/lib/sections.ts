@@ -11,11 +11,12 @@
 export type SectionDef = { id: string; label: string };
 
 // One entry in a page's stored layout (the `layout.<page>` content block).
-// Built-in sections carry `id`; template-library instances (Phase E) carry
-// `kind:"lib"` + `template` + `instanceId`.
+// Built-in sections carry `id`; template-library instances carry `kind:"lib"`
+// + `template` + `instanceId`; sections adopted from other pages carry
+// `kind:"shared"` + `id` (the shared section's id).
 export type LayoutEntry = {
   id?: string;
-  kind?: "builtin" | "lib";
+  kind?: "builtin" | "lib" | "shared";
   template?: string;
   instanceId?: string;
   hidden?: boolean;
@@ -87,7 +88,7 @@ export function sectionLabel(page: string, entry: LayoutEntry): string {
 
 // Stable identity for a layout entry (used as React key / drag id).
 export const entryKey = (e: LayoutEntry) =>
-  e.kind === "lib" ? `lib:${e.instanceId}` : `s:${e.id}`;
+  e.kind === "lib" ? `lib:${e.instanceId}` : e.kind === "shared" ? `shared:${e.id}` : `s:${e.id}`;
 
 export function parseLayout(raw: string | undefined | null): LayoutEntry[] | null {
   if (!raw) return null;
@@ -109,7 +110,7 @@ export function parseLayout(raw: string | undefined | null): LayoutEntry[] | nul
 export function resolveLayout(page: string, raw: string | undefined | null): LayoutEntry[] {
   const manifest = SECTION_MANIFESTS[page] ?? [];
   const stored: LayoutEntry[] = parseLayout(raw) ?? manifest.map((s) => ({ id: s.id }));
-  const known = new Set(stored.filter((e) => e.kind !== "lib").map((e) => e.id));
+  const known = new Set(stored.filter((e) => !e.kind || e.kind === "builtin").map((e) => e.id));
   const missing = manifest.filter((s) => !known.has(s.id)).map((s) => ({ id: s.id }));
   return [...stored, ...missing];
 }

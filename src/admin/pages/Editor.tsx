@@ -26,6 +26,7 @@ import blocksData from "@/content/blocks.json";
 import { mergePages, pageLabel, pagePath, SITE_PAGES, HIDEABLE_PAGES, pageVisibleKey } from "@/lib/pages";
 import { SIGN_UP_URL, SIGN_IN_URL } from "@/lib/site";
 import { entryKey, resolveLayout, sectionLabel, type LayoutEntry } from "@/lib/sections";
+import { TEMPLATES as SECTION_TEMPLATES, templateById, SHARED_SECTIONS, sharedById, type TemplateDef } from "@/sitebuilder/registry";
 import { useAdminAuth } from "../auth";
 import { AssetPicker } from "../AssetPicker";
 import { runAgent, publishEdits, type AgentEdit, type ChatMsg } from "../agent/client";
@@ -88,6 +89,17 @@ function deriveRow(key: string, type: string, fallbackPage: string): Omit<Block,
   const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
   if (parts[0] === "layout") {
     return { key, page: parts[1] ?? fallbackPage, section: "Page structure", label: "Section order & visibility", type: "layout", sort: 0 };
+  }
+  if (parts[0] === "sec") {
+    // Fields of an inserted gallery section: sec.<instanceId>.<field>
+    return {
+      key,
+      page: fallbackPage,
+      section: `Added section · ${parts[1]}`,
+      label: cap(parts.slice(2).join(" ").replace(/[._]/g, " ")) || key,
+      type,
+      sort: 950,
+    };
   }
   const pageMap: Record<string, string> = {
     home: "home", pricing: "pricing", sb: "small-business", ec: "ecommerce",
@@ -435,6 +447,47 @@ Locate this exact element in the source (search_code with its distinctive classe
   };
 
   const layoutDirty = (draft[layoutKey] ?? "") !== (published[layoutKey] ?? "");
+  const [gallery, setGallery] = useState(false);
+
+  const entryLabel = (e: LayoutEntry): string => {
+    if (e.kind === "lib") return templateById(e.template ?? "")?.name ?? "Added section";
+    if (e.kind === "shared") return `${sharedById(e.id ?? "")?.label ?? e.id} · shared`;
+    return sectionLabel(page, e);
+  };
+
+  // "+ Add section": template instance (seeds its editable copy as drafts)…
+  const insertTemplate = (t: TemplateDef) => {
+    const iid = Math.random().toString(36).slice(2, 8);
+    const updates: Record<string, { value: string; type: string }> = {};
+    for (const [field, value] of Object.entries(t.defaults)) {
+      const type = /image|poster/.test(field) ? "image" : /video/.test(field) ? "video" : "text";
+      updates[`sec.${iid}.${field}`] = { value, type };
+    }
+    updates[layoutKey] = { value: JSON.stringify([...entries, { kind: "lib", template: t.id, instanceId: iid }]), type: "layout" };
+    writeMany(updates);
+    setGallery(false);
+    setToast(`“${t.name}” added at the bottom — drag it into place, then edit its copy.`);
+    window.setTimeout(() => setToast(""), 4000);
+    window.setTimeout(() => iframeRef.current?.contentWindow?.postMessage({ type: "airea-scroll-section", id: `lib:${iid}` }, "*"), 900);
+  };
+
+  // …or adopt an existing section from another page (one source of truth).
+  const insertShared = (id: string) => {
+    if (entries.some((e) => e.kind === "shared" && e.id === id)) {
+      setToast("That section is already on this page.");
+      window.setTimeout(() => setToast(""), 2500);
+      return;
+    }
+    writeLayout([...entries, { kind: "shared", id }]);
+    setGallery(false);
+    const label = sharedById(id)?.label ?? id;
+    setToast(`“${label}” added — it shares its content wherever it appears.`);
+    window.setTimeout(() => setToast(""), 4000);
+  };
+
+  const removeEntry = (key: string) => {
+    writeLayout(entries.filter((e) => entryKey(e) !== key));
+  };
 
   const applyTemplate = (t: Template) => {
     const next = entries.map((e) =>
@@ -530,19 +583,28 @@ Locate this exact element in the source (search_code with its distinctive classe
             <div className="rounded-2xl border border-line bg-white p-5 shadow-soft">
               <div className="mb-1 flex items-center justify-between">
                 <h3 className="text-[13px] font-semibold uppercase tracking-wider text-ink-3">Page structure</h3>
-                {layoutDirty && <span className="rounded-full bg-blue-mist px-1.5 py-0.5 text-[9px] font-semibold uppercase text-blue-ink">unpublished</span>}
+                <div className="flex items-center gap-2">
+                  {layoutDirty && <span className="rounded-full bg-blue-mist px-1.5 py-0.5 text-[9px] font-semibold uppercase text-blue-ink">unpublished</span>}
+                  <button
+                    onClick={() => setGallery(true)}
+                    className="flex items-center gap-1 rounded-full border border-line-2 px-2.5 py-1 text-[11.5px] font-semibold text-ink transition-colors hover:border-blue hover:text-blue"
+                  >
+                    + Add section
+                  </button>
+                </div>
               </div>
-              <p className="mb-3 text-[12.5px] text-ink-3">Drag to reorder · eye to show/hide</p>
+              <p className="mb-3 text-[12.5px] text-ink-3">Drag to reorder · eye to show/hide · click a name to jump to it</p>
               <Reorder.Group axis="y" values={entries.map(entryKey)} onReorder={reorderEntries} className="space-y-1.5">
                 {entries.map((e) => (
                   <StructureRow
                     key={entryKey(e)}
                     id={entryKey(e)}
-                    label={sectionLabel(page, e)}
+                    label={entryLabel(e)}
                     hidden={isHidden(e)}
                     active={!!e.id && e.id === liveSection}
                     onToggle={() => toggleEntry(entryKey(e))}
-                    onSelect={() => e.id && jumpToSection(e.id, sectionLabel(page, e))}
+                    onSelect={() => jumpToSection(e.id ?? entryKey(e), entryLabel(e))}
+                    onDelete={e.kind === "lib" || e.kind === "shared" ? () => removeEntry(entryKey(e)) : undefined}
                     onDragEnd={commitReorder}
                   />
                 ))}
@@ -811,6 +873,9 @@ Locate this exact element in the source (search_code with its distinctive classe
         </>
       )}
 
+      {/* section template gallery */}
+      {gallery && <SectionGallery onClose={() => setGallery(false)} onInsertTemplate={insertTemplate} onInsertShared={insertShared} />}
+
       {/* Fix with AI — on-canvas component agent */}
       {aiTarget && (
         <div className="fixed bottom-5 right-5 z-[70] flex max-h-[70vh] w-[380px] flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-card">
@@ -916,7 +981,7 @@ Locate this exact element in the source (search_code with its distinctive classe
 
 /* One row in the Structure panel — drags only from its grip handle so the
  * show/hide button stays cleanly clickable. */
-function StructureRow({ id, label, hidden, active, onToggle, onSelect, onDragEnd }: { id: string; label: string; hidden: boolean; active?: boolean; onToggle: () => void; onSelect?: () => void; onDragEnd: () => void }) {
+function StructureRow({ id, label, hidden, active, onToggle, onSelect, onDelete, onDragEnd }: { id: string; label: string; hidden: boolean; active?: boolean; onToggle: () => void; onSelect?: () => void; onDelete?: () => void; onDragEnd: () => void }) {
   const controls = useDragControls();
   return (
     <Reorder.Item
@@ -946,6 +1011,15 @@ function StructureRow({ id, label, hidden, active, onToggle, onSelect, onDragEnd
       >
         {label}
       </button>
+      {onDelete && (
+        <button
+          onClick={() => window.confirm(`Remove “${label}” from this page? Its edited copy is kept, so re-adding restores it.`) && onDelete()}
+          title="Remove from this page"
+          className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-ink-3 transition-colors hover:text-critical"
+        >
+          ×
+        </button>
+      )}
       <button
         onClick={onToggle}
         title={hidden ? "Show section" : "Hide section"}
@@ -954,6 +1028,82 @@ function StructureRow({ id, label, hidden, active, onToggle, onSelect, onDragEnd
         {hidden ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
       </button>
     </Reorder.Item>
+  );
+}
+
+/* "+ Add section" gallery: on-brand pre-coded templates rendered as LIVE
+ * scaled previews (always current with the design system — no screenshots to
+ * maintain), plus existing sections from other pages (one source of truth). */
+function SectionGallery({ onClose, onInsertTemplate, onInsertShared }: { onClose: () => void; onInsertTemplate: (t: TemplateDef) => void; onInsertShared: (id: string) => void }) {
+  const cats = ["All", ...Array.from(new Set(SECTION_TEMPLATES.map((t) => t.category))), "From other pages"];
+  const [cat, setCat] = useState("All");
+  const shown = cat === "From other pages" ? [] : SECTION_TEMPLATES.filter((t) => cat === "All" || t.category === cat);
+
+  return (
+    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-ink/50 backdrop-blur-sm" />
+      <div className="relative flex h-[86vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-line bg-white shadow-card" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-start justify-between border-b border-line p-5 pb-4">
+          <div>
+            <h2 className="font-display text-2xl text-ink">Add a section</h2>
+            <p className="mt-0.5 text-[13px] text-ink-2">Pre-built, on-brand, instantly editable — or reuse a section that already exists on another page.</p>
+          </div>
+          <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-lg text-ink-3 hover:bg-ink/5">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="flex flex-wrap gap-1.5 border-b border-line px-5 py-3">
+          {cats.map((c) => (
+            <button
+              key={c}
+              onClick={() => setCat(c)}
+              className={cn("rounded-full px-3 py-1.5 text-[12.5px] font-semibold transition-colors", cat === c ? "bg-blue text-white" : "border border-line-2 text-ink-2 hover:text-ink")}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-5">
+          {cat === "From other pages" ? (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {SHARED_SECTIONS.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => onInsertShared(s.id)}
+                  className="rounded-2xl border border-line-2 bg-canvas p-4 text-left transition-all hover:-translate-y-0.5 hover:border-blue hover:shadow-card"
+                >
+                  <div className="text-[14px] font-semibold text-ink">{s.label}</div>
+                  <div className="mt-1 text-[12px] text-ink-3">Same content everywhere it appears — edit once, updates on every page.</div>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {shown.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => onInsertTemplate(t)}
+                  className="group rounded-2xl border border-line-2 bg-canvas p-3 text-left transition-all hover:-translate-y-0.5 hover:border-blue hover:shadow-card"
+                >
+                  <div className="pointer-events-none h-[170px] overflow-hidden rounded-xl border border-line bg-white [&_.reveal]:!translate-y-0 [&_.reveal]:!opacity-100">
+                    <div style={{ width: 1280, transform: "scale(0.345)", transformOrigin: "top left" }}>
+                      <t.Component k={(f) => `__tplpreview.${t.id}.${f}`} />
+                    </div>
+                  </div>
+                  <div className="mt-2.5 flex items-baseline justify-between gap-2 px-1">
+                    <span className="text-[13.5px] font-semibold text-ink">{t.name}</span>
+                    <span className="text-[11px] font-medium uppercase tracking-wide text-ink-3">{t.category}</span>
+                  </div>
+                  <p className="px-1 pb-0.5 text-[12px] text-ink-3">{t.description}</p>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
