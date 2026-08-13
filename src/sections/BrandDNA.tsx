@@ -11,11 +11,14 @@ const LEARNS = [
   "Audience & campaign goals",
 ];
 
+// The side chips hang half-outside the square on desktop (looks great with
+// slack around it) but that clips at the viewport edges on phones — so below
+// `sm` they tuck fully inside the container instead.
 const NODES = [
   { icon: Share2, label: "Social", pos: "left-1/2 top-0 -translate-x-1/2 -translate-y-1/2" },
-  { icon: Megaphone, label: "Paid ads", pos: "right-0 top-1/2 -translate-y-1/2 translate-x-1/2" },
+  { icon: Megaphone, label: "Paid ads", pos: "right-0 top-1/2 -translate-y-1/2 translate-x-0 sm:translate-x-1/2" },
   { icon: Mail, label: "Email", pos: "left-1/2 bottom-0 -translate-x-1/2 translate-y-1/2" },
-  { icon: Globe, label: "Web & blog", pos: "left-0 top-1/2 -translate-y-1/2 -translate-x-1/2" },
+  { icon: Globe, label: "Web & blog", pos: "left-0 top-1/2 -translate-y-1/2 translate-x-0 sm:-translate-x-1/2" },
 ];
 
 export function BrandDNA() {
@@ -80,9 +83,9 @@ export function BrandDNA() {
           {/* nodes */}
           {NODES.map((n, i) => (
             <div key={n.label} className={`absolute ${n.pos} z-10`}>
-              <div className="flex items-center gap-2 rounded-full border border-line bg-white px-3 py-2 shadow-soft">
-                <n.icon className="h-4 w-4 text-blue" />
-                <span className="text-[12.5px] font-semibold text-ink" {...editable(`home.branddna.node${i}.label`)}>{c(`home.branddna.node${i}.label`, n.label)}</span>
+              <div className="flex items-center gap-1.5 rounded-full border border-line bg-white px-2.5 py-1.5 shadow-soft sm:gap-2 sm:px-3 sm:py-2">
+                <n.icon className="h-3.5 w-3.5 text-blue sm:h-4 sm:w-4" />
+                <span className="whitespace-nowrap text-[11.5px] font-semibold text-ink sm:text-[12.5px]" {...editable(`home.branddna.node${i}.label`)}>{c(`home.branddna.node${i}.label`, n.label)}</span>
               </div>
             </div>
           ))}
