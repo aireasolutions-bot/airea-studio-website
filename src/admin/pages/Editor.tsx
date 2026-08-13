@@ -28,6 +28,18 @@ import { SIGN_UP_URL, SIGN_IN_URL } from "@/lib/site";
 import { entryKey, resolveLayout, sectionLabel, type LayoutEntry } from "@/lib/sections";
 import { useAdminAuth } from "../auth";
 import { AssetPicker } from "../AssetPicker";
+import { runAgent, publishEdits, type AgentEdit, type ChatMsg } from "../agent/client";
+
+// Element descriptor sent by the canvas when the team ⌥-clicks something.
+type AiTarget = {
+  tag: string;
+  classes: string;
+  editKey: string | null;
+  section: string | null;
+  text: string;
+  imgSrc: string | null;
+  path: string;
+};
 
 type Block = {
   key: string;
@@ -114,6 +126,16 @@ export function Editor() {
   const [liveSection, setLiveSection] = useState("");
   const fieldCardRefs = useRef<Map<string, HTMLElement>>(new Map());
   const pointerOverPreview = useRef(false);
+
+  // "Fix with AI" — on-canvas component agent (⌥-click an element)
+  const [aiTarget, setAiTarget] = useState<AiTarget | null>(null);
+  const [aiMsgs, setAiMsgs] = useState<ChatMsg[]>([]);
+  const [aiNotes, setAiNotes] = useState<{ role: "user" | "assistant"; text: string }[]>([]);
+  const [aiInput, setAiInput] = useState("");
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiStaged, setAiStaged] = useState<AgentEdit[]>([]);
+  const [aiPublishing, setAiPublishing] = useState(false);
+  const [aiLive, setAiLive] = useState<string | null>(null);
 
   useEffect(() => {
     if (!supabase) return;
@@ -220,6 +242,76 @@ export function Editor() {
       if (ns.includes(nid) || nid.includes(ns) || ns.includes(nlabel) || nlabel.includes(ns)) return el;
     }
     return undefined;
+  };
+
+  // Canvas → "Fix with AI": open the panel for the ⌥-clicked element.
+  useEffect(() => {
+    const onMsg = (e: MessageEvent) => {
+      if (e.data?.type !== "airea-ai-select") return;
+      setAiTarget(e.data.element as AiTarget);
+      setAiMsgs([]);
+      setAiNotes([]);
+      setAiStaged([]);
+      setAiLive(null);
+      setAiInput("");
+      setEditing(null);
+    };
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
+  }, []);
+
+  const askAi = async (text: string) => {
+    const q = text.trim();
+    if (!q || !aiTarget || aiBusy) return;
+    setAiInput("");
+    setAiBusy(true);
+    setAiNotes((n) => [...n, { role: "user", text: q }]);
+    const content =
+      aiMsgs.length === 0
+        ? `On-canvas fix request from the visual editor.
+Page: ${aiTarget.path}${aiTarget.section ? ` · Section id: "${aiTarget.section}"` : ""}
+Selected element: <${aiTarget.tag}> ${aiTarget.classes ? `class="${aiTarget.classes}"` : ""}${aiTarget.editKey ? ` · content key: ${aiTarget.editKey}` : ""}${aiTarget.imgSrc ? ` · image src: ${aiTarget.imgSrc}` : ""}${aiTarget.text ? ` · text: "${aiTarget.text}"` : ""}
+
+Task: ${q}
+
+Locate this exact element in the source (search_code with its distinctive classes/text/key), make the MINIMAL edit that satisfies the task, and stage it. Do not publish. Keep every other element untouched.`
+        : q;
+    const nextMsgs: ChatMsg[] = [...aiMsgs, { role: "user", content }];
+    setAiMsgs(nextMsgs);
+    try {
+      const res = await runAgent(nextMsgs, aiStaged.map((e) => ({ path: e.path, content: e.content })), "build");
+      setAiMsgs((m) => [...m, { role: "assistant", content: res.reply || "Done." }]);
+      setAiNotes((n) => [...n, { role: "assistant", text: res.reply || "Done." }]);
+      if (res.edits?.length) {
+        setAiStaged((prev) => {
+          const byPath = new Map(prev.map((e) => [e.path, e]));
+          for (const e of res.edits) byPath.set(e.path, e);
+          return Array.from(byPath.values());
+        });
+      }
+    } catch (e) {
+      setAiNotes((n) => [...n, { role: "assistant", text: `⚠️ ${(e as Error).message}` }]);
+    } finally {
+      setAiBusy(false);
+    }
+  };
+
+  const publishAi = async () => {
+    if (!aiStaged.length || aiPublishing) return;
+    setAiPublishing(true);
+    try {
+      const first = aiNotes.find((n) => n.role === "user")?.text ?? "on-canvas fix";
+      const res = await publishEdits(
+        aiStaged.map((e) => ({ path: e.path, content: e.content })),
+        `On-canvas fix: ${first.slice(0, 70)}`
+      );
+      setAiLive(res.url);
+      setAiStaged([]);
+    } catch (e) {
+      setAiNotes((n) => [...n, { role: "assistant", text: `⚠️ Publish failed: ${(e as Error).message}` }]);
+    } finally {
+      setAiPublishing(false);
+    }
   };
 
   useEffect(() => {
@@ -584,6 +676,7 @@ export function Editor() {
             <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
               <span className="flex items-center gap-2 text-[12.5px] font-medium text-ink-2">
                 <span className="h-2 w-2 rounded-full bg-green-500" /> Live preview · draft
+                {editOnCanvas && <span className="hidden rounded bg-[#7C3AED]/10 px-1.5 py-0.5 text-[10.5px] font-semibold text-[#7C3AED] xl:inline">⌥-click anything → Fix with AI</span>}
               </span>
               <div className="flex items-center gap-2">
                 <div className="flex rounded-full border border-line-2 p-0.5">
@@ -716,6 +809,87 @@ export function Editor() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Fix with AI — on-canvas component agent */}
+      {aiTarget && (
+        <div className="fixed bottom-5 right-5 z-[70] flex max-h-[70vh] w-[380px] flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-card">
+          <div className="flex items-start justify-between gap-2 border-b border-line bg-[#7C3AED]/5 p-3.5">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wider text-[#7C3AED]">✨ Fix with AI</div>
+              <div className="mt-0.5 truncate text-[12px] text-ink-2">
+                {`<${aiTarget.tag}>`}{aiTarget.section ? ` in ${sectionLabel(page, { id: aiTarget.section })}` : ""}{aiTarget.text ? ` — “${aiTarget.text.slice(0, 40)}”` : ""}
+              </div>
+            </div>
+            <button onClick={() => setAiTarget(null)} className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-ink-3 hover:bg-ink/5">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div className="flex-1 space-y-2 overflow-y-auto p-3.5">
+            {aiNotes.length === 0 && (
+              <p className="rounded-xl bg-canvas p-3 text-[12.5px] leading-relaxed text-ink-2">
+                Tell me what to change about this element — “less padding”, “center it”, “remove the frame”, “make it bigger on mobile”… I'll edit the code. Nothing goes live until you press Publish.
+              </p>
+            )}
+            {aiNotes.map((n, i) => (
+              <div key={i} className={cn("max-w-[92%] whitespace-pre-wrap rounded-xl px-3 py-2 text-[12.5px] leading-relaxed", n.role === "user" ? "ml-auto bg-[#7C3AED] text-white" : "bg-canvas text-ink")}>
+                {n.text}
+              </div>
+            ))}
+            {aiBusy && (
+              <div className="flex items-center gap-2 rounded-xl bg-canvas px-3 py-2 text-[12.5px] text-ink-3">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Reading the code & making the change…
+              </div>
+            )}
+            {aiLive && (
+              <div className="rounded-xl border border-blue/30 bg-blue-mist/50 px-3 py-2 text-[12.5px] text-ink">
+                Published — live in ~2 minutes.{" "}
+                <a href={aiLive} target="_blank" rel="noreferrer" className="font-semibold text-blue underline">commit</a>
+              </div>
+            )}
+          </div>
+
+          <div className="border-t border-line p-3">
+            {aiStaged.length > 0 && !aiLive && (
+              <div className="mb-2 flex items-center justify-between rounded-xl border border-line-2 bg-canvas px-3 py-2">
+                <span className="text-[12px] font-medium text-ink">{aiStaged.length} file{aiStaged.length > 1 ? "s" : ""} staged</span>
+                <div className="flex gap-1.5">
+                  <button onClick={() => setAiStaged([])} className="rounded-full px-2.5 py-1 text-[11.5px] font-semibold text-ink-3 hover:text-critical">Discard</button>
+                  <button
+                    onClick={publishAi}
+                    disabled={aiPublishing}
+                    className="flex items-center gap-1.5 rounded-full bg-blue px-3 py-1 text-[11.5px] font-semibold text-white hover:bg-blue-ink disabled:opacity-60"
+                  >
+                    {aiPublishing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Rocket className="h-3 w-3" />} Publish now
+                  </button>
+                </div>
+              </div>
+            )}
+            <div className="flex items-end gap-2">
+              <textarea
+                value={aiInput}
+                onChange={(e) => setAiInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    askAi(aiInput);
+                  }
+                }}
+                rows={2}
+                placeholder="e.g. remove the phone frame around this image"
+                className="w-full resize-none rounded-xl border border-line-2 bg-canvas px-3 py-2 text-[13px] text-ink outline-none focus:border-[#7C3AED]"
+              />
+              <button
+                onClick={() => askAi(aiInput)}
+                disabled={aiBusy || !aiInput.trim()}
+                className={cn("grid h-9 w-9 shrink-0 place-items-center rounded-xl text-white", aiBusy || !aiInput.trim() ? "cursor-not-allowed bg-ink-3" : "bg-[#7C3AED] hover:bg-[#6D28D9]")}
+              >
+                ➤
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {toast && (
