@@ -78,7 +78,7 @@ function ProductScreenshot({ src, alt, className }: ProductScreenshotProps) {
         alt={alt}
         loading="lazy"
         draggable={false}
-        className="block aspect-[16/10] w-full rounded-2xl border border-line/60 object-cover object-top"
+        className="block aspect-[16/10] w-full object-contain object-top"
       />
     </div>
   );
