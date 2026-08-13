@@ -24,7 +24,13 @@ export function PageSections({ page, sections }: { page: string; sections: Recor
         const id = e.id!;
         const node = sections[id];
         if (!node || e.hidden || legacyHidden(id)) return null;
-        return <Fragment key={id}>{node}</Fragment>;
+        // display:contents keeps layout identical; the marker lets the admin's
+        // preview sync scrolling with the fields panel (see previewSync.ts).
+        return (
+          <div key={id} style={{ display: "contents" }} data-airea-section={id}>
+            {node}
+          </div>
+        );
       })}
     </>
   );

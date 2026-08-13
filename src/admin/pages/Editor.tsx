@@ -23,7 +23,7 @@ import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/cn";
 import { resolveAsset, parseLink, type CtaLink } from "@/content/ContentProvider";
 import blocksData from "@/content/blocks.json";
-import { mergePages, pageLabel, pagePath, SITE_PAGES } from "@/lib/pages";
+import { mergePages, pageLabel, pagePath, SITE_PAGES, HIDEABLE_PAGES, pageVisibleKey } from "@/lib/pages";
 import { SIGN_UP_URL, SIGN_IN_URL } from "@/lib/site";
 import { entryKey, resolveLayout, sectionLabel, type LayoutEntry } from "@/lib/sections";
 import { useAdminAuth } from "../auth";
@@ -111,6 +111,9 @@ export function Editor() {
   const draftRef = useRef<Record<string, string>>({});
   const blocksRef = useRef<Block[]>([]);
   const scaleRef = useRef(1);
+  const [liveSection, setLiveSection] = useState("");
+  const fieldCardRefs = useRef<Map<string, HTMLElement>>(new Map());
+  const pointerOverPreview = useRef(false);
 
   useEffect(() => {
     if (!supabase) return;
@@ -147,7 +150,7 @@ export function Editor() {
   const sections = useMemo(() => {
     const map = new Map<string, Block[]>();
     blocks
-      .filter((b) => b.page === page && b.type !== "section" && b.type !== "layout" && b.type !== "json")
+      .filter((b) => b.page === page && b.type !== "section" && b.type !== "layout" && b.type !== "json" && b.type !== "page")
       .filter(
         (b) =>
           !(
@@ -204,6 +207,40 @@ export function Editor() {
   };
 
   const saveBlock = (key: string, value: string, type: string) => writeMany({ [key]: { value, type } });
+
+  // Preview → panel scroll sync: highlight the structure row for the section
+  // in view; when the user is actually scrolling the preview, follow along in
+  // the fields column too (Campbell's "side nav scrolls with the section").
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const fieldsCardFor = (id: string, label: string): HTMLElement | undefined => {
+    const nid = norm(id);
+    const nlabel = norm(label);
+    for (const [section, el] of fieldCardRefs.current) {
+      const ns = norm(section);
+      if (ns.includes(nid) || nid.includes(ns) || ns.includes(nlabel) || nlabel.includes(ns)) return el;
+    }
+    return undefined;
+  };
+
+  useEffect(() => {
+    const onMsg = (e: MessageEvent) => {
+      if (e.data?.type !== "airea-section-visible") return;
+      const id = String(e.data.id || "");
+      setLiveSection(id);
+      if (pointerOverPreview.current) {
+        const label = sectionLabel(page, { id });
+        fieldsCardFor(id, label)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    };
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
+
+  const jumpToSection = (id: string, label: string) => {
+    iframeRef.current?.contentWindow?.postMessage({ type: "airea-scroll-section", id }, "*");
+    fieldsCardFor(id, label)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   // Listen for clicks coming from the visual-edit overlay inside the preview.
   useEffect(() => {
@@ -411,11 +448,46 @@ export function Editor() {
                     id={entryKey(e)}
                     label={sectionLabel(page, e)}
                     hidden={isHidden(e)}
+                    active={!!e.id && e.id === liveSection}
                     onToggle={() => toggleEntry(entryKey(e))}
+                    onSelect={() => e.id && jumpToSection(e.id, sectionLabel(page, e))}
                     onDragEnd={commitReorder}
                   />
                 ))}
               </Reorder.Group>
+            </div>
+          )}
+
+          {/* whole-page visibility — customers only; home & pricing always on */}
+          {page === "global" && (
+            <div className="rounded-2xl border border-line bg-white p-5 shadow-soft">
+              <h3 className="mb-1 text-[13px] font-semibold uppercase tracking-wider text-ink-3">Pages</h3>
+              <p className="mb-3 text-[12.5px] text-ink-3">
+                Switch whole pages off for customers — they leave the menus and the URL sends visitors home. Publish to apply.
+              </p>
+              <div className="space-y-1.5">
+                {HIDEABLE_PAGES.map((p) => {
+                  const key = pageVisibleKey(p.slug);
+                  const hidden = (draft[key] ?? DEFAULTS[key]) === "false";
+                  const dirty = (draft[key] ?? "") !== (published[key] ?? "") && draft[key] !== undefined;
+                  return (
+                    <div key={p.slug} className={cn("flex items-center gap-2.5 rounded-xl border border-line-2 bg-canvas px-3 py-2.5", hidden && "opacity-60")}>
+                      <span className={cn("flex-1 truncate text-[13.5px] font-medium", hidden ? "text-ink-3 line-through decoration-ink-3/50" : "text-ink")}>
+                        {p.label}
+                        <span className="ml-2 font-mono text-[10.5px] text-ink-3">{p.path}</span>
+                      </span>
+                      {dirty && <span className="rounded-full bg-blue-mist px-1.5 py-0.5 text-[9px] font-semibold uppercase text-blue-ink">unpublished</span>}
+                      <button
+                        onClick={() => writeMany({ [key]: { value: hidden ? "true" : "false", type: "page" } })}
+                        title={hidden ? "Show this page" : "Hide this page from customers"}
+                        className={cn("grid h-7 w-7 shrink-0 place-items-center rounded-lg transition-colors", hidden ? "text-ink-3 hover:bg-ink/5 hover:text-ink" : "text-blue hover:bg-blue-mist")}
+                      >
+                        {hidden ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
 
@@ -433,7 +505,14 @@ export function Editor() {
           )}
 
           {sections.map(([section, items]) => (
-            <div key={section} className="rounded-2xl border border-line bg-white p-5 shadow-soft">
+            <div
+              key={section}
+              ref={(el) => {
+                if (el) fieldCardRefs.current.set(section, el);
+                else fieldCardRefs.current.delete(section);
+              }}
+              className="scroll-mt-24 rounded-2xl border border-line bg-white p-5 shadow-soft"
+            >
               <h3 className="mb-4 text-[13px] font-semibold uppercase tracking-wider text-ink-3">{section}</h3>
               <div className="space-y-4">
                 {items.map((b) => {
@@ -537,7 +616,12 @@ export function Editor() {
                 </a>
               </div>
             </div>
-            <div ref={paneRef} className="relative flex flex-1 items-start justify-center overflow-hidden bg-paper p-3">
+            <div
+              ref={paneRef}
+              onPointerEnter={() => (pointerOverPreview.current = true)}
+              onPointerLeave={() => (pointerOverPreview.current = false)}
+              className="relative flex flex-1 items-start justify-center overflow-hidden bg-paper p-3"
+            >
               <div
                 style={{ width: dw * scale, height: innerH || 600 }}
                 className={cn("overflow-hidden bg-canvas", device === "mobile" ? "rounded-[2rem] border-[6px] border-ink shadow-card" : "rounded-lg border border-line shadow-sm")}
@@ -595,7 +679,29 @@ export function Editor() {
               </div>
             )}
             <div className="mt-2 flex items-center justify-between">
-              <span className="text-[10.5px] text-ink-3">⌘↵ to save</span>
+              {editing.type === "cta" && editing.link ? (
+                <button
+                  onClick={() => {
+                    // Campbell's "Remove" button: one click hides the item from
+                    // the live site (it stays as a ghost on this canvas).
+                    const next = { ...editing.link!, visible: !editing.link!.visible };
+                    writeMany({
+                      [editing.key]: { value: editing.value, type: "text" },
+                      [`${editing.key}_link`]: { value: JSON.stringify(next), type: "link" },
+                    });
+                    setEditing(null);
+                  }}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-colors",
+                    editing.link.visible ? "text-critical hover:bg-critical/10" : "text-blue hover:bg-blue-mist"
+                  )}
+                >
+                  {editing.link.visible ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                  {editing.link.visible ? "Remove from site" : "Show on site"}
+                </button>
+              ) : (
+                <span className="text-[10.5px] text-ink-3">⌘↵ to save</span>
+              )}
               <div className="flex gap-2">
                 <button onClick={() => setEditing(null)} className="rounded-full border border-line-2 px-3 py-1.5 text-[12px] font-semibold text-ink hover:border-ink-3">
                   Cancel
@@ -636,7 +742,7 @@ export function Editor() {
 
 /* One row in the Structure panel — drags only from its grip handle so the
  * show/hide button stays cleanly clickable. */
-function StructureRow({ id, label, hidden, onToggle, onDragEnd }: { id: string; label: string; hidden: boolean; onToggle: () => void; onDragEnd: () => void }) {
+function StructureRow({ id, label, hidden, active, onToggle, onSelect, onDragEnd }: { id: string; label: string; hidden: boolean; active?: boolean; onToggle: () => void; onSelect?: () => void; onDragEnd: () => void }) {
   const controls = useDragControls();
   return (
     <Reorder.Item
@@ -644,7 +750,11 @@ function StructureRow({ id, label, hidden, onToggle, onDragEnd }: { id: string; 
       dragListener={false}
       dragControls={controls}
       onDragEnd={onDragEnd}
-      className={cn("flex select-none items-center gap-2.5 rounded-xl border bg-canvas px-3 py-2.5", hidden ? "border-line-2 opacity-60" : "border-line-2")}
+      className={cn(
+        "flex select-none items-center gap-2.5 rounded-xl border bg-canvas px-3 py-2.5 transition-colors",
+        hidden ? "border-line-2 opacity-60" : "border-line-2",
+        active && "border-blue/50 bg-blue-mist/40"
+      )}
     >
       <span
         onPointerDown={(e) => {
@@ -655,9 +765,13 @@ function StructureRow({ id, label, hidden, onToggle, onDragEnd }: { id: string; 
       >
         <GripVertical className="h-4 w-4" />
       </span>
-      <span className={cn("flex-1 truncate text-[13.5px] font-medium", hidden ? "text-ink-3 line-through decoration-ink-3/50" : "text-ink")}>
+      <button
+        onClick={onSelect}
+        title="Jump to this section in the preview"
+        className={cn("flex-1 truncate text-left text-[13.5px] font-medium", hidden ? "text-ink-3 line-through decoration-ink-3/50" : "text-ink")}
+      >
         {label}
-      </span>
+      </button>
       <button
         onClick={onToggle}
         title={hidden ? "Show section" : "Hide section"}

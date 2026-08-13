@@ -67,15 +67,20 @@ type ProductScreenshotProps = {
   className?: string;
 };
 
+/* Uniform frame for product screenshots: fixed aspect, one border weight, one
+ * radius, consistent inner padding — mixed captures with different intrinsic
+ * margins all present identically (the borders/centering Campbell flagged). */
 function ProductScreenshot({ src, alt, className }: ProductScreenshotProps) {
   return (
-    <img
-      src={src}
-      alt={alt}
-      loading="lazy"
-      draggable={false}
-      className={cn("block w-full rounded-3xl border border-line bg-white shadow-card", className)}
-    />
+    <div className={cn("overflow-hidden rounded-3xl border border-line bg-white p-2 shadow-card", className)}>
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        draggable={false}
+        className="block aspect-[16/10] w-full rounded-2xl border border-line/60 object-cover object-top"
+      />
+    </div>
   );
 }
 
@@ -147,6 +152,14 @@ function StepExplorer() {
                         </li>
                       ))}
                     </ul>
+                    {/* mobile: the step's screenshot lives WITH its step (on
+                        desktop it shows in the sticky column instead) */}
+                    <div className="mt-4 lg:hidden" {...editable(`howitworks.step${i}.image`, "image")}>
+                      <ProductScreenshot
+                        src={resolveAsset(c(`howitworks.step${i}.image`, s.image))}
+                        alt={c(`howitworks.step${i}.title`, s.title)}
+                      />
+                    </div>
                     {/* progress */}
                     {!paused && (
                       <div className="mt-3 h-0.5 w-full overflow-hidden rounded-full bg-line">
@@ -167,8 +180,8 @@ function StepExplorer() {
         })}
       </div>
 
-      {/* product screenshot */}
-      <div className="relative lg:sticky lg:top-24">
+      {/* product screenshot — desktop only; on mobile each step carries its own */}
+      <div className="relative hidden lg:sticky lg:top-24 lg:block">
         <span
           className="absolute inset-0 -z-10 rounded-[3rem] blur-3xl"
           style={{ background: "radial-gradient(circle at 50% 40%, rgb(var(--c-blue)/0.2), transparent 65%)" }}

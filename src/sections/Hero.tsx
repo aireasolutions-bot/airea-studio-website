@@ -210,12 +210,22 @@ export function Hero() {
 
             {/* side image cards — desktop only (room in the 2-col layout) */}
             <FloatCard className="-left-24 top-8 hidden lg:block" depth={26} delay={0.6}>
-              <img src="/assets/campaigns/nine-grid.jpg" alt="Nine ads from one source" className="h-28 w-24 rounded-xl object-cover" />
-              <Caption>9 ads · 1 source</Caption>
+              <img
+                src={resolveAsset(c("home.hero.float1.image", "/assets/campaigns/nine-grid.jpg"))}
+                {...editable("home.hero.float1.image", "image")}
+                alt="Nine ads from one source"
+                className="h-28 w-24 rounded-xl object-cover"
+              />
+              <Caption><span {...editable("home.hero.float1.caption")}>{c("home.hero.float1.caption", "9 ads · 1 source")}</span></Caption>
             </FloatCard>
             <FloatCard className="-right-20 top-1/3 hidden lg:block" depth={36} delay={0.78}>
-              <img src="/assets/campaigns/ratio-story.jpg" alt="Auto-sized story creative" className="h-32 w-[72px] rounded-xl object-cover" />
-              <Caption>Auto-sized · 9:16</Caption>
+              <img
+                src={resolveAsset(c("home.hero.float2.image", "/assets/campaigns/ratio-story.jpg"))}
+                {...editable("home.hero.float2.image", "image")}
+                alt="Auto-sized story creative"
+                className="h-32 w-[72px] rounded-xl object-cover"
+              />
+              <Caption><span {...editable("home.hero.float2.caption")}>{c("home.hero.float2.caption", "Auto-sized · 9:16")}</span></Caption>
             </FloatCard>
           </motion.div>
         </div>

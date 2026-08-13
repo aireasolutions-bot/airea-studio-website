@@ -134,6 +134,10 @@ Marketing copy, CTA labels, and images are often driven by editable content bloc
 - The pricing page (plan cards + comparison table) renders from the \`pricing.data\` content block (JSON: \`{plans:[{id,name,price,cadence,blurb,features[],ctaLabel,ctaHref,featured,badge}], compare:{rows:[{label,values:[{t:"check"|"dash"|"text",v?}]}]}}\`), managed by the team in the admin's **Pricing Studio** (/admin/pricing). Parsing/normalizing lives in \`src/lib/pricing.ts\`; \`PricingCards.tsx\` and \`src/pages/Pricing.tsx\` render from it (2–4 plans supported). If that block doesn't exist yet, legacy \`pricing.plan1..3.*\` keys are used.
 - DON'T hard-code pricing copy into components — pricing changes belong in the data (tell the user to use Pricing Studio), unless they explicitly ask you to change the pricing page's DESIGN.
 
+# Nav, footer & page visibility (all content-managed — don't hard-code)
+- Every nav menu item and footer link is a label key + \`_link\` key pair (e.g. \`global.nav.route0\` + \`global.nav.route0_link\`). Empty label or visible:false = the item disappears cleanly (no gaps). Spare slots (\`global.nav.extra0/1\`, last footer link per column) let the team ADD items with zero code.
+- Whole pages can be switched off via \`page.<slug>.visible\` ("false" hides): the route redirects home and any nav/footer link pointing at it auto-hides. Manifest in \`HIDEABLE_PAGES\` (src/lib/pages.ts). When you CREATE a page, add it to HIDEABLE_PAGES + seed its \`page.<slug>.visible\` row so the team controls it.
+
 # Small content conventions
 - Hero eyebrows use \`<EditableEyebrow k="…" defaultLabel="…"/>\` — an EMPTY content value hides the pill entirely (team clears the field to hide it).
 - The home hero's "Publishes to" strip is content-managed: \`home.hero.publishto_label\` (empty hides label) + \`home.hero.platforms\` (comma list matched against PLATFORMS in src/lib/site.ts; empty hides the strip).

@@ -197,6 +197,18 @@ export function ContentProvider({ children }: { children: ReactNode }) {
     return () => cleanup?.();
   }, [editing]);
 
+  // Scroll sync with the admin (preview iframes only, lazy for the same reason).
+  useEffect(() => {
+    if (!preview) return;
+    let cleanup: (() => void) | undefined;
+    import("./previewSync")
+      .then((m) => {
+        cleanup = m.activate();
+      })
+      .catch(() => {});
+    return () => cleanup?.();
+  }, [preview]);
+
   const get = (key: string, fallback?: string) => overrides[key] ?? DEFAULTS[key] ?? fallback ?? "";
 
   return (

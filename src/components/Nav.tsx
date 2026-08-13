@@ -1,28 +1,54 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { Logo } from "./Logo";
 import { CtaButton } from "./ui";
 import { cn } from "@/lib/cn";
 import { SOLUTIONS, SIGN_UP_URL, SIGN_IN_URL } from "@/lib/site";
+import { hrefPageSlug, pageVisibleKey } from "@/lib/pages";
 import { scrollToTarget } from "@/hooks/useSmoothScroll";
-import { useC, editable, parseLink } from "@/content/ContentProvider";
+import { useC, editable, parseLink, isEdit } from "@/content/ContentProvider";
 
-// NOTE: these are keyed by index for content overrides (global.nav.route{i}),
-// so only ever APPEND — inserting in the middle re-labels existing entries.
+/* Every menu item is fully content-managed: label at its key, destination +
+ * visibility at `${key}_link` ({"href","visible"}). An item disappears from the
+ * live site when it's hidden, its label is emptied, or the page it points to is
+ * switched off (Global → Pages) — no ghost gaps. On the edit canvas hidden
+ * items stay as dashed ghosts so they can be clicked and brought back. */
+
+// NOTE: keys are indexed — only ever APPEND to these lists.
 const ROUTE_LINKS = [
-  { label: "How it works", to: "/how-it-works" },
-  { label: "FAQ", to: "/faq" },
-  { label: "Blog", to: "/blog" },
+  { key: "global.nav.route0", label: "How it works", href: "/how-it-works" },
+  { key: "global.nav.route1", label: "FAQ", href: "/faq" },
+  { key: "global.nav.route2", label: "Blog", href: "/blog" },
+];
+const HASH_LINKS = [
+  { key: "global.nav.hash0", label: "One photo", href: "/#campaign" },
+  { key: "global.nav.hash1", label: "The Wall", href: "/#wall" },
+];
+// Spare slots — empty by default; fill the label + URL in the admin to add a
+// brand-new menu item without code.
+const EXTRA_LINKS = [
+  { key: "global.nav.extra0", label: "", href: "/" },
+  { key: "global.nav.extra1", label: "", href: "/" },
 ];
 
-const HASH_LINKS = [
-  { label: "One photo", hash: "#campaign" },
-  { label: "The Wall", hash: "#wall" },
-];
+type NavItem = { key: string; label: string; href: string; visible: boolean };
+
+function useNavItems() {
+  const c = useC();
+  const resolve = (key: string, defaultLabel: string, defaultHref: string): NavItem => {
+    const label = c(key, defaultLabel).trim();
+    const link = parseLink(c(`${key}_link`), defaultHref);
+    const pageSlug = hrefPageSlug(link.href);
+    const pageOn = !pageSlug || c(pageVisibleKey(pageSlug)) !== "false";
+    return { key, label, href: link.href, visible: link.visible && !!label && pageOn };
+  };
+  return { c, resolve };
+}
 
 export function Nav() {
-  const c = useC();
+  const { c, resolve } = useNavItems();
+  const editing = isEdit();
   const [scrolled, setScrolled] = useState(false);
   const [progress, setProgress] = useState(0);
   const [open, setOpen] = useState(false);
@@ -51,8 +77,9 @@ export function Nav() {
 
   useEffect(() => setOpen(false), [location.pathname]);
 
-  const goHash = (hash: string) => {
+  const goHash = (href: string) => {
     setOpen(false);
+    const hash = href.slice(href.indexOf("#"));
     if (location.pathname === "/") {
       scrollToTarget(hash);
     } else {
@@ -60,6 +87,59 @@ export function Nav() {
       setTimeout(() => scrollToTarget(hash), 650);
     }
   };
+
+  // One item, rendered for desktop or mobile. Hidden → null on the live site,
+  // dashed ghost on the edit canvas.
+  const item = (it: NavItem, mobile = false): ReactNode => {
+    const cls = mobile
+      ? "border-b border-line py-4 text-left font-display text-3xl text-ink"
+      : "rounded-lg px-3 py-2 text-[13.5px] font-medium text-ink-2 transition-colors hover:bg-ink/5 hover:text-ink";
+    if (!it.visible) {
+      if (!editing) return null;
+      return (
+        <span
+          key={it.key}
+          {...editable(it.key, "cta")}
+          title="Hidden — click to edit & bring it back"
+          className={cn(
+            "rounded-lg px-3 py-2 text-[12px] font-medium text-ink-3 opacity-50 outline-dashed outline-1 outline-offset-2 outline-ink-3",
+            mobile && "py-4 text-xl"
+          )}
+        >
+          {it.label || "Hidden item"}
+        </span>
+      );
+    }
+    const isHash = it.href.includes("#");
+    const internal = it.href.startsWith("/") || it.href.startsWith("#");
+    if (isHash && internal) {
+      return (
+        <button key={it.key} onClick={() => goHash(it.href)} className={cls} {...editable(it.key, "cta")}>
+          {it.label}
+        </button>
+      );
+    }
+    if (internal) {
+      return (
+        <Link key={it.key} to={it.href} className={cls} {...editable(it.key, "cta")}>
+          {it.label}
+        </Link>
+      );
+    }
+    return (
+      <a key={it.key} href={it.href} target="_blank" rel="noreferrer" className={cls} {...editable(it.key, "cta")}>
+        {it.label}
+      </a>
+    );
+  };
+
+  const routeItems = ROUTE_LINKS.map((l) => resolve(l.key, l.label, l.href));
+  const hashItems = HASH_LINKS.map((l) => resolve(l.key, l.label, l.href));
+  const extraItems = EXTRA_LINKS.map((l) => resolve(l.key, l.label, l.href));
+  const pricingItem = resolve("global.nav.pricing_label", "Pricing", "/pricing");
+  const solutionItems = SOLUTIONS.map((s, i) => resolve(`global.nav.solution${i}.label`, s.label, s.to));
+  const solutionsLabel = c("global.nav.solutions_label", "Solutions").trim();
+  const solutionsVisible = !!solutionsLabel && solutionItems.some((s) => s.visible);
 
   return (
     <>
@@ -82,66 +162,54 @@ export function Nav() {
 
           {/* desktop nav */}
           <nav className="hidden items-center gap-1 lg:flex">
-            {ROUTE_LINKS.map((l, i) => (
-              <Link
-                key={l.to}
-                to={l.to}
-                className="rounded-lg px-3 py-2 text-[13.5px] font-medium text-ink-2 transition-colors hover:bg-ink/5 hover:text-ink"
-                {...editable(`global.nav.route${i}`)}
-              >
-                {c(`global.nav.route${i}`, l.label)}
-              </Link>
-            ))}
-            {HASH_LINKS.map((l, i) => (
-              <button
-                key={l.hash}
-                onClick={() => goHash(l.hash)}
-                className="rounded-lg px-3 py-2 text-[13.5px] font-medium text-ink-2 transition-colors hover:bg-ink/5 hover:text-ink"
-                {...editable(`global.nav.hash${i}`)}
-              >
-                {c(`global.nav.hash${i}`, l.label)}
-              </button>
-            ))}
+            {routeItems.map((it) => item(it))}
+            {hashItems.map((it) => item(it))}
+            {extraItems.map((it) => item(it))}
 
-            <div
-              className="relative"
-              onMouseEnter={() => setSolOpen(true)}
-              onMouseLeave={() => setSolOpen(false)}
-            >
-              <button className="flex items-center gap-1 rounded-lg px-3 py-2 text-[13.5px] font-medium text-ink-2 transition-colors hover:bg-ink/5 hover:text-ink">
-                <span {...editable("global.nav.solutions_label")}>{c("global.nav.solutions_label", "Solutions")}</span>
-                <ChevronDown className="h-3.5 w-3.5 opacity-60" />
-              </button>
+            {(solutionsVisible || editing) && (
               <div
-                className={cn(
-                  "absolute left-0 top-full w-64 pt-3 transition-all duration-200",
-                  solOpen
-                    ? "pointer-events-auto translate-y-0 opacity-100"
-                    : "pointer-events-none -translate-y-1 opacity-0"
-                )}
+                className="relative"
+                onMouseEnter={() => setSolOpen(true)}
+                onMouseLeave={() => setSolOpen(false)}
               >
-                <div className="card overflow-hidden p-2">
-                  {SOLUTIONS.map((s, i) => (
-                    <Link
-                      key={s.to}
-                      to={s.to}
-                      className="block rounded-xl px-3 py-2.5 transition-colors hover:bg-blue-mist"
-                    >
-                      <div className="text-[14px] font-semibold text-ink" {...editable(`global.nav.solution${i}.label`)}>{c(`global.nav.solution${i}.label`, s.label)}</div>
-                      <div className="text-[12.5px] text-ink-3" {...editable(`global.nav.solution${i}.desc`)}>{c(`global.nav.solution${i}.desc`, s.desc)}</div>
-                    </Link>
-                  ))}
+                <button
+                  className={cn(
+                    "flex items-center gap-1 rounded-lg px-3 py-2 text-[13.5px] font-medium transition-colors",
+                    solutionsVisible ? "text-ink-2 hover:bg-ink/5 hover:text-ink" : "text-ink-3 opacity-50 outline-dashed outline-1 outline-offset-2 outline-ink-3"
+                  )}
+                >
+                  <span {...editable("global.nav.solutions_label")}>{solutionsLabel || "Solutions (hidden)"}</span>
+                  <ChevronDown className="h-3.5 w-3.5 opacity-60" />
+                </button>
+                <div
+                  className={cn(
+                    "absolute left-0 top-full w-64 pt-3 transition-all duration-200",
+                    solOpen
+                      ? "pointer-events-auto translate-y-0 opacity-100"
+                      : "pointer-events-none -translate-y-1 opacity-0"
+                  )}
+                >
+                  <div className="card overflow-hidden p-2">
+                    {solutionItems.map((it, i) =>
+                      it.visible ? (
+                        <Link key={it.key} to={it.href} className="block rounded-xl px-3 py-2.5 transition-colors hover:bg-blue-mist">
+                          <div className="text-[14px] font-semibold text-ink" {...editable(it.key, "cta")}>{it.label}</div>
+                          <div className="text-[12.5px] text-ink-3" {...editable(`global.nav.solution${i}.desc`)}>
+                            {c(`global.nav.solution${i}.desc`, SOLUTIONS[i]?.desc ?? "")}
+                          </div>
+                        </Link>
+                      ) : editing ? (
+                        <span key={it.key} {...editable(it.key, "cta")} className="block rounded-xl px-3 py-2.5 text-[13px] text-ink-3 opacity-50 outline-dashed outline-1 -outline-offset-2 outline-ink-3">
+                          {it.label || "Hidden item"}
+                        </span>
+                      ) : null
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
-            <Link
-              to="/pricing"
-              className="rounded-lg px-3 py-2 text-[13.5px] font-medium text-ink-2 transition-colors hover:bg-ink/5 hover:text-ink"
-              {...editable("global.nav.pricing_label")}
-            >
-              {c("global.nav.pricing_label", "Pricing")}
-            </Link>
+            {item(pricingItem)}
           </nav>
 
           <div className="hidden items-center gap-2 lg:flex">
@@ -175,47 +243,15 @@ export function Nav() {
           open ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
         )}
       >
-        <div className="flex h-full flex-col px-6 pb-8 pt-24">
+        <div className="flex h-full flex-col overflow-y-auto px-6 pb-8 pt-24">
           <div className="flex flex-col gap-1">
-            {ROUTE_LINKS.map((l, i) => (
-              <Link
-                key={l.to}
-                to={l.to}
-                className="border-b border-line py-4 font-display text-3xl text-ink"
-                {...editable(`global.nav.route${i}`)}
-              >
-                {c(`global.nav.route${i}`, l.label)}
-              </Link>
-            ))}
-            {HASH_LINKS.map((l, i) => (
-              <button
-                key={l.hash}
-                onClick={() => goHash(l.hash)}
-                className="border-b border-line py-4 text-left font-display text-3xl text-ink"
-                {...editable(`global.nav.hash${i}`)}
-              >
-                {c(`global.nav.hash${i}`, l.label)}
-              </button>
-            ))}
-            {SOLUTIONS.map((s, i) => (
-              <Link
-                key={s.to}
-                to={s.to}
-                className="border-b border-line py-4 font-display text-3xl text-ink"
-                {...editable(`global.nav.solution${i}.label`)}
-              >
-                {c(`global.nav.solution${i}.label`, s.label)}
-              </Link>
-            ))}
-            <Link
-              to="/pricing"
-              className="border-b border-line py-4 font-display text-3xl text-ink"
-              {...editable("global.nav.pricing_label")}
-            >
-              {c("global.nav.pricing_label", "Pricing")}
-            </Link>
+            {routeItems.map((it) => item(it, true))}
+            {hashItems.map((it) => item(it, true))}
+            {extraItems.map((it) => item(it, true))}
+            {solutionItems.map((it) => item(it, true))}
+            {item(pricingItem, true)}
           </div>
-          <div className="mt-auto flex flex-col gap-3">
+          <div className="mt-auto flex flex-col gap-3 pt-8">
             <CtaButton k="global.nav.cta_mobile" defaultLabel="Start 14-day free trial" defaultHref={SIGN_UP_URL} variant="primary" size="lg" arrow />
             {parseLink(c("global.nav.login_link"), SIGN_IN_URL).visible && (
               <a
