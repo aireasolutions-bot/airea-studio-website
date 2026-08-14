@@ -158,6 +158,7 @@ function StepExplorer() {
                       <ProductScreenshot
                         src={resolveAsset(c(`howitworks.step${i}.image`, s.image))}
                         alt={c(`howitworks.step${i}.title`, s.title)}
+                        className="p-4"
                       />
                     </div>
                     {/* progress */}
@@ -200,6 +201,7 @@ function StepExplorer() {
               <ProductScreenshot
                 src={resolveAsset(c(`howitworks.step${active}.image`, STEPS[active].image))}
                 alt={`${c(`howitworks.step${active}.title`, STEPS[active].title)} product screenshot`}
+                className="p-4"
               />
             </motion.div>
           </AnimatePresence>
