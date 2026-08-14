@@ -67,18 +67,15 @@ type ProductScreenshotProps = {
   className?: string;
 };
 
-/* Uniform frame for product screenshots: fixed aspect, one border weight, one
- * radius, consistent inner padding — mixed captures with different intrinsic
- * margins all present identically (the borders/centering Campbell flagged). */
 function ProductScreenshot({ src, alt, className }: ProductScreenshotProps) {
   return (
-    <div className={cn("overflow-hidden rounded-3xl border border-line bg-white p-2 shadow-card", className)}>
+    <div className={cn("mx-auto w-fit max-w-full overflow-hidden rounded-3xl border border-line bg-white p-2 shadow-card", className)}>
       <img
         src={src}
         alt={alt}
         loading="lazy"
         draggable={false}
-        className="block aspect-[16/10] w-full object-contain object-top"
+        className="block h-auto max-w-full"
       />
     </div>
   );
@@ -158,7 +155,6 @@ function StepExplorer() {
                       <ProductScreenshot
                         src={resolveAsset(c(`howitworks.step${i}.image`, s.image))}
                         alt={c(`howitworks.step${i}.title`, s.title)}
-                        className="p-4"
                       />
                     </div>
                     {/* progress */}
@@ -201,7 +197,6 @@ function StepExplorer() {
               <ProductScreenshot
                 src={resolveAsset(c(`howitworks.step${active}.image`, STEPS[active].image))}
                 alt={`${c(`howitworks.step${active}.title`, STEPS[active].title)} product screenshot`}
-                className="p-4"
               />
             </motion.div>
           </AnimatePresence>
