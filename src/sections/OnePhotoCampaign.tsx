@@ -4,7 +4,7 @@ import { Sparkles } from "lucide-react";
 import { Button, Tag } from "@/components/ui";
 import { RobotHead } from "@/components/RobotHead";
 import { SIGN_UP_URL } from "@/lib/site";
-import { useC, resolveAsset, editable } from "@/content/ContentProvider";
+import { useC, resolveAsset, editable, isEdit, parseLink } from "@/content/ContentProvider";
 
 const WORLDS = [
   { src: "/assets/campaigns/worlds/w1.jpg", n: "01", label: "Track" },
@@ -34,6 +34,9 @@ function WorldCard({
   label: string;
 }) {
   const c = useC();
+  const editing = isEdit();
+  const visibilityKey = `home.onephoto.world${index}.visible`;
+  const visible = parseLink(c(`${visibilityKey}_link`, '{"href":"","visible":true}'), "").visible;
   const start = 0.12 + index * 0.062;
   const end = start + 0.2;
   const opacity = useTransform(progress, [start, end], [0, 1]);
@@ -41,9 +44,11 @@ function WorldCard({
   const scale = useTransform(progress, [start, end], [0.7, 1]);
   const rotate = useTransform(progress, [start, end], [ROT[index], 0]);
 
+  if (!visible && !editing) return null;
+
   return (
     <motion.div
-      style={{ opacity, y, scale, rotate }}
+      style={editing && !visible ? { opacity: 0.4, y, scale, rotate } : { opacity, y, scale, rotate }}
       className="group relative overflow-hidden rounded-xl border border-line bg-white shadow-card md:rounded-2xl"
     >
       <img
@@ -58,6 +63,15 @@ function WorldCard({
         <span className="font-mono text-[9px] font-semibold text-blue">{n}</span>
         <span className="text-[10px] font-semibold text-ink" {...editable(`home.onephoto.world${index}.label`)}>{c(`home.onephoto.world${index}.label`, label)}</span>
       </div>
+      {editing && (
+        <button
+          type="button"
+          className="absolute right-1.5 top-1.5 rounded-full bg-white/95 px-2 py-0.5 text-[10px] font-semibold text-ink shadow-soft backdrop-blur"
+          {...editable(visibilityKey, "cta")}
+        >
+          {visible ? "Shown" : "Hidden"}
+        </button>
+      )}
     </motion.div>
   );
 }
