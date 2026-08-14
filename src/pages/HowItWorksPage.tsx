@@ -69,13 +69,13 @@ type ProductScreenshotProps = {
 
 function ProductScreenshot({ src, alt, className }: ProductScreenshotProps) {
   return (
-    <div className={cn("mx-auto w-fit max-w-full overflow-hidden rounded-3xl border border-line bg-white p-2 shadow-card", className)}>
+    <div className={cn("mx-auto inline-flex box-border max-w-full items-start rounded-3xl border border-line bg-white p-[8px] shadow-card", className)}>
       <img
         src={src}
         alt={alt}
         loading="lazy"
         draggable={false}
-        className="block h-auto max-w-full"
+        className="block h-auto max-w-full rounded-[18px]"
       />
     </div>
   );
@@ -188,7 +188,7 @@ function StepExplorer() {
             <motion.div
               key={active}
               {...editable(`howitworks.step${active}.image`, "image")}
-              className="w-full max-w-[420px]"
+              className="w-full max-w-[420px] text-center"
               initial={{ opacity: 0, y: 18, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -14, scale: 0.97 }}
@@ -339,7 +339,7 @@ export function HowItWorksPage() {
               ))}
             </Reveal>
           </div>
-          <Reveal className="relative mx-auto w-full max-w-[460px]" delay={0.05}>
+          <Reveal className="relative mx-auto w-full max-w-[460px] text-center" delay={0.05}>
             <span
               className="absolute inset-0 -z-10 rounded-[3rem] blur-3xl"
               style={{ background: "radial-gradient(circle at 50% 40%, rgb(var(--c-blue)/0.18), transparent 65%)" }}
