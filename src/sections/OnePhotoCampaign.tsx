@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { motion, useScroll, useTransform, type MotionValue } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { Button, Tag } from "@/components/ui";
@@ -61,7 +61,9 @@ function WorldCard({
       />
       <div className="absolute bottom-1.5 left-1.5 flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 backdrop-blur">
         <span className="font-mono text-[9px] font-semibold text-blue">{n}</span>
-        <span className="text-[10px] font-semibold text-ink" {...editable(`home.onephoto.world${index}.label`)}>{c(`home.onephoto.world${index}.label`, label)}</span>
+        <span className="text-[10px] font-semibold text-ink" {...editable(`home.onephoto.world${index}.label`)}>
+          {c(`home.onephoto.world${index}.label`, label)}
+        </span>
       </div>
       {editing && (
         <button
@@ -84,6 +86,11 @@ export function OnePhotoCampaign() {
     offset: ["start start", "end end"],
   });
 
+  const [showAll, setShowAll] = useState(false);
+  // Preserve original indices for content editing keys
+  const worldsWithIndex = WORLDS.map((w, i) => ({ ...w, originalIndex: i }));
+  const displayedWorlds = showAll ? worldsWithIndex : worldsWithIndex.filter(w => w.originalIndex < 6);
+
   const titleY = useTransform(scrollYProgress, [0, 0.12], [30, 0]);
   const titleO = useTransform(scrollYProgress, [0, 0.12], [0, 1]);
   const sourceScale = useTransform(scrollYProgress, [0, 0.5], [1.04, 0.96]);
@@ -99,23 +106,20 @@ export function OnePhotoCampaign() {
           {/* left: source */}
           <div>
             <motion.div style={{ opacity: titleO, y: titleY }}>
-              <Tag className="mb-5 text-ink-3"><span {...editable("home.onephoto.tag")}>{c("home.onephoto.tag")}</span></Tag>
+              <Tag className="mb-5 text-ink-3">
+                <span {...editable("home.onephoto.tag")}>{c("home.onephoto.tag")}</span>
+              </Tag>
               <h2 className="font-display text-[clamp(34px,5vw,62px)] leading-[1.0] tracking-[-0.01em] text-ink">
                 <span {...editable("home.onephoto.title_lead")}>{c("home.onephoto.title_lead")}</span>
                 <br />
                 <span className="italic-blue" {...editable("home.onephoto.title_accent")}>{c("home.onephoto.title_accent")}</span>
               </h2>
-              <p className="mt-5 max-w-md text-[clamp(15px,1.5vw,18px)] text-ink-2" {...editable("home.onephoto.sub", "richtext")}>
-                {c("home.onephoto.sub")}
-              </p>
+              <p className="mt-5 max-w-md text-[clamp(15px,1.5vw,18px)] text-ink-2" {...editable("home.onephoto.sub", "richtext")}>{c("home.onephoto.sub")}</p>
             </motion.div>
 
             {/* source card */}
             <div className="relative mt-9 w-fit">
-              <motion.div
-                style={{ scale: sourceScale }}
-                className="overflow-hidden rounded-3xl border border-line bg-white p-2 shadow-card"
-              >
+              <motion.div style={{ scale: sourceScale }} className="overflow-hidden rounded-3xl border border-line bg-white p-2 shadow-card">
                 <img
                   src={resolveAsset(c("home.onephoto.source_image", "/assets/campaigns/shoe-source.jpg"))}
                   {...editable("home.onephoto.source_image", "image")}
@@ -143,24 +147,31 @@ export function OnePhotoCampaign() {
               </div>
             </div>
 
-            <motion.div
-              style={{ opacity: payoffO, y: payoffY }}
-              className="mt-8 flex flex-wrap items-center gap-4"
-            >
+            <motion.div style={{ opacity: payoffO, y: payoffY }} className="mt-8 flex flex-wrap items-center gap-4">
               <Button href={SIGN_UP_URL} variant="primary" magnetic arrow>
                 <span {...editable("home.onephoto.cta")}>{c("home.onephoto.cta", "Turn a photo into a campaign")}</span>
               </Button>
-              <span className="font-mono text-[12px] uppercase tracking-wider text-ink-3" {...editable("home.onephoto.timing")}>
-                {c("home.onephoto.timing", "~90 seconds")}
-              </span>
+              <span className="font-mono text-[12px] uppercase tracking-wider text-ink-3" {...editable("home.onephoto.timing")}>{c("home.onephoto.timing", "~90 seconds")}</span>
             </motion.div>
           </div>
 
-          {/* right: 9 worlds */}
-          <div className="grid grid-cols-3 gap-2.5 md:gap-3.5">
-            {WORLDS.map((w, i) => (
-              <WorldCard key={w.n} progress={scrollYProgress} index={i} {...w} />
-            ))}
+          {/* right: worlds grid */}
+          <div>
+            <div className="grid grid-cols-3 gap-2.5 md:gap-3.5">
+              {displayedWorlds.map((w) => (
+                <WorldCard key={w.n} progress={scrollYProgress} index={w.originalIndex} src={w.src} n={w.n} label={w.label} />
+              ))}
+            </div>
+            {WORLDS.length > 6 && (
+              <div className="mt-4 text-center">
+                <button
+                  onClick={() => setShowAll(!showAll)}
+                  className="text-blue-ink text-sm font-medium underline hover:text-blue-bright"
+                >
+                  {showAll ? "Show fewer" : "Show more"}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
