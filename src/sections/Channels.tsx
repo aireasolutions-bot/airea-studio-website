@@ -33,7 +33,7 @@ export function Channels() {
         />
 
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {CHANNELS.map((ch, i) => {
+          {CHANNELS.slice(0, 3).map((ch, i) => {
             const Icon = ICONS[i];
             return (
               <Reveal key={ch.title} delay={i * 0.06}>
