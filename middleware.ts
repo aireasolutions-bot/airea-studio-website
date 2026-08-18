@@ -81,7 +81,7 @@ async function resolveMeta(pathname: string): Promise<Meta> {
     description: base.description,
     url: canonical,
     image: OG_IMAGE,
-    type: pathname === "/" ? "website" : "article",
+    type: "website",
   };
   const [ov] = await sb<Record<string, string | boolean | null>>(
     `seo_meta?path=eq.${encodeURIComponent(pathname)}&select=title,description,og_image,canonical,noindex&limit=1`
@@ -93,7 +93,6 @@ async function resolveMeta(pathname: string): Promise<Meta> {
     if (ov.canonical) meta.url = String(ov.canonical);
     if (ov.noindex) meta.noindex = true;
   }
-  if (pathname === "/blog") meta.type = "website";
   return meta;
 }
 
