@@ -56,23 +56,26 @@ export const editable = (
  * A button's label lives at key `X` (type text) and its link at `X_link`
  * (type link), stored as JSON: {"href": "...", "visible": true}. `visible:false`
  * removes the button from the live site. */
-export type CtaLink = { href: string; visible: boolean };
+export type CtaLink = { href: string; visible: boolean; newTab: boolean };
 
 export function parseLink(raw: string | undefined | null, defaultHref: string): CtaLink {
-  if (!raw) return { href: defaultHref, visible: true };
+  if (!raw) return { href: defaultHref, visible: true, newTab: false };
   try {
     const v = JSON.parse(raw);
     if (v && typeof v === "object") {
       return {
         href: typeof v.href === "string" && v.href.trim() ? v.href.trim() : defaultHref,
         visible: v.visible !== false,
+        // Same tab unless the team explicitly opts in — links inside our own
+        // product should feel like one continuous site.
+        newTab: v.newTab === true,
       };
     }
   } catch {
     // A plain URL string (hand-typed) is also accepted.
-    if (raw.trim()) return { href: raw.trim(), visible: true };
+    if (raw.trim()) return { href: raw.trim(), visible: true, newTab: false };
   }
-  return { href: defaultHref, visible: true };
+  return { href: defaultHref, visible: true, newTab: false };
 }
 
 export function isEdit() {

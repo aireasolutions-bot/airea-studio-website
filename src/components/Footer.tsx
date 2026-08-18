@@ -65,7 +65,7 @@ export function Footer() {
     const link = parseLink(c(`${key}_link`), def.to);
     const pageSlug = hrefPageSlug(link.href);
     const pageOn = !pageSlug || c(pageVisibleKey(pageSlug)) !== "false";
-    return { key, label, href: link.href, visible: link.visible && !!label && pageOn };
+    return { key, label, href: link.href, visible: link.visible && !!label && pageOn, newTab: link.newTab };
   };
 
   return (
@@ -113,7 +113,7 @@ export function Footer() {
                           {l.label}
                         </Link>
                       ) : (
-                        <a href={l.href} target="_blank" rel="noreferrer" className="text-[14px] text-ink-2 transition-colors hover:text-blue" {...editable(l.key, "cta")}>
+                        <a href={l.href} {...(l.newTab ? { target: "_blank", rel: "noopener" } : {})} className="text-[14px] text-ink-2 transition-colors hover:text-blue" {...editable(l.key, "cta")}>
                           {l.label}
                         </a>
                       )}

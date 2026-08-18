@@ -32,7 +32,7 @@ const EXTRA_LINKS = [
   { key: "global.nav.extra1", label: "", href: "/" },
 ];
 
-type NavItem = { key: string; label: string; href: string; visible: boolean };
+type NavItem = { key: string; label: string; href: string; visible: boolean; newTab: boolean };
 
 function useNavItems() {
   const c = useC();
@@ -41,7 +41,7 @@ function useNavItems() {
     const link = parseLink(c(`${key}_link`), defaultHref);
     const pageSlug = hrefPageSlug(link.href);
     const pageOn = !pageSlug || c(pageVisibleKey(pageSlug)) !== "false";
-    return { key, label, href: link.href, visible: link.visible && !!label && pageOn };
+    return { key, label, href: link.href, visible: link.visible && !!label && pageOn, newTab: link.newTab };
   };
   return { c, resolve };
 }
@@ -127,7 +127,7 @@ export function Nav() {
       );
     }
     return (
-      <a key={it.key} href={it.href} target="_blank" rel="noreferrer" className={cls} {...editable(it.key, "cta")}>
+      <a key={it.key} href={it.href} {...(it.newTab ? { target: "_blank", rel: "noopener" } : {})} className={cls} {...editable(it.key, "cta")}>
         {it.label}
       </a>
     );
@@ -216,6 +216,7 @@ export function Nav() {
             {parseLink(c("global.nav.login_link"), SIGN_IN_URL).visible && (
               <a
                 href={parseLink(c("global.nav.login_link"), SIGN_IN_URL).href}
+                {...(parseLink(c("global.nav.login_link"), SIGN_IN_URL).newTab ? { target: "_blank", rel: "noopener" } : {})}
                 className="px-3 py-2 text-[13.5px] font-medium text-ink-2 transition-colors hover:text-ink"
                 {...editable("global.nav.login", "cta")}
               >
@@ -256,6 +257,7 @@ export function Nav() {
             {parseLink(c("global.nav.login_link"), SIGN_IN_URL).visible && (
               <a
                 href={parseLink(c("global.nav.login_link"), SIGN_IN_URL).href}
+                {...(parseLink(c("global.nav.login_link"), SIGN_IN_URL).newTab ? { target: "_blank", rel: "noopener" } : {})}
                 className="text-center text-sm font-medium text-ink-2"
                 {...editable("global.nav.login", "cta")}
               >

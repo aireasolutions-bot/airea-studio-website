@@ -20,6 +20,8 @@ type ButtonProps = {
   arrow?: boolean;
   magnetic?: boolean;
   iconLeft?: ReactNode;
+  /** Open in a new tab. Off by default — see CtaButton. */
+  newTab?: boolean;
 };
 
 const VARIANTS: Record<NonNullable<ButtonProps["variant"]>, string> = {
@@ -42,6 +44,7 @@ export function Button({
   arrow,
   magnetic,
   iconLeft,
+  newTab,
 }: ButtonProps) {
   const magRef = useMagnetic<HTMLSpanElement>(0.3);
   const classes = cn(
@@ -87,7 +90,9 @@ export function Button({
     );
   } else if (href) {
     el = (
-      <a href={href} target="_blank" rel="noreferrer" className={classes} onClick={onClick}>
+      // rel keeps noopener (security) but NOT noreferrer — we want the
+      // referrer to reach app.aireastudio.ai so signups attribute correctly.
+      <a href={href} {...(newTab ? { target: "_blank", rel: "noopener" } : {})} className={classes} onClick={onClick}>
         {content}
       </a>
     );
@@ -133,7 +138,7 @@ export function CtaButton({ k, defaultLabel, defaultHref, ...rest }: CtaButtonPr
   const btn = internal ? (
     <Button to={link.href} onClick={onClick} {...rest}>{label}</Button>
   ) : (
-    <Button href={link.href} onClick={onClick} {...rest}>{label}</Button>
+    <Button href={link.href} newTab={link.newTab} onClick={onClick} {...rest}>{label}</Button>
   );
 
   if (!link.visible) {

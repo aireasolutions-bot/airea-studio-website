@@ -806,7 +806,7 @@ Locate this exact element in the source (search_code with its distinctive classe
           <div className="fixed inset-0 z-[59]" onClick={() => setEditing(null)} />
           <div
             className="fixed z-[60] w-[min(400px,92vw)] rounded-2xl border border-line bg-white p-3 shadow-card"
-            style={{ left: Math.max(8, Math.min(editing.x, window.innerWidth - 412)), top: Math.max(8, Math.min(editing.y + 8, window.innerHeight - (editing.type === "cta" ? 330 : 210))) }}
+            style={{ left: Math.max(8, Math.min(editing.x, window.innerWidth - 412)), top: Math.max(8, Math.min(editing.y + 8, window.innerHeight - (editing.type === "cta" ? 400 : 210))) }}
           >
             <div className="mb-1.5 flex items-center justify-between gap-2">
               <span className="truncate font-mono text-[10.5px] uppercase tracking-wider text-ink-3">
@@ -1140,6 +1140,24 @@ function LinkField({ value, onChange }: { value: CtaLink; onChange: (l: CtaLink)
         <span className="text-[13px] font-medium text-ink">{value.visible ? "Button is shown" : "Button is hidden"}</span>
         <span className={cn("relative h-5 w-9 shrink-0 rounded-full transition-colors", value.visible ? "bg-blue" : "bg-line-2")}>
           <span className={cn("absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-all", value.visible ? "left-[1.1rem]" : "left-0.5")} />
+        </span>
+      </button>
+      {/* Same tab by default — our own pages and app should feel continuous.
+          Opt in per link for anything genuinely off-site. */}
+      <button
+        onClick={() => onChange({ ...value, newTab: !value.newTab })}
+        className="flex w-full items-center justify-between gap-3 rounded-xl border border-line-2 bg-canvas px-3.5 py-2 text-left"
+      >
+        <span>
+          <span className="block text-[13px] font-medium text-ink">
+            {value.newTab ? "Opens in a new tab" : "Opens in the same tab"}
+          </span>
+          <span className="block text-[11.5px] text-ink-3">
+            {value.newTab ? "For links away from our site" : "Recommended for our own pages & app"}
+          </span>
+        </span>
+        <span className={cn("relative h-5 w-9 shrink-0 rounded-full transition-colors", value.newTab ? "bg-blue" : "bg-line-2")}>
+          <span className={cn("absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-all", value.newTab ? "left-[1.1rem]" : "left-0.5")} />
         </span>
       </button>
     </div>
