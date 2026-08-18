@@ -1,4 +1,12 @@
 {
+  "redirects": [
+    {
+      "source": "/((?!api/).*)",
+      "has": [{ "type": "host", "value": "airea-studio-website.vercel.app" }],
+      "destination": "https://aireastudio.ai/$1",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/brandfonts/:path*",

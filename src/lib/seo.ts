@@ -1,8 +1,8 @@
 // Central SEO config + JSON-LD (schema.org) builders. SITE_URL is the CANONICAL
 // domain (aireastudio.ai) — used for canonicals, Open Graph, the sitemap, and all
-// structured data, even while the app is also reachable on its Vercel URL. When
-// the domain is connected in Vercel, add a 301 from the *.vercel.app host so link
-// equity consolidates here.
+// structured data. The domain is live, and vercel.json 301s the project's
+// airea-studio-website.vercel.app host here so link equity consolidates on one
+// hostname (preview deployments and /api are excluded from that redirect).
 import { PLANS, SITE } from "./site";
 
 export const SITE_URL = "https://aireastudio.ai";

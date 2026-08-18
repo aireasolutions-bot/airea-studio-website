@@ -16,7 +16,7 @@ async function asJson(res: Response): Promise<any> {
 function friendly(e: unknown): string {
   const msg = (e as Error)?.message || String(e);
   if (msg === "__not_deployed__" || msg.includes("Failed to fetch") || msg.includes("Unexpected token")) {
-    return "Version history runs on the deployed site (Vercel), where the GitHub key lives. Open the admin on your Vercel URL to use it.";
+    return "Version history runs on the deployed site (Vercel), where the GitHub key lives. Open the live admin at https://aireastudio.ai/admin to use it.";
   }
   return msg;
 }

@@ -114,7 +114,7 @@ async function authHeaders() {
 }
 
 const NOT_DEPLOYED =
-  "The blog agent runs on the deployed site (Vercel), where its serverless functions + OpenAI key live. Open the admin on your Vercel URL to generate posts.";
+  "The blog agent runs on the deployed site (Vercel), where its serverless functions + OpenAI key live. Open the live admin at https://aireastudio.ai/admin to generate posts.";
 
 async function asJson(res: Response): Promise<any> {
   const ct = res.headers.get("content-type") || "";

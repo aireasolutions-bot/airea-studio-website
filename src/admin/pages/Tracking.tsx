@@ -199,7 +199,7 @@ export function Tracking() {
       });
       const ct = res.headers.get("content-type") || "";
       if (!ct.includes("application/json")) {
-        throw new Error("The Tracking Wizard runs on the deployed site (Vercel), where its serverless functions and keys live. Open the admin on your Vercel URL to use it.");
+        throw new Error("The Tracking Wizard runs on the deployed site (Vercel), where its serverless functions and keys live. Open the live admin at https://aireastudio.ai/admin to use it.");
       }
       const body = await res.json();
       if (!res.ok) throw new Error(body?.error || `Wizard error (${res.status})`);

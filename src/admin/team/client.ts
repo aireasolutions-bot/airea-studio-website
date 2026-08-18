@@ -25,7 +25,7 @@ async function authHeaders() {
 }
 
 const NOT_DEPLOYED =
-  "Team management runs on the deployed site (Vercel), where the serverless functions and service-role key live. Open the admin on your Vercel URL.";
+  "Team management runs on the deployed site (Vercel), where the serverless functions and service-role key live. Open the live admin at https://aireastudio.ai/admin.";
 
 // Vite's dev server returns index.html for /api/* — detect that and show a
 // helpful message instead of a JSON parse error.

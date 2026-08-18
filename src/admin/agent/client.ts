@@ -36,7 +36,7 @@ const NOT_DEPLOYED = "__airea_not_deployed__";
 function friendly(e: unknown): string {
   const msg = (e as Error)?.message || String(e);
   if (msg === NOT_DEPLOYED || msg.includes("Failed to fetch") || msg.includes("Unexpected token")) {
-    return "The agent runs on the deployed site (Vercel), where its serverless functions and keys live. Open the admin on your Vercel URL to use it.";
+    return "The agent runs on the deployed site (Vercel), where its serverless functions and keys live. Open the live admin at https://aireastudio.ai/admin to use it.";
   }
   return msg;
 }

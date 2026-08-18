@@ -51,7 +51,7 @@ async function authHeaders() {
 }
 
 const NOT_DEPLOYED =
-  "The SEO agent runs on the deployed site (Vercel), where its serverless functions + keys live. Open the admin on your Vercel URL to use it.";
+  "The SEO agent runs on the deployed site (Vercel), where its serverless functions + keys live. Open the live admin at https://aireastudio.ai/admin to use it.";
 
 async function asJson(res: Response): Promise<any> {
   const ct = res.headers.get("content-type") || "";
