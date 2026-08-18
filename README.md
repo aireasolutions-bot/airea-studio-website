@@ -73,3 +73,9 @@ build.
 - `scripts-import-assets.sh` documents how source assets were curated/optimised
   from the parent project folders.
 ```
+
+## Docs
+
+- [Meta Pixel — app.aireastudio.ai integration](docs/meta-pixel-app-integration.md)
+  — hand-off spec for the app team: closes the attribution loop between the
+  marketing site (`Lead`) and the app (`CompleteRegistration`, `Purchase`).
