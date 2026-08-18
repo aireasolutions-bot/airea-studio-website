@@ -5,6 +5,7 @@ import { cn } from "@/lib/cn";
 import { useMagnetic } from "@/hooks/useMagnetic";
 import { scrollToTarget } from "@/hooks/useSmoothScroll";
 import { useC, editable, parseLink, isEdit } from "@/content/ContentProvider";
+import { trackSignupIntent } from "@/lib/analytics";
 
 /* ---------------- Button ---------------- */
 
@@ -123,10 +124,16 @@ export function CtaButton({ k, defaultLabel, defaultHref, ...rest }: CtaButtonPr
 
   if (!link.visible && !isEdit()) return null;
 
+  // Clicks that hand off to the app are the conversion we can measure here.
+  const isSignup = /\/sign-up|\/sign-in|\/signup/i.test(link.href);
+  const onClick = isSignup && !isEdit()
+    ? () => trackSignupIntent(c(k, defaultLabel), link.href)
+    : undefined;
+
   const btn = internal ? (
-    <Button to={link.href} {...rest}>{label}</Button>
+    <Button to={link.href} onClick={onClick} {...rest}>{label}</Button>
   ) : (
-    <Button href={link.href} {...rest}>{label}</Button>
+    <Button href={link.href} onClick={onClick} {...rest}>{label}</Button>
   );
 
   if (!link.visible) {

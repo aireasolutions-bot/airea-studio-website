@@ -7,6 +7,7 @@ import { Markdown } from "@/components/Markdown";
 import { breadcrumbSchema } from "@/lib/seo";
 import { SIGN_UP_URL } from "@/lib/site";
 import { fetchPostBySlug, fetchPostForPreview, articleSchema, formatDate, type BlogPost as Post } from "@/lib/blog";
+import { trackContentView } from "@/lib/analytics";
 
 export function BlogPost() {
   const { slug = "" } = useParams();
@@ -20,7 +21,11 @@ export function BlogPost() {
     setPost(undefined);
     setError(null);
     (preview ? fetchPostForPreview(slug) : fetchPostBySlug(slug))
-      .then((p) => live && setPost(p))
+      .then((p) => {
+        if (!live) return;
+        setPost(p);
+        if (p) trackContentView(p.title, "blog");
+      })
       .catch((e) => live && setError(e?.message || "Couldn't load this article."));
     return () => {
       live = false;

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Check, Minus } from "lucide-react";
 import { EditableEyebrow, SectionHeading } from "@/components/ui";
 import { PricingCards } from "@/components/PricingCards";
@@ -9,6 +10,7 @@ import { useC, editable } from "@/content/ContentProvider";
 import { resolvePricing, type CompareCell } from "@/lib/pricing";
 import { Seo } from "@/components/Seo";
 import { productSchema, breadcrumbSchema } from "@/lib/seo";
+import { trackContentView } from "@/lib/analytics";
 
 function Cell({ cell }: { cell: CompareCell }) {
   if (cell.t === "check") return <Check className="mx-auto h-4.5 w-4.5 text-blue" />;
@@ -17,6 +19,8 @@ function Cell({ cell }: { cell: CompareCell }) {
 }
 
 export function Pricing() {
+  // High-intent view — feeds Meta/GA retargeting audiences.
+  useEffect(() => trackContentView("Pricing", "pricing"), []);
   const c = useC();
   // Plans + comparison come from the Pricing Studio data (legacy keys until
   // the team first publishes from the Studio).

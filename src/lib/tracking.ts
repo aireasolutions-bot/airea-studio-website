@@ -20,10 +20,11 @@ declare global {
     dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
     fbq?: (...args: unknown[]) => void;
-    ttq?: { page: () => void; [k: string]: unknown };
+    ttq?: { page: () => void; track?: (...args: unknown[]) => void; [k: string]: unknown };
     pintrk?: (...args: unknown[]) => void;
     snaptr?: (...args: unknown[]) => void;
     twq?: (...args: unknown[]) => void;
+    lintrk?: (...args: unknown[]) => void;
     _linkedin_partner_id?: string;
     _linkedin_data_partner_ids?: string[];
   }
