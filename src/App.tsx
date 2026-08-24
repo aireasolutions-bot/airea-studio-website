@@ -7,6 +7,7 @@ import { SmallBusiness } from "@/pages/SmallBusiness";
 import { Ecommerce } from "@/pages/Ecommerce";
 import { HowItWorksPage } from "@/pages/HowItWorksPage";
 import { FaqPage } from "@/pages/FaqPage";
+import { FaqChildPage } from "@/pages/FaqChildPage";
 import { Blog } from "@/pages/Blog";
 import { BlogPost } from "@/pages/BlogPost";
 import { PrivacyPolicy } from "@/pages/PrivacyPolicy";
@@ -57,6 +58,7 @@ function PublicApp() {
               <Route key={p.slug} path={p.path} element={<PageGate slug={p.slug}><C /></PageGate>} />
             ) : null;
           })}
+          <Route path="/faq/:slug" element={<PageGate slug="faq"><FaqChildPage /></PageGate>} />
           <Route path="/blog" element={<PageGate slug="blog"><Blog /></PageGate>} />
           <Route path="/blog/:slug" element={<PageGate slug="blog"><BlogPost /></PageGate>} />
           <Route path="/test" element={<Test />} />

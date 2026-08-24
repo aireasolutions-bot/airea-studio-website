@@ -2,7 +2,12 @@
   "redirects": [
     {
       "source": "/((?!api/).*)",
-      "has": [{ "type": "host", "value": "airea-studio-website.vercel.app" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "airea-studio-website.vercel.app"
+        }
+      ],
       "destination": "https://aireastudio.ai/$1",
       "permanent": true
     }
@@ -12,13 +17,30 @@
       "source": "/brandfonts/:path*",
       "destination": "https://pub-5cdbd1e945544b179386519484eb7db1.r2.dev/assets/fonts/:path*"
     },
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/seo/sitemap"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ],
   "headers": [
     {
       "source": "/pricing.md",
-      "headers": [{ "key": "Content-Type", "value": "text/plain; charset=utf-8" }]
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
+        }
+      ]
     }
   ],
-  "crons": [{ "path": "/api/blog/generate", "schedule": "0 14 * * *" }]
+  "crons": [
+    {
+      "path": "/api/blog/generate",
+      "schedule": "0 14 * * *"
+    }
+  ]
 }

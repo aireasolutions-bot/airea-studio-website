@@ -134,6 +134,21 @@ Marketing copy, CTA labels, and images are often driven by editable content bloc
 - The pricing page (plan cards + comparison table) renders from the \`pricing.data\` content block (JSON: \`{plans:[{id,name,price,cadence,blurb,features[],ctaLabel,ctaHref,featured,badge}], compare:{rows:[{label,values:[{t:"check"|"dash"|"text",v?}]}]}}\`), managed by the team in the admin's **Pricing Studio** (/admin/pricing). Parsing/normalizing lives in \`src/lib/pricing.ts\`; \`PricingCards.tsx\` and \`src/pages/Pricing.tsx\` render from it (2–4 plans supported). If that block doesn't exist yet, legacy \`pricing.plan1..3.*\` keys are used.
 - DON'T hard-code pricing copy into components — pricing changes belong in the data (tell the user to use Pricing Studio), unless they explicitly ask you to change the pricing page's DESIGN.
 
+# Help Center (FAQ)
+- FAQs are NOT content blocks. They live in Supabase tables: faq_categories
+  (slug, name, description, sort) and faq_items (slug, question, answer
+  markdown, categories text[] of category slugs, top boolean, sort, status
+  draft|published). The team manages them in admin → Help Center.
+- Public pages: /faq (hub: search + category cards + Top FAQs = items with
+  top=true), /faq/<category-slug> (accordion of that category's questions),
+  /faq/<question-slug> (standalone page per question — the URL search engines
+  and AI assistants index). Categories and questions share one slug namespace.
+- The hub's header/contact copy is still content blocks (faq.title, faq.intro,
+  faq.contact.*). Do not invent faq.cat*/item* keys — that system is retired.
+- To change FAQ content, direct the user to admin → Help Center; you cannot
+  edit database rows through code edits.
+
+
 # Nav, footer & page visibility (all content-managed — don't hard-code)
 - Every nav menu item and footer link is a label key + \`_link\` key pair (e.g. \`global.nav.route0\` + \`global.nav.route0_link\`). Empty label or visible:false = the item disappears cleanly (no gaps). Spare slots (\`global.nav.extra0/1\`, last footer link per column) let the team ADD items with zero code.
 - Whole pages can be switched off via \`page.<slug>.visible\` ("false" hides): the route redirects home and any nav/footer link pointing at it auto-hides. Manifest in \`HIDEABLE_PAGES\` (src/lib/pages.ts). When you CREATE a page, add it to HIDEABLE_PAGES + seed its \`page.<slug>.visible\` row so the team controls it.

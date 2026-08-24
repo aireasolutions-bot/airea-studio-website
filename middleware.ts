@@ -35,7 +35,7 @@ const trim = (s: string, n: number) => {
   return v.length <= n ? v : `${v.slice(0, n - 1).trimEnd()}…`;
 };
 
-type Meta = { title: string; description: string; url: string; image: string; type: string; noindex?: boolean };
+type Meta = { title: string; description: string; url: string; image: string; type: string; noindex?: boolean; jsonLd?: unknown[]; bodyHtml?: string };
 
 /** Small, dependency-free Supabase REST read. Never throws. */
 async function sb<T>(path: string): Promise<T[]> {
@@ -52,6 +52,49 @@ async function sb<T>(path: string): Promise<T[]> {
     return [];
   }
 }
+
+
+/* Minimal markdown → HTML for crawler bodies. Escapes everything first, then
+ * applies just the transforms help answers use (paragraphs, headings, lists,
+ * bold, links). Non-JS crawlers — most AI bots — read THIS, so FAQ answers
+ * are genuinely indexable instead of an empty SPA shell. */
+function mdHtml(md: string): string {
+  const inlined = (t: string) =>
+    esc(t)
+      .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
+      .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2">$1</a>')
+      .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  return md
+    .split(/\n{2,}/)
+    .map((b) => {
+      const t = b.trim();
+      if (!t) return "";
+      if (/^###\s/.test(t)) return `<h3>${inlined(t.replace(/^###\s+/, ""))}</h3>`;
+      if (/^##\s/.test(t)) return `<h2>${inlined(t.replace(/^##\s+/, ""))}</h2>`;
+      if (/^#\s/.test(t)) return `<h2>${inlined(t.replace(/^#\s+/, ""))}</h2>`;
+      if (/^[-*]\s/m.test(t))
+        return `<ul>${t.split(/\n/).filter((l) => /^[-*]\s/.test(l.trim())).map((l) => `<li>${inlined(l.trim().replace(/^[-*]\s+/, ""))}</li>`).join("")}</ul>`;
+      return `<p>${inlined(t.replace(/\n/g, " "))}</p>`;
+    })
+    .filter(Boolean)
+    .join("\n");
+}
+
+const answerPlain = (md: string, max: number) =>
+  trim(md.replace(/!\[[^\]]*\]\([^)]*\)/g, "").replace(/\[([^\]]+)\]\([^)]*\)/g, "$1").replace(/[#>*`_-]+/g, " "), max);
+
+const faqLd = (items: { question: string; answer: string }[]) => ({
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: items.map((it) => ({
+    "@type": "Question",
+    name: it.question,
+    acceptedAnswer: { "@type": "Answer", text: answerPlain(it.answer, 1200) },
+  })),
+});
+
+type FaqRow = { slug: string; question: string; answer: string; categories: string[] };
+type FaqCatRow = { slug: string; name: string; description: string | null };
 
 async function resolveMeta(pathname: string): Promise<Meta> {
   const canonical = pathname === "/" ? `${SITE_URL}/` : `${SITE_URL}${pathname.replace(/\/+$/, "")}`;
@@ -70,6 +113,67 @@ async function resolveMeta(pathname: string): Promise<Meta> {
         url: canonical,
         image: post.cover_image || OG_IMAGE,
         type: "article",
+      };
+    }
+  }
+
+
+  // ── help center: hub, category pages, and standalone question pages all
+  // carry FAQPage JSON-LD plus a real HTML body — the "help pages for LLMs"
+  // requirement. Content comes from the same tables the site renders.
+  if (pathname === "/faq") {
+    const tops = await sb<FaqRow>(`faq_items?top=eq.true&status=eq.published&select=slug,question,answer,categories&order=sort`);
+    if (tops.length) {
+      const base = PAGE_SEO[pathname] ?? { title: DEFAULT_TITLE, description: DEFAULT_DESCRIPTION };
+      return {
+        title: base.title,
+        description: base.description,
+        url: canonical,
+        image: OG_IMAGE,
+        type: "website",
+        jsonLd: [faqLd(tops)],
+        bodyHtml:
+          `<main><h1>AIREA Studio Help Center</h1>` +
+          tops.map((t) => `<h2><a href="${esc(`${SITE_URL}/faq/${t.slug}`)}">${esc(t.question)}</a></h2>${mdHtml(t.answer)}`).join("") +
+          `</main>`,
+      };
+    }
+  }
+  const faq = pathname.match(/^\/faq\/([^/]+)\/?$/);
+  if (faq) {
+    const slug = decodeURIComponent(faq[1]);
+    const [cat] = await sb<FaqCatRow>(`faq_categories?slug=eq.${encodeURIComponent(slug)}&select=slug,name,description&limit=1`);
+    if (cat) {
+      const items = await sb<FaqRow>(
+        `faq_items?categories=cs.%7B${encodeURIComponent(cat.slug)}%7D&status=eq.published&select=slug,question,answer,categories&order=sort`
+      );
+      return {
+        title: `${cat.name} — ${SITE_NAME} Help Center`,
+        description: trim(cat.description || `Answers about ${cat.name.toLowerCase()} from the ${SITE_NAME} help center.`, 200),
+        url: canonical,
+        image: OG_IMAGE,
+        type: "website",
+        jsonLd: [faqLd(items)],
+        bodyHtml:
+          `<main><h1>${esc(cat.name)}</h1>` +
+          (cat.description ? `<p>${esc(cat.description)}</p>` : "") +
+          `<ul>` + items.map((it) => `<li><a href="${esc(`${SITE_URL}/faq/${it.slug}`)}">${esc(it.question)}</a></li>`).join("") + `</ul></main>`,
+      };
+    }
+    const [item] = await sb<FaqRow>(
+      `faq_items?slug=eq.${encodeURIComponent(slug)}&status=eq.published&select=slug,question,answer,categories&limit=1`
+    );
+    if (item) {
+      return {
+        title: `${item.question} — ${SITE_NAME}`,
+        description: answerPlain(item.answer, 200),
+        url: canonical,
+        image: OG_IMAGE,
+        type: "website",
+        jsonLd: [faqLd([item])],
+        bodyHtml:
+          `<main><p><a href="${esc(`${SITE_URL}/faq`)}">Help center</a></p>` +
+          `<h1>${esc(item.question)}</h1>${mdHtml(item.answer)}</main>`,
       };
     }
   }
@@ -114,14 +218,20 @@ function inject(html: string, m: Meta): string {
     `<meta name="twitter:description" content="${esc(m.description)}" />`,
     `<meta name="twitter:image" content="${esc(m.image)}" />`,
     m.noindex ? `<meta name="robots" content="noindex, nofollow" />` : "",
+    ...(m.jsonLd ?? []).map((ld) => `<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, "\\u003c")}</script>`),
   ]
     .filter(Boolean)
     .join("\n    ");
 
-  const stripped = html.replace(managed, "");
-  return stripped.includes("</head>")
-    ? stripped.replace("</head>", `    ${block}\n  </head>`)
-    : stripped;
+  let out = html.replace(managed, "");
+  out = out.includes("</head>") ? out.replace("</head>", `    ${block}\n  </head>`) : out;
+  // Real page content for crawlers that don't run JS. It goes INSIDE #root:
+  // rendering bots (Googlebot) replace it with the live app; non-JS bots read
+  // it as the page body. Never shown to humans — they skip this middleware.
+  if (m.bodyHtml) {
+    out = out.replace(/<div id="root">\s*<\/div>/, `<div id="root">${m.bodyHtml}</div>`);
+  }
+  return out;
 }
 
 export default async function middleware(request: Request) {

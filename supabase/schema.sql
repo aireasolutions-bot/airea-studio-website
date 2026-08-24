@@ -209,3 +209,41 @@ grant select on public.active_tracking_tags to anon, authenticated;
 drop policy if exists p_publish_insert on public.publish_log;
 create policy p_publish_insert on public.publish_log
   for insert with check (public.is_admin());
+-- Help Center: categories + question/answer items.
+-- Questions are tagged with category slugs (text[]) so one question can live
+-- in several categories; `top` flags it for the hub's "Top FAQs" section.
+create table if not exists public.faq_categories (
+  id uuid primary key default gen_random_uuid(),
+  slug text unique not null,
+  name text not null,
+  description text,
+  sort int not null default 0,
+  created_at timestamptz not null default now()
+);
+alter table public.faq_categories enable row level security;
+drop policy if exists p_faq_cat_read on public.faq_categories;
+create policy p_faq_cat_read on public.faq_categories for select using (true);
+drop policy if exists p_faq_cat_write on public.faq_categories;
+create policy p_faq_cat_write on public.faq_categories for all
+  using (public.is_admin()) with check (public.is_admin());
+
+create table if not exists public.faq_items (
+  id uuid primary key default gen_random_uuid(),
+  slug text unique not null,
+  question text not null,
+  answer text not null default '',
+  categories text[] not null default '{}',
+  top boolean not null default false,
+  sort int not null default 0,
+  status text not null default 'draft' check (status in ('draft','published')),
+  created_by text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.faq_items enable row level security;
+drop policy if exists p_faq_items_public on public.faq_items;
+create policy p_faq_items_public on public.faq_items for select using (status = 'published');
+drop policy if exists p_faq_items_admin on public.faq_items;
+create policy p_faq_items_admin on public.faq_items for all
+  using (public.is_admin()) with check (public.is_admin());
+create index if not exists faq_items_status_idx on public.faq_items (status);

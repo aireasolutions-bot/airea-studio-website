@@ -14,6 +14,7 @@ import { Publish } from "./pages/Publish";
 import { Settings } from "./pages/Settings";
 import { SeoConsole } from "./pages/SeoConsole";
 import { Blog } from "./pages/Blog";
+import { HelpCenter } from "./pages/HelpCenter";
 import { Activity } from "./pages/Activity";
 
 export function AdminApp() {
@@ -38,6 +39,7 @@ export function AdminApp() {
           <Route path="comments" element={<Comments />} />
           <Route path="seo" element={<SeoConsole />} />
           <Route path="blog" element={<Blog />} />
+          <Route path="help" element={<HelpCenter />} />
           <Route path="publish" element={<Publish />} />
           <Route path="settings" element={<Settings />} />
           <Route path="activity" element={<Activity />} />

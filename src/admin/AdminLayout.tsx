@@ -17,6 +17,7 @@ import {
   Sparkles,
   Users,
   X,
+  LifeBuoy,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/cn";
@@ -33,6 +34,7 @@ const NAV = [
   { to: "/admin/comments", label: "Review", icon: MessagesSquare },
   { to: "/admin/seo", label: "SEO", icon: Search },
   { to: "/admin/blog", label: "Blog", icon: Newspaper },
+  { to: "/admin/help", label: "Help Center", icon: LifeBuoy },
   { to: "/admin/publish", label: "Publish", icon: Rocket },
   { to: "/admin/settings", label: "Team", icon: Users },
   { to: "/admin/activity", label: "Activity", icon: ScrollText },
