@@ -61,8 +61,8 @@ async function sb<T>(path: string): Promise<T[]> {
 function mdHtml(md: string): string {
   const inlined = (t: string) =>
     esc(t)
-      .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
-      .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2">$1</a>')
+      .replace(/!\[[^\]]*\]\s*\([^)]*\)/g, "")
+      .replace(/\[([^\]]+)\]\s*\(([^)\s]+)\)/g, '<a href="$2">$1</a>')
       .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   return md
     .split(/\n{2,}/)
@@ -81,7 +81,7 @@ function mdHtml(md: string): string {
 }
 
 const answerPlain = (md: string, max: number) =>
-  trim(md.replace(/!\[[^\]]*\]\([^)]*\)/g, "").replace(/\[([^\]]+)\]\([^)]*\)/g, "$1").replace(/[#>*`_-]+/g, " "), max);
+  trim(md.replace(/!\[[^\]]*\]\s*\([^)]*\)/g, "").replace(/\[([^\]]+)\]\s*\([^)]*\)/g, "$1").replace(/[#>*`_-]+/g, " "), max);
 
 const faqLd = (items: { question: string; answer: string }[]) => ({
   "@context": "https://schema.org",

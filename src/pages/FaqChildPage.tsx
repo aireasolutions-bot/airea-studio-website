@@ -173,7 +173,10 @@ export function FaqChildPage() {
               <h3 className="font-display text-2xl text-ink">Ready to try it yourself?</h3>
               <p className="mt-1 text-[14.5px] text-ink-2">Start free in minutes — no marketing experience needed.</p>
             </div>
-            <CtaButton k="faq.contact.cta" defaultLabel="Start 14-day free trial" defaultHref={SIGN_UP_URL} variant="primary" size="lg" magnetic arrow />
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <CtaButton k="faq.contact.demo" defaultLabel="Book a demo" defaultHref="mailto:info@aireastudio.ai?subject=Demo%20request" variant="ghost" size="lg" />
+              <CtaButton k="faq.contact.cta" defaultLabel="Start 14-day free trial" defaultHref={SIGN_UP_URL} variant="primary" size="lg" magnetic arrow />
+            </div>
           </div>
 
           <Link to="/faq" className="mt-10 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-ink-2 hover:text-ink">

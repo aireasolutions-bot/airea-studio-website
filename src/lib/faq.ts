@@ -83,8 +83,8 @@ export const topItems = (data: FaqData): FaqItem[] =>
 /** Plain-text preview of a markdown answer (search results, meta descriptions). */
 export function answerText(md: string, max = 200): string {
   const t = md
-    .replace(/!\[[^\]]*\]\([^)]*\)/g, "")   // images/videos
-    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1") // links → label
+    .replace(/!\[[^\]]*\]\s*\([^)]*\)/g, "")   // images/videos
+    .replace(/\[([^\]]+)\]\s*\([^)]*\)/g, "$1") // links → label
     .replace(/[#>*`_-]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();

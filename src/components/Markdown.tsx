@@ -23,7 +23,7 @@ function Media({ src, caption, k }: { src: string; caption?: string; k: string }
 }
 
 const INLINE =
-  /(!\[([^\]]*)\]\(([^)\s]+)\))|(\[([^\]]+)\]\(([^)\s]+)\))|(\*\*([^*]+)\*\*)|(\*([^*]+)\*)|(`([^`]+)`)/g;
+  /(!\[([^\]]*)\]\s*\(([^)\s]+)\))|(\[([^\]]+)\]\s*\(([^)\s]+)\))|(\*\*([^*]+)\*\*)|(\*([^*]+)\*)|(`([^`]+)`)/g;
 
 function inline(text: string, kp: string): ReactNode[] {
   const out: ReactNode[] = [];
@@ -80,7 +80,7 @@ function inline(text: string, kp: string): ReactNode[] {
 
 const BLOCK_START = /^(#{1,6}\s|>|\s*[-*+]\s|\s*\d+\.\s|```|!\[)/;
 const RULE = /^(-{3,}|\*{3,}|_{3,})$/;
-const MEDIA_BLOCK = /^!\[([^\]]*)\]\(([^)\s]+)\)\s*$/;
+const MEDIA_BLOCK = /^!\[([^\]]*)\]\s*\(([^)\s]+)\)\s*$/;
 
 export function Markdown({ content }: { content: string }) {
   const lines = (content || "").replace(/\r\n/g, "\n").split("\n");

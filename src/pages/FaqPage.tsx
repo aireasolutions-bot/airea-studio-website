@@ -15,6 +15,28 @@ import { faqSchema, breadcrumbSchema } from "@/lib/seo";
  * live on category pages (/faq/<category>) and their own standalone pages
  * (/faq/<question>) — managed in the admin's Help Center. */
 
+
+/* Emails and URLs typed into the contact copy become live links automatically —
+ * the team writes one plain sentence in the admin and never touches markup.
+ * (The old version appended a hard-coded email AFTER the editable text, which
+ * doubled it the moment someone typed the address into the copy.) */
+const LINKIFY = /(https?:\/\/[^\s<]+[^\s<.,:;!?)\]]|[\w.+-]+@[\w-]+(?:\.[\w-]+)+)/g;
+function Linkify({ text }: { text: string }) {
+  return (
+    <>
+      {text.split(LINKIFY).map((part, i) => {
+        if (i % 2 === 0) return part;
+        const href = part.includes("@") && !part.startsWith("http") ? `mailto:${part}` : part;
+        return (
+          <a key={i} href={href} className="font-semibold text-blue hover:underline">
+            {part}
+          </a>
+        );
+      })}
+    </>
+  );
+}
+
 export function FaqPage() {
   const c = useC();
   const navigate = useNavigate();
@@ -147,14 +169,13 @@ export function FaqPage() {
           <div>
             <h3 className="font-display text-2xl text-ink" {...editable("faq.contact.title")}>{c("faq.contact.title", "Still have a question?")}</h3>
             <p className="mt-1 text-[14.5px] text-ink-2" {...editable("faq.contact.body", "richtext")}>
-              <span>{c("faq.contact.body", "Start free in minutes, or email us at ")}</span>
-              <a href="mailto:info@aireastudio.ai" className="font-semibold text-blue">
-                info@aireastudio.ai
-              </a>
-              .
+              <Linkify text={c("faq.contact.body", "Start free in minutes, or email us at info@aireastudio.ai.")} />
             </p>
           </div>
-          <CtaButton k="faq.contact.cta" defaultLabel="Start 14-day free trial" defaultHref={SIGN_UP_URL} variant="primary" size="lg" magnetic arrow />
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <CtaButton k="faq.contact.demo" defaultLabel="Book a demo" defaultHref="mailto:info@aireastudio.ai?subject=Demo%20request" variant="ghost" size="lg" />
+            <CtaButton k="faq.contact.cta" defaultLabel="Start 14-day free trial" defaultHref={SIGN_UP_URL} variant="primary" size="lg" magnetic arrow />
+          </div>
         </div>
       </div>
     </section>
