@@ -18,7 +18,7 @@ import { useC, editable, parseLink, isEdit } from "@/content/ContentProvider";
 // NOTE: keys are indexed — only ever APPEND to these lists.
 const ROUTE_LINKS = [
   { key: "global.nav.route0", label: "How it works", href: "/how-it-works" },
-  { key: "global.nav.route1", label: "FAQ", href: "/faq" },
+  { key: "global.nav.route1", label: "Help Center", href: "/faq" },
   { key: "global.nav.route2", label: "Blog", href: "/blog" },
 ];
 const HASH_LINKS = [
