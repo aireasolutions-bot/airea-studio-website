@@ -3,7 +3,7 @@ import { Reveal } from "@/components/Reveal";
 import { Marquee } from "@/components/Marquee";
 import { SectionHeading } from "@/components/ui";
 import { CHANNELS, PLATFORMS } from "@/lib/site";
-import { useC, editable } from "@/content/ContentProvider";
+import { useC, editable, resolveAsset } from "@/content/ContentProvider";
 
 const ICONS = [Share2, Megaphone, Mail, FileText];
 
@@ -57,20 +57,23 @@ export function Channels() {
 
         <div className="mt-14 rounded-3xl border border-line bg-paper py-7">
           <Marquee speed={28}>
-            {CHIPS.map((chip, i) => (
-              <div key={`${chip.name}-${i}`} className="flex items-center gap-2.5 opacity-70">
-                {chip.src ? (
-                  <img src={chip.src} alt={chip.name} className="h-6 w-auto" />
-                ) : (
-                  <span className="grid h-6 w-6 place-items-center rounded-full bg-ink/5 font-mono text-[10px] text-ink">
-                    ✦
+            {CHIPS.map((chip, i) => {
+              const iconSrc = resolveAsset(c(`home.channels.chip${i}.icon`, chip.src));
+              return (
+                <div key={`${chip.name}-${i}`} className="flex items-center gap-2.5 opacity-70">
+                  {iconSrc ? (
+                    <img src={iconSrc} alt={chip.name} className="h-6 w-auto" {...editable(`home.channels.chip${i}.icon`, "image")} />
+                  ) : (
+                    <span className="grid h-6 w-6 place-items-center rounded-full bg-ink/5 font-mono text-[10px] text-ink" {...editable(`home.channels.chip${i}.icon`, "image")}>
+                      ✦
+                    </span>
+                  )}
+                  <span className="whitespace-nowrap font-mono text-[13px] font-medium uppercase tracking-wider text-ink-2" {...editable(`home.channels.chip${i}`)}>
+                    {c(`home.channels.chip${i}`, chip.name)}
                   </span>
-                )}
-                <span className="whitespace-nowrap font-mono text-[13px] font-medium uppercase tracking-wider text-ink-2" {...editable(`home.channels.chip${i}`)}>
-                  {c(`home.channels.chip${i}`, chip.name)}
-                </span>
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </Marquee>
         </div>
       </div>
