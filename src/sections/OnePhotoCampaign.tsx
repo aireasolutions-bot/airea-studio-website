@@ -51,7 +51,7 @@ function WorldCard({
       style={editing && !visible ? { opacity: 0.4, y, scale, rotate } : { opacity, y, scale, rotate }}
       className="group relative overflow-hidden rounded-xl border border-line bg-white shadow-card md:rounded-2xl"
     >
-      {index !== 4 && index !== 5 && (
+      {index !== 4 && index !== 5 && index !== 6 && (
         <img
           src={resolveAsset(c(`home.onephoto.world${index}.image`, src))}
           {...editable(`home.onephoto.world${index}.image`, "image")}
