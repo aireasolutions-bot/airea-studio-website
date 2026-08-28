@@ -51,14 +51,16 @@ function WorldCard({
       style={editing && !visible ? { opacity: 0.4, y, scale, rotate } : { opacity, y, scale, rotate }}
       className="group relative overflow-hidden rounded-xl border border-line bg-white shadow-card md:rounded-2xl"
     >
-      <img
-        src={resolveAsset(c(`home.onephoto.world${index}.image`, src))}
-        {...editable(`home.onephoto.world${index}.image`, "image")}
-        alt={`Sneaker — ${label}`}
-        className="aspect-square w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
-        draggable={false}
-        decoding="async"
-      />
+      {index !== 4 && (
+        <img
+          src={resolveAsset(c(`home.onephoto.world${index}.image`, src))}
+          {...editable(`home.onephoto.world${index}.image`, "image")}
+          alt={`Sneaker — ${label}`}
+          className="aspect-square w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+          draggable={false}
+          decoding="async"
+        />
+      )}
       <div className="absolute bottom-1.5 left-1.5 flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 backdrop-blur">
         <span className="font-mono text-[9px] font-semibold text-blue">{n}</span>
         <span className="text-[10px] font-semibold text-ink" {...editable(`home.onephoto.world${index}.label`)}>
