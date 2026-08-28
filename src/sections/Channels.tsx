@@ -58,18 +58,22 @@ export function Channels() {
         <div className="mt-14 rounded-3xl border border-line bg-paper py-7">
           <Marquee speed={28}>
             {CHIPS.map((chip, i) => {
-              const iconSrc = resolveAsset(c(`home.channels.chip${i}.icon`, chip.src));
+              const imageKey = `home.channels.carousel.image${i}`;
+              const legacyImage = c(`home.channels.chip${i}.icon`, chip.src);
+              const iconSrc = resolveAsset(c(imageKey, legacyImage));
+              const label = c(`home.channels.chip${i}`, chip.name);
+
               return (
                 <div key={`${chip.name}-${i}`} className="flex items-center gap-2.5 opacity-70">
                   {iconSrc ? (
-                    <img src={iconSrc} alt={chip.name} className="h-6 w-auto" {...editable(`home.channels.chip${i}.icon`, "image")} />
+                    <img src={iconSrc} alt={`${label} logo`} className="h-6 w-auto" {...editable(imageKey, "image")} />
                   ) : (
-                    <span className="grid h-6 w-6 place-items-center rounded-full bg-ink/5 font-mono text-[10px] text-ink" {...editable(`home.channels.chip${i}.icon`, "image")}>
+                    <span className="grid h-6 w-6 place-items-center rounded-full bg-ink/5 font-mono text-[10px] text-ink" {...editable(imageKey, "image")}>
                       ✦
                     </span>
                   )}
                   <span className="whitespace-nowrap font-mono text-[13px] font-medium uppercase tracking-wider text-ink-2" {...editable(`home.channels.chip${i}`)}>
-                    {c(`home.channels.chip${i}`, chip.name)}
+                    {label}
                   </span>
                 </div>
               );
