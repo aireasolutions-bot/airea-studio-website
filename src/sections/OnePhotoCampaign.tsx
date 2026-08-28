@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { motion, useScroll, useTransform, type MotionValue } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { Button, Tag } from "@/components/ui";
@@ -86,10 +86,9 @@ export function OnePhotoCampaign() {
     offset: ["start start", "end end"],
   });
 
-  const [showAll, setShowAll] = useState(false);
   // Preserve original indices for content editing keys
   const worldsWithIndex = WORLDS.map((w, i) => ({ ...w, originalIndex: i }));
-  const displayedWorlds = showAll ? worldsWithIndex : worldsWithIndex.filter(w => w.originalIndex < 6);
+  const displayedWorlds = worldsWithIndex.filter(w => w.originalIndex < 6);
 
   const titleY = useTransform(scrollYProgress, [0, 0.12], [30, 0]);
   const titleO = useTransform(scrollYProgress, [0, 0.12], [0, 1]);
@@ -162,16 +161,6 @@ export function OnePhotoCampaign() {
                 <WorldCard key={w.n} progress={scrollYProgress} index={w.originalIndex} src={w.src} n={w.n} label={w.label} />
               ))}
             </div>
-            {WORLDS.length > 6 && (
-              <div className="mt-4 text-center">
-                <button
-                  onClick={() => setShowAll(!showAll)}
-                  className="text-blue-ink text-sm font-medium underline hover:text-blue-bright"
-                >
-                  {showAll ? "Show fewer" : "Show more"}
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </div>
