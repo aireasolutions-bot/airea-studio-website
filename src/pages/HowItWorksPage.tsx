@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, FolderKanban, Sparkles, Users, Wand2 } from "lucide-react";
+import { CalendarDays, Check, FolderKanban, Sparkles, Users, Wand2 } from "lucide-react";
 import { RobotHead } from "@/components/RobotHead";
 import { CtaButton, EditableEyebrow, Tag } from "@/components/ui";
 import { Reveal } from "@/components/Reveal";
@@ -355,6 +355,44 @@ export function HowItWorksPage() {
       </section>
   );
 
+  const calendar = (
+      <section className="border-t border-line py-20 md:py-28">
+        <div className="wrap-wide grid items-center gap-14 lg:grid-cols-2">
+          <div>
+            <div className="max-w-2xl">
+              <Tag className="mb-5 text-ink-3">
+                <CalendarDays className="mr-2 h-3.5 w-3.5 text-blue" />
+                <span {...editable("howitworks.calendar.tag")}>{c("howitworks.calendar.tag", "YOUR MARKETING, ORGANIZED")}</span>
+              </Tag>
+              <h2 className="font-display text-[clamp(32px,5vw,58px)] leading-[1.03] tracking-[-0.01em] text-ink">
+                <span {...editable("howitworks.calendar.title")}>{c("howitworks.calendar.title", "See Your Entire Marketing Calendar ")}</span>
+                <span className="italic-blue" {...editable("howitworks.calendar.title_accent")}>{c("howitworks.calendar.title_accent", "in One Place")}</span>
+                <span {...editable("howitworks.calendar.title_tail")}>{c("howitworks.calendar.title_tail", ".")}</span>
+              </h2>
+              <p className="mt-5 max-w-xl text-[clamp(15px,1.5vw,18px)] text-ink-2" {...editable("howitworks.calendar.sub", "richtext")}>
+                {c(
+                  "howitworks.calendar.sub",
+                  "Plan ahead without losing track of what’s going live. AIREA Studio brings scheduled and published content across your campaigns into one calendar, so you can see what’s happening, where it’s running, and what’s coming next."
+                )}
+              </p>
+            </div>
+          </div>
+          <Reveal className="relative mx-auto w-full max-w-[560px] text-center" delay={0.05}>
+            <span
+              className="absolute inset-0 -z-10 rounded-[3rem] blur-3xl"
+              style={{ background: "radial-gradient(circle at 50% 40%, rgb(var(--c-blue)/0.18), transparent 65%)" }}
+            />
+            <div {...editable("howitworks.calendar.image", "image")}>
+              <ProductScreenshot
+                src={resolveAsset(c("howitworks.calendar.image", "https://pub-5cdbd1e945544b179386519484eb7db1.r2.dev/assets/uploads/1788378712237-Calendar.png"))}
+                alt="AIREA Studio marketing calendar screenshot"
+              />
+            </div>
+          </Reveal>
+        </div>
+      </section>
+  );
+
   return (
     <>
       <Seo
@@ -366,7 +404,7 @@ export function HowItWorksPage() {
       />
       <PageSections
         page="how-it-works"
-        sections={{ hero, workflow, creative, organize, cta: <FinalCTA /> }}
+        sections={{ hero, workflow, creative, organize, calendar, cta: <FinalCTA /> }}
       />
     </>
   );

@@ -64,6 +64,7 @@ export const SECTION_MANIFESTS: Record<string, SectionDef[]> = {
   "how-it-works": [
     { id: "hero", label: "Hero" },
     { id: "workflow", label: "Step-by-step workflow" },
+    { id: "calendar", label: "Marketing calendar" },
     { id: "creative", label: "Creative direction" },
     { id: "organize", label: "Workspaces & teams" },
     { id: "cta", label: "Final CTA" },
@@ -105,12 +106,34 @@ export function parseLayout(raw: string | undefined | null): LayoutEntry[] | nul
 }
 
 // Final ordered entry list for a page: the stored layout (if any), plus any
-// manifest sections it doesn't know about yet appended visible at the end —
-// so newly-coded sections always surface even with an older saved layout.
+// manifest sections it doesn't know about yet inserted next to their manifest
+// neighbors — so newly-coded sections surface in the intended place without
+// wiping out a team's custom ordering.
 export function resolveLayout(page: string, raw: string | undefined | null): LayoutEntry[] {
   const manifest = SECTION_MANIFESTS[page] ?? [];
   const stored: LayoutEntry[] = parseLayout(raw) ?? manifest.map((s) => ({ id: s.id }));
+  const manifestIds = manifest.map((s) => s.id);
   const known = new Set(stored.filter((e) => !e.kind || e.kind === "builtin").map((e) => e.id));
-  const missing = manifest.filter((s) => !known.has(s.id)).map((s) => ({ id: s.id }));
-  return [...stored, ...missing];
+  const missing = manifest.filter((s) => !known.has(s.id));
+  if (!missing.length) return stored;
+
+  const merged = [...stored];
+
+  for (const section of missing) {
+    const manifestIndex = manifestIds.indexOf(section.id);
+    const previousIds = manifestIds.slice(0, manifestIndex).reverse();
+    const nextIds = manifestIds.slice(manifestIndex + 1);
+    const previousIndex = merged.findIndex((e) => !!e.id && previousIds.includes(e.id));
+
+    if (previousIndex >= 0) {
+      merged.splice(previousIndex + 1, 0, { id: section.id });
+      continue;
+    }
+
+    const nextIndex = merged.findIndex((e) => !!e.id && nextIds.includes(e.id));
+    if (nextIndex >= 0) merged.splice(nextIndex, 0, { id: section.id });
+    else merged.push({ id: section.id });
+  }
+
+  return merged;
 }
