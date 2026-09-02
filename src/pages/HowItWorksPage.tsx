@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { CalendarDays, Check, FolderKanban, Sparkles, Users, Wand2 } from "lucide-react";
+import { Check, FolderKanban, Sparkles, Users, Wand2 } from "lucide-react";
 import { RobotHead } from "@/components/RobotHead";
 import { CtaButton, EditableEyebrow, Tag } from "@/components/ui";
 import { Reveal } from "@/components/Reveal";
@@ -361,7 +361,6 @@ export function HowItWorksPage() {
           <div>
             <div className="max-w-2xl">
               <Tag className="mb-5 text-ink-3">
-                <CalendarDays className="mr-2 h-3.5 w-3.5 text-blue" />
                 <span {...editable("howitworks.calendar.tag")}>{c("howitworks.calendar.tag", "YOUR MARKETING, ORGANIZED")}</span>
               </Tag>
               <h2 className="font-display text-[clamp(32px,5vw,58px)] leading-[1.03] tracking-[-0.01em] text-ink">
