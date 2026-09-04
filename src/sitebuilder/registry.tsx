@@ -193,6 +193,7 @@ const splitFeatureDefaults = F({
 function SplitFeature({ k }: { k: K }) {
   const t = useT(k, splitFeatureDefaults);
   const imageKey = k("image");
+  const showCta = k("cta") !== "sec.et9sim.cta";
   return (
     <section className="border-y border-line bg-paper py-20 md:py-28">
       <div className="wrap-wide grid items-center gap-12 lg:grid-cols-2">
@@ -214,9 +215,11 @@ function SplitFeature({ k }: { k: K }) {
               </li>
             ))}
           </ul>
-          <div className="mt-8">
-            <CtaButton k={k("cta")} defaultLabel={splitFeatureDefaults.cta} defaultHref="/how-it-works" variant="ghost" arrow />
-          </div>
+          {showCta && (
+            <div className="mt-8">
+              <CtaButton k={k("cta")} defaultLabel={splitFeatureDefaults.cta} defaultHref="/how-it-works" variant="ghost" arrow />
+            </div>
+          )}
         </div>
       </div>
     </section>
