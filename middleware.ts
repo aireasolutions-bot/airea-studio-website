@@ -85,6 +85,17 @@ function mdHtml(md: string): string {
 const answerPlain = (md: string, max: number) =>
   trim(md.replace(/!\[[^\]]*\]\s*\([^)]*\)/g, "").replace(/\[([^\]]+)\]\s*\([^)]*\)/g, "$1").replace(/[#>*`_-]+/g, " "), max);
 
+const crumbLd = (trail: { name: string; path: string }[]) => ({
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: trail.map((t, i) => ({
+    "@type": "ListItem",
+    position: i + 1,
+    name: t.name,
+    item: `${SITE_URL}${t.path}`,
+  })),
+});
+
 const faqLd = (items: { question: string; answer: string }[]) => ({
   "@context": "https://schema.org",
   "@type": "FAQPage",
@@ -133,7 +144,7 @@ async function resolveMeta(pathname: string): Promise<Meta> {
         url: canonical,
         image: OG_IMAGE,
         type: "website",
-        jsonLd: [faqLd(tops)],
+        jsonLd: [faqLd(tops), crumbLd([{ name: "Home", path: "/" }, { name: "Help Center", path: "/faq" }])],
         bodyHtml:
           `<main><h1>AIREA Studio Help Center</h1>` +
           tops.map((t) => `<h2><a href="${esc(`${SITE_URL}/faq/${t.slug}`)}">${esc(t.question)}</a></h2>${mdHtml(t.answer)}`).join("") +
@@ -155,7 +166,7 @@ async function resolveMeta(pathname: string): Promise<Meta> {
         url: canonical,
         image: OG_IMAGE,
         type: "website",
-        jsonLd: [faqLd(items)],
+        jsonLd: [faqLd(items), crumbLd([{ name: "Home", path: "/" }, { name: "Help Center", path: "/faq" }, { name: cat.name, path: `/faq/${cat.slug}` }])],
         bodyHtml:
           `<main><h1>${esc(cat.name)}</h1>` +
           (cat.description ? `<p>${esc(cat.description)}</p>` : "") +
@@ -172,9 +183,9 @@ async function resolveMeta(pathname: string): Promise<Meta> {
         url: canonical,
         image: OG_IMAGE,
         type: "website",
-        jsonLd: [faqLd([item])],
+        jsonLd: [faqLd([item]), crumbLd([{ name: "Home", path: "/" }, { name: "Help Center", path: "/faq" }, { name: item.question, path: `/faq/${item.slug}` }])],
         bodyHtml:
-          `<main><p><a href="${esc(`${SITE_URL}/faq`)}">Help center</a></p>` +
+          `<main><p><a href="${esc(`${SITE_URL}/faq`)}">Help Center</a></p>` +
           `<h1>${esc(item.question)}</h1>${mdHtml(item.answer)}</main>`,
       };
     }
