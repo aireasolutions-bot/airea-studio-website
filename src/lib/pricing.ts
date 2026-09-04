@@ -5,6 +5,9 @@
 // (pricing.plan1.* etc.) so nothing changes for previously-published edits.
 
 export type CompareCell = { t: "check" | "dash" | "text"; v?: string };
+export type CompareFeatureRow = { kind?: "feature"; label: string; values: CompareCell[] };
+export type CompareDividerRow = { kind: "divider"; label: string };
+export type CompareRow = CompareFeatureRow | CompareDividerRow;
 export type PricingPlan = {
   id: string;
   name: string;
@@ -19,7 +22,7 @@ export type PricingPlan = {
 };
 export type PricingData = {
   plans: PricingPlan[];
-  compare: { rows: { label: string; values: CompareCell[] }[] };
+  compare: { rows: CompareRow[] };
 };
 
 export const MAX_PLANS = 4;
@@ -71,7 +74,7 @@ export function pricingFromLegacy(get: Getter): PricingData {
     };
   });
 
-  const rows = LEGACY_COMPARE.map((row, r) => ({
+  const rows: CompareFeatureRow[] = LEGACY_COMPARE.map((row, r) => ({
     label: get(`pricing.compare.row${r}.label`) || row.label,
     values: row.values.map((v, i): CompareCell =>
       v === true ? { t: "check" } : v === false ? { t: "dash" } : { t: "text", v: get(`pricing.compare.row${r}.v${i}`) || v }
@@ -83,6 +86,7 @@ export function pricingFromLegacy(get: Getter): PricingData {
 
 // Normalize arbitrary parsed JSON into safe PricingData (pad/trim compare rows
 // to the plan count, coerce fields, enforce plan bounds and a single featured).
+// Comparison rows can be regular feature rows or divider headline rows.
 export function normalizePricing(raw: unknown): PricingData | null {
   if (!raw || typeof raw !== "object") return null;
   const d = raw as any;
@@ -104,7 +108,11 @@ export function normalizePricing(raw: unknown): PricingData | null {
   plans.forEach((p, i) => (p.featured = i === firstFeatured));
 
   const rowsIn = Array.isArray(d?.compare?.rows) ? d.compare.rows : [];
-  const rows = rowsIn.map((r: any) => {
+  const rows: CompareRow[] = rowsIn.map((r: any): CompareRow => {
+    if (r?.kind === "divider") {
+      return { kind: "divider", label: String(r?.label ?? "") };
+    }
+
     const values: CompareCell[] = Array.isArray(r?.values) ? r.values : [];
     const norm = plans.map((_, i): CompareCell => {
       const c = values[i];

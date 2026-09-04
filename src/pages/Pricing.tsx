@@ -85,19 +85,27 @@ export function Pricing() {
                 </tr>
               </thead>
               <tbody>
-                {pricing.compare.rows.map((row, r) => (
-                  <tr key={r} className="border-b border-line last:border-0">
-                    <td className="p-4 text-[14px] text-ink-2">{row.label}</td>
-                    {row.values.map((cell, i) => (
-                      <td
-                        key={i}
-                        className={`p-4 text-center ${i === featuredCol ? "bg-blue-mist/40" : ""}`}
-                      >
-                        <Cell cell={cell} />
+                {pricing.compare.rows.map((row, r) =>
+                  row.kind === "divider" ? (
+                    <tr key={r} className="border-b border-line bg-paper/70">
+                      <td colSpan={pricing.plans.length + 1} className="px-4 pb-3 pt-6">
+                        <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-blue">{row.label}</span>
                       </td>
-                    ))}
-                  </tr>
-                ))}
+                    </tr>
+                  ) : (
+                    <tr key={r} className="border-b border-line last:border-0">
+                      <td className="p-4 text-[14px] text-ink-2">{row.label}</td>
+                      {row.values.map((cell, i) => (
+                        <td
+                          key={i}
+                          className={`p-4 text-center ${i === featuredCol ? "bg-blue-mist/40" : ""}`}
+                        >
+                          <Cell cell={cell} />
+                        </td>
+                      ))}
+                    </tr>
+                  )
+                )}
               </tbody>
             </table>
           </Reveal>

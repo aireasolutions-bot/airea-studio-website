@@ -65,7 +65,7 @@ export function PricingStudio() {
   const { email } = useAdminAuth();
   const [data, setData] = useState<PricingData | null>(null);
   const [rowIds, setRowIds] = useState<string[]>([]);
-  const [publishedJson, setPublishedJson] = useState<string>("");
+  const [publishedJson, setPublishedJson] = useState("");
   const [rowExists, setRowExists] = useState(false);
   const [status, setStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [publishing, setPublishing] = useState(false);
@@ -219,7 +219,11 @@ export function PricingStudio() {
     apply({
       ...data,
       plans: [...data.plans, plan],
-      compare: { rows: data.compare.rows.map((r) => ({ ...r, values: [...r.values, { t: "dash" } as CompareCell] })) },
+      compare: {
+        rows: data.compare.rows.map((r) =>
+          r.kind === "divider" ? r : { ...r, values: [...r.values, { t: "dash" } as CompareCell] }
+        ),
+      },
     });
   };
 
@@ -229,7 +233,9 @@ export function PricingStudio() {
     apply({
       ...data,
       plans: data.plans.filter((p) => p.id !== id),
-      compare: { rows: data.compare.rows.map((r) => ({ ...r, values: r.values.filter((_, i) => i !== idx) })) },
+      compare: {
+        rows: data.compare.rows.map((r) => (r.kind === "divider" ? r : { ...r, values: r.values.filter((_, i) => i !== idx) })),
+      },
     });
   };
 
@@ -239,7 +245,9 @@ export function PricingStudio() {
     apply({
       ...data,
       plans: order.map((i) => data.plans[i]),
-      compare: { rows: data.compare.rows.map((r) => ({ ...r, values: order.map((i) => r.values[i]) })) },
+      compare: {
+        rows: data.compare.rows.map((r) => (r.kind === "divider" ? r : { ...r, values: order.map((i) => r.values[i]) })),
+      },
     });
   };
 
@@ -250,7 +258,9 @@ export function PricingStudio() {
 
   const cycleCell = (r: number, cIdx: number) => {
     if (!data) return;
-    const cell = data.compare.rows[r].values[cIdx];
+    const row = data.compare.rows[r];
+    if (!row || row.kind === "divider") return;
+    const cell = row.values[cIdx];
     const next: CompareCell = cell.t === "check" ? { t: "dash" } : cell.t === "dash" ? { t: "text", v: "" } : { t: "check" };
     setCell(r, cIdx, next);
   };
@@ -261,7 +271,7 @@ export function PricingStudio() {
       ...data,
       compare: {
         rows: data.compare.rows.map((row, i) =>
-          i === r ? { ...row, values: row.values.map((v, j) => (j === cIdx ? cell : v)) } : row
+          i === r && row.kind !== "divider" ? { ...row, values: row.values.map((v, j) => (j === cIdx ? cell : v)) } : row
         ),
       },
     });
@@ -272,6 +282,15 @@ export function PricingStudio() {
     apply({
       ...data,
       compare: { rows: [...data.compare.rows, { label: "New feature", values: data.plans.map(() => ({ t: "dash" } as CompareCell)) }] },
+    });
+  };
+
+  const addDivider = () => {
+    if (!data) return;
+    setRowIds((ids) => [...ids, newId()]);
+    apply({
+      ...data,
+      compare: { rows: [...data.compare.rows, { kind: "divider", label: "New section" }] },
     });
   };
 
@@ -424,16 +443,24 @@ export function PricingStudio() {
 
           {/* ---- comparison table ---- */}
           <div className="rounded-2xl border border-line bg-white p-5 shadow-soft">
-            <div className="mb-1 flex items-center justify-between">
+            <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
               <h3 className="text-[13px] font-semibold uppercase tracking-wider text-ink-3">Comparison table</h3>
-              <button
-                onClick={addRow}
-                className="flex items-center gap-1.5 rounded-full border border-line-2 px-3 py-1.5 text-[12.5px] font-semibold text-ink transition-colors hover:border-blue hover:text-blue"
-              >
-                <Plus className="h-3.5 w-3.5" /> Add row
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={addDivider}
+                  className="flex items-center gap-1.5 rounded-full border border-line-2 px-3 py-1.5 text-[12.5px] font-semibold text-ink transition-colors hover:border-blue hover:text-blue"
+                >
+                  <Plus className="h-3.5 w-3.5" /> Add divider
+                </button>
+                <button
+                  onClick={addRow}
+                  className="flex items-center gap-1.5 rounded-full border border-line-2 px-3 py-1.5 text-[12.5px] font-semibold text-ink transition-colors hover:border-blue hover:text-blue"
+                >
+                  <Plus className="h-3.5 w-3.5" /> Add row
+                </button>
+              </div>
             </div>
-            <p className="mb-4 text-[12.5px] text-ink-3">Click a cell to cycle ✓ → — → text · drag rows to reorder</p>
+            <p className="mb-4 text-[12.5px] text-ink-3">Click a cell to cycle ✓ → — → text · add dividers for section headlines · drag rows to reorder</p>
 
             {/* header */}
             <div
@@ -455,27 +482,50 @@ export function PricingStudio() {
                 <DragItem
                   key={rowIds[r] ?? r}
                   value={rowIds[r] ?? String(r)}
-                  className="grid items-center gap-1.5 rounded-xl border border-line-2 bg-canvas px-1.5 py-1.5"
+                  className={cn(
+                    "grid items-center gap-1.5 rounded-xl border px-1.5 py-1.5",
+                    row.kind === "divider" ? "border-blue/25 bg-blue-mist/50" : "border-line-2 bg-canvas"
+                  )}
                   style={{ gridTemplateColumns: `16px 1fr repeat(${data.plans.length}, 64px) 28px` }}
                 >
                   {(grip) => (
                   <>
                   {grip}
-                  <input
-                    value={row.label}
-                    onChange={(e) => setRowLabel(r, e.target.value)}
-                    className="w-full min-w-0 rounded-lg border border-transparent bg-transparent px-2 py-1 text-[13px] text-ink outline-none focus:border-blue focus:bg-white"
-                  />
-                  {row.values.map((cell, i) => (
-                    <CompareCellEditor key={i} cell={cell} onCycle={() => cycleCell(r, i)} onText={(v) => setCell(r, i, { t: "text", v })} />
-                  ))}
-                  <button
-                    onClick={() => removeRow(r)}
-                    title="Remove row"
-                    className="grid h-7 w-7 place-items-center rounded-lg text-ink-3 transition-colors hover:text-critical"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
+                  {row.kind === "divider" ? (
+                    <>
+                      <input
+                        value={row.label}
+                        onChange={(e) => setRowLabel(r, e.target.value)}
+                        style={{ gridColumn: `span ${data.plans.length + 1} / span ${data.plans.length + 1}` }}
+                        className="w-full min-w-0 rounded-lg border border-transparent bg-transparent px-2 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-blue outline-none focus:border-blue focus:bg-white"
+                      />
+                      <button
+                        onClick={() => removeRow(r)}
+                        title="Remove divider"
+                        className="grid h-7 w-7 place-items-center rounded-lg text-ink-3 transition-colors hover:text-critical"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <input
+                        value={row.label}
+                        onChange={(e) => setRowLabel(r, e.target.value)}
+                        className="w-full min-w-0 rounded-lg border border-transparent bg-transparent px-2 py-1 text-[13px] text-ink outline-none focus:border-blue focus:bg-white"
+                      />
+                      {row.values.map((cell, i) => (
+                        <CompareCellEditor key={i} cell={cell} onCycle={() => cycleCell(r, i)} onText={(v) => setCell(r, i, { t: "text", v })} />
+                      ))}
+                      <button
+                        onClick={() => removeRow(r)}
+                        title="Remove row"
+                        className="grid h-7 w-7 place-items-center rounded-lg text-ink-3 transition-colors hover:text-critical"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </>
+                  )}
                   </>
                   )}
                 </DragItem>
@@ -572,4 +622,3 @@ function CompareCellEditor({ cell, onCycle, onText }: { cell: CompareCell; onCyc
     </button>
   );
 }
-
