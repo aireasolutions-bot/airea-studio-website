@@ -209,7 +209,7 @@ function SplitFeature({ k }: { k: K }) {
           <ul className="mt-6 space-y-3">
             {[0, 1, 2].map((i) => (
               <li key={i} className="flex items-start gap-2.5 text-[15px] text-ink-2">
-                <Check className="mt-0.5 h-4.5 w-4.5 shrink-0 text-blue" />
+                {k(`check${i}`) !== "sec.et9sim.check2" && <Check className="mt-0.5 h-4.5 w-4.5 shrink-0 text-blue" />}
                 <span {...editable(k(`check${i}`))}>{t(`check${i}`)}</span>
               </li>
             ))}
