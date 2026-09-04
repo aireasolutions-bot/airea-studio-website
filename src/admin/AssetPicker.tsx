@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Film, Loader2, Search, UploadCloud, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { uploadOne } from "./lib/upload";
 import { resolveAsset } from "@/content/ContentProvider";
 
 type Asset = { id: string; key: string; filename: string; url: string; type: string | null; folder: string | null };
@@ -19,6 +20,7 @@ export function AssetPicker({
   const [assets, setAssets] = useState<Asset[]>([]);
   const [q, setQ] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [err, setErr] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -37,32 +39,25 @@ export function AssetPicker({
   const upload = async (file: File) => {
     setErr("");
     setUploading(true);
+    setProgress(0);
     try {
-      const dataBase64 = await new Promise<string>((resolve, reject) => {
-        const r = new FileReader();
-        r.onload = () => resolve(String(r.result).split(",")[1] ?? "");
-        r.onerror = reject;
-        r.readAsDataURL(file);
-      });
-      const { data: s } = await supabase!.auth.getSession();
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${s.session?.access_token ?? ""}` },
-        body: JSON.stringify({ filename: file.name, contentType: file.type, folder: "uploads", dataBase64 }),
-      });
-      if (!res.ok) throw new Error((await res.json().catch(() => ({})))?.error || `Upload failed (${res.status})`);
-      const out = await res.json();
+      // Shared engine: small files go through the API, anything larger uploads
+      // straight to storage. Previously this modal always sent base64, so a
+      // large video failed with a bare 413.
+      const key = await uploadOne(file, "uploads", setProgress);
       await load();
-      onSelect(out.key);
+      onSelect(key);
       onClose();
     } catch (e) {
+      const msg = (e as Error).message || "Upload failed";
       setErr(
-        (e as Error).message?.includes("404") || (e as Error).message?.includes("Failed to fetch")
+        msg.includes("404") || msg.includes("Failed to fetch")
           ? "Upload runs on the deployed site (needs the serverless function + env vars). Pick an existing asset for now."
-          : (e as Error).message
+          : msg
       );
     } finally {
       setUploading(false);
+      setProgress(0);
     }
   };
 
@@ -92,7 +87,9 @@ export function AssetPicker({
               className="flex items-center gap-2 rounded-full bg-blue px-3.5 py-2 text-[13px] font-semibold text-white hover:bg-blue-ink disabled:opacity-60"
             >
               {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
-              Upload
+              {/* Large files upload straight to storage, which takes real time —
+                  show the percentage instead of an unexplained spinner. */}
+              {uploading ? (progress > 0 ? `Uploading ${Math.round(progress * 100)}%` : "Uploading…") : "Upload"}
             </button>
             <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-lg hover:bg-ink/5">
               <X className="h-5 w-5" />

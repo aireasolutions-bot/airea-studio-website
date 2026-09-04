@@ -10,7 +10,7 @@ export const SITE_PAGES: SitePage[] = [
   { slug: "small-business", path: "/small-business", label: "Small business" },
   { slug: "ecommerce", path: "/ecommerce", label: "E-commerce" },
   { slug: "how-it-works", path: "/how-it-works", label: "How it works" },
-  { slug: "faq", path: "/faq", label: "FAQ" },
+  { slug: "faq", path: "/faq", label: "Help Center" },
   { slug: "privacy-policy", path: "/privacy-policy", label: "Privacy Policy" },
   { slug: "terms-of-service", path: "/terms-of-service", label: "Terms of Service" },
 ];
@@ -31,7 +31,7 @@ export const pagePath = (slug: string) =>
 // ("false" hides) riding the normal draft → publish pipeline.
 export const HIDEABLE_PAGES: { slug: string; label: string; path: string }[] = [
   { slug: "how-it-works", path: "/how-it-works", label: "How it works" },
-  { slug: "faq", path: "/faq", label: "FAQ" },
+  { slug: "faq", path: "/faq", label: "Help Center" },
   { slug: "blog", path: "/blog", label: "Blog" },
   { slug: "small-business", path: "/small-business", label: "Small business" },
   { slug: "ecommerce", path: "/ecommerce", label: "E-commerce" },

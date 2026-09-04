@@ -56,7 +56,7 @@ export const PAGE_SEO: Record<string, PageSeo> = {
     changefreq: "monthly",
   },
   "/faq": {
-    title: "AIREA Studio FAQ — AI Marketing for Small Business",
+    title: "Help Center — AIREA Studio",
     description:
       "Answers about AIREA Studio, the AI marketing platform for small businesses: how it works, channels, Brand DNA training, pricing, security, and getting started.",
     priority: 0.7,

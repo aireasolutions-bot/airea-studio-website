@@ -1,6 +1,16 @@
 {
   "redirects": [
     {
+      "source": "/help",
+      "destination": "/faq",
+      "permanent": true
+    },
+    {
+      "source": "/help/:path*",
+      "destination": "/faq/:path*",
+      "permanent": true
+    },
+    {
       "source": "/((?!api/).*)",
       "has": [
         {

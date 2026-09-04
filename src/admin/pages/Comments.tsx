@@ -30,6 +30,7 @@ type Comment = {
   pos_x: number | null;
   pos_y: number | null;
   target_label: string | null;
+  anchor: string | null;
   body: string;
   status: string;
   author_email: string | null;
@@ -70,6 +71,44 @@ function TagRow({ team, me, value, onChange }: { team: string[]; me: string; val
   );
 }
 
+
+/* Comment anchoring.
+ * The canvas already marks its editable text (`data-edit-key`) and each
+ * section (`data-airea-section`). Binding a comment to the nearest of those
+ * gives it something stable to hold on to across edits and screen sizes;
+ * pos_x/pos_y then describe where inside that element the pin sits. */
+function anchorFor(start: Element | null): { el: Element; anchor: string; label: string } | null {
+  let el: Element | null = start;
+  while (el && el !== el.ownerDocument?.body) {
+    const key = el.getAttribute?.("data-edit-key");
+    if (key) return { el, anchor: `key:${key}`, label: labelFor(el, key) };
+    const sec = el.getAttribute?.("data-airea-section");
+    if (sec) return { el, anchor: `section:${sec}`, label: labelFor(el, sec) };
+    el = el.parentElement;
+  }
+  return null;
+}
+
+function labelFor(el: Element, fallback: string): string {
+  const text = (el.textContent || "").replace(/\s+/g, " ").trim();
+  return text ? (text.length > 60 ? `${text.slice(0, 59)}…` : text) : fallback;
+}
+
+/** Resolve a stored anchor back to a live element in the preview document. */
+function resolveAnchor(doc: Document, anchor: string | null): Element | null {
+  if (!anchor) return null;
+  const [kind, ...rest] = anchor.split(":");
+  const value = rest.join(":");
+  if (!value) return null;
+  try {
+    if (kind === "key") return doc.querySelector(`[data-edit-key="${CSS.escape(value)}"]`);
+    if (kind === "section") return doc.querySelector(`[data-airea-section="${CSS.escape(value)}"]`);
+  } catch {
+    return null;
+  }
+  return null;
+}
+
 export function Comments() {
   const { email } = useAdminAuth();
   const me = email || "";
@@ -82,7 +121,9 @@ export function Comments() {
   const [device, setDevice] = useState<Device>("desktop");
   const [fullscreen, setFullscreen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(true);
-  const [pending, setPending] = useState<{ x: number; y: number } | null>(null);
+  const [pending, setPending] = useState<{ x: number; y: number; anchor: string | null; label: string | null } | null>(null);
+  // Bumped whenever the preview's layout changes so anchored pins re-measure.
+  const [relayout, setRelayout] = useState(0);
   const [composerOpen, setComposerOpen] = useState(false);
   const [draft, setDraft] = useState("");
   const [draftMentions, setDraftMentions] = useState<string[]>([]);
@@ -150,14 +191,28 @@ export function Comments() {
     const H = doc.documentElement.scrollHeight;
     threads.forEach((t, i) => {
       if (t.pos_x == null || t.pos_y == null) return;
+      // Anchored comments follow their element; older ones fall back to the
+      // page fraction they were saved with.
+      const host = resolveAnchor(doc, t.anchor);
+      let left: number;
+      let top: number;
+      if (host) {
+        const r = host.getBoundingClientRect();
+        const win = doc.defaultView;
+        left = r.left + (win?.scrollX ?? 0) + t.pos_x * r.width;
+        top = r.top + (win?.scrollY ?? 0) + t.pos_y * r.height;
+      } else {
+        left = t.pos_x * W;
+        top = t.pos_y * H;
+      }
       const pin = doc.createElement("div");
       pin.setAttribute("data-airea-pin", t.id);
       pin.textContent = String(i + 1);
       const resolved = t.status === "resolved";
       Object.assign(pin.style, {
         position: "absolute",
-        left: `${t.pos_x * W}px`,
-        top: `${t.pos_y * H}px`,
+        left: `${left}px`,
+        top: `${top}px`,
         transform: "translate(-50%,-100%)",
         zIndex: "2147483646",
         width: "26px",
@@ -197,7 +252,22 @@ export function Comments() {
       } as CSSStyleDeclaration);
       doc.body.appendChild(p);
     }
-  }, [doc, threads, pending, selected]);
+  }, [doc, threads, pending, selected, relayout]);
+
+  // Late-loading images and device-width changes move everything on the page;
+  // without this the pins keep their old coordinates and drift off target.
+  useEffect(() => {
+    if (!doc?.body) return;
+    const bump = () => setRelayout((n) => n + 1);
+    const ro = new ResizeObserver(bump);
+    ro.observe(doc.body);
+    doc.defaultView?.addEventListener("load", bump);
+    doc.querySelectorAll("img,video").forEach((el) => el.addEventListener("load", bump, { once: true }));
+    return () => {
+      ro.disconnect();
+      doc.defaultView?.removeEventListener("load", bump);
+    };
+  }, [doc]);
 
   // Comment mode: capture clicks on the preview to place a pin.
   useEffect(() => {
@@ -205,9 +275,24 @@ export function Comments() {
     const onClick = (e: MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      const W = doc.documentElement.clientWidth;
-      const H = doc.documentElement.scrollHeight;
-      setPending({ x: e.pageX / W, y: e.pageY / H });
+      // Bind the comment to the thing that was clicked, not to a percentage of
+      // the page. Page fractions drift the moment anything above changes
+      // (a section added, images loading, a different device width), which is
+      // why pins used to scatter into a floating list.
+      const hit = anchorFor(e.target as Element | null);
+      if (hit) {
+        const r = hit.el.getBoundingClientRect();
+        setPending({
+          x: r.width ? (e.clientX - r.left) / r.width : 0.5,
+          y: r.height ? (e.clientY - r.top) / r.height : 0.5,
+          anchor: hit.anchor,
+          label: hit.label,
+        });
+      } else {
+        const W = doc.documentElement.clientWidth;
+        const H = doc.documentElement.scrollHeight;
+        setPending({ x: e.pageX / W, y: e.pageY / H, anchor: null, label: null });
+      }
       setComposerOpen(true);
       setDrawerOpen(true);
       setSelected(null);
@@ -238,6 +323,8 @@ export function Comments() {
       parent_id: null,
       pos_x: pending?.x ?? null,
       pos_y: pending?.y ?? null,
+      anchor: pending?.anchor ?? null,
+      target_label: pending?.label ?? null,
       body: draft.trim(),
       status: "open",
       author_email: me,

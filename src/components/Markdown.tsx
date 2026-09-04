@@ -211,19 +211,19 @@ export function Markdown({ content }: { content: string }) {
 
     // ordered list — survives blank lines between items and honors the typed
     // starting number, so long spaced-out lists never restart at 1
-    if (/^\s*\d+\.\s+/.test(line)) {
+    if (/^\s*\d+[.)]\s+/.test(line)) {
       const items: string[] = [];
-      const startNum = parseInt(/^\s*(\d+)\./.exec(line)?.[1] ?? "1", 10) || 1;
+      const startNum = parseInt(/^\s*(\d+)[.)]/.exec(line)?.[1] ?? "1", 10) || 1;
       while (i < lines.length) {
-        if (/^\s*\d+\.\s+/.test(lines[i])) {
-          items.push(lines[i].replace(/^\s*\d+\.\s+/, ""));
+        if (/^\s*\d+[.)]\s+/.test(lines[i])) {
+          items.push(lines[i].replace(/^\s*\d+[.)]\s+/, ""));
           i++;
           continue;
         }
         if (!lines[i].trim()) {
           let j = i;
           while (j < lines.length && !lines[j].trim()) j++;
-          if (j < lines.length && /^\s*\d+\.\s+/.test(lines[j])) {
+          if (j < lines.length && /^\s*\d+[.)]\s+/.test(lines[j])) {
             i = j;
             continue;
           }

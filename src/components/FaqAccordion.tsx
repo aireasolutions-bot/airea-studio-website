@@ -29,7 +29,11 @@ export function FaqAccordion({ items, defaultOpen }: { items: FaqItem[]; default
             <div className={cn("grid transition-all duration-300 ease-out", isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0")}>
               <div className="overflow-hidden">
                 <div className="px-5 pb-5 pt-0.5">
-                  <div className="max-w-2xl text-[14.5px] leading-relaxed text-ink-2 [&_h2]:mt-4 [&_h2]:text-[16px] [&_h2]:font-semibold [&_h2]:text-ink [&_p]:mb-3">
+                  {/* Compact scale for the in-place accordion, but headings must still LOOK
+                     * like headings — the old override shrank them to body size, which is
+                     * why "##" appeared to do nothing. Full typography lives on the
+                     * standalone page behind "Full answer". */}
+                  <div className="faq-compact">
                     <Markdown content={it.answer} />
                   </div>
                   <Link

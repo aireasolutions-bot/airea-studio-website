@@ -74,6 +74,8 @@ function mdHtml(md: string): string {
       if (/^#\s/.test(t)) return `<h2>${inlined(t.replace(/^#\s+/, ""))}</h2>`;
       if (/^[-*]\s/m.test(t))
         return `<ul>${t.split(/\n/).filter((l) => /^[-*]\s/.test(l.trim())).map((l) => `<li>${inlined(l.trim().replace(/^[-*]\s+/, ""))}</li>`).join("")}</ul>`;
+      if (/^\d+[.)]\s/m.test(t))
+        return `<ol>${t.split(/\n/).filter((l) => /^\d+[.)]\s/.test(l.trim())).map((l) => `<li>${inlined(l.trim().replace(/^\d+[.)]\s+/, ""))}</li>`).join("")}</ol>`;
       return `<p>${inlined(t.replace(/\n/g, " "))}</p>`;
     })
     .filter(Boolean)

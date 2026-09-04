@@ -64,16 +64,19 @@ export function FaqChildPage() {
             faqSchema(items.map((it) => ({ q: it.question, a: answerText(it.answer, 500) }))),
             breadcrumbSchema([
               { name: "Home", path: "/" },
-              { name: "FAQ", path: "/faq" },
+              { name: "Help Center", path: "/faq" },
               { name: category.name, path: `/faq/${category.slug}` },
             ]),
           ]}
         />
         <section className="relative overflow-hidden pb-24 pt-32 md:pt-40">
           <div className="pointer-events-none absolute inset-0 -z-10 bg-blue-radial" />
-          <div className="wrap-wide">
+          {/* One centered reading column across the whole help center — the old
+           * mix of wrap-wide here and a left-pinned max-w-2xl on question pages
+           * made the content look narrow and off-centre on desktop. */}
+          <div className="wrap"><div className="mx-auto max-w-[820px]">
             <nav className="flex items-center gap-1.5 text-[13px] text-ink-3">
-              <Link to="/faq" className="font-medium hover:text-ink">Help center</Link>
+              <Link to="/faq" className="font-medium hover:text-ink">Help Center</Link>
               <ChevronRight className="h-3.5 w-3.5" />
               <span className="text-ink-2">{category.name}</span>
             </nav>
@@ -101,7 +104,7 @@ export function FaqChildPage() {
                 </div>
               </div>
             )}
-          </div>
+          </div></div>
         </section>
       </>
     );
@@ -125,7 +128,7 @@ export function FaqChildPage() {
           faqSchema([{ q: item.question, a: answerText(item.answer, 1200) }]),
           breadcrumbSchema([
             { name: "Home", path: "/" },
-            { name: "FAQ", path: "/faq" },
+            { name: "Help Center", path: "/faq" },
             ...(home ? [{ name: home.name, path: `/faq/${home.slug}` }] : []),
             { name: item.question, path: `/faq/${item.slug}` },
           ]),
@@ -133,9 +136,9 @@ export function FaqChildPage() {
       />
       <section className="relative overflow-hidden pb-24 pt-32 md:pt-40">
         <div className="pointer-events-none absolute inset-0 -z-10 bg-blue-radial" />
-        <div className="wrap">
+        <div className="wrap"><div className="mx-auto max-w-[820px]">
           <nav className="flex flex-wrap items-center gap-1.5 text-[13px] text-ink-3">
-            <Link to="/faq" className="font-medium hover:text-ink">Help center</Link>
+            <Link to="/faq" className="font-medium hover:text-ink">Help Center</Link>
             {home && (
               <>
                 <ChevronRight className="h-3.5 w-3.5" />
@@ -148,8 +151,8 @@ export function FaqChildPage() {
               Draft preview — not visible to customers yet
             </div>
           )}
-          <h1 className="mt-5 max-w-3xl font-display text-[clamp(28px,4vw,44px)] leading-[1.08] tracking-[-0.015em] text-ink">{item.question}</h1>
-          <div className="prose-airea mt-8 max-w-2xl text-[15.5px] leading-relaxed text-ink-2 [&_h2]:mt-8 [&_h2]:font-display [&_h2]:text-[22px] [&_h2]:text-ink [&_p]:mb-4">
+          <h1 className="mt-5 font-display text-[clamp(28px,4vw,44px)] leading-[1.08] tracking-[-0.015em] text-ink">{item.question}</h1>
+          <div className="mt-8">
             <Markdown content={item.answer} />
           </div>
 
@@ -180,9 +183,9 @@ export function FaqChildPage() {
           </div>
 
           <Link to="/faq" className="mt-10 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-ink-2 hover:text-ink">
-            <ArrowLeft className="h-4 w-4" /> Back to help center
+            <ArrowLeft className="h-4 w-4" /> Back to Help Center
           </Link>
-        </div>
+        </div></div>
       </section>
     </>
   );

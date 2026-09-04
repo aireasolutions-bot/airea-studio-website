@@ -266,3 +266,16 @@
     transform: none;
   }
 }
+
+/* Help-center accordion: the shared Markdown renderer at a compact scale.
+   Headings stay visibly hierarchical (the previous inline overrides flattened
+   them to body size); the standalone question page uses full article scale. */
+.faq-compact { font-size: 14.5px; line-height: 1.65; color: rgb(var(--c-ink-2)); }
+.faq-compact > :first-child { margin-top: 0; }
+.faq-compact h2 { font-size: 21px; margin: 1.4rem 0 .6rem; }
+.faq-compact h3 { font-size: 18px; margin: 1.25rem 0 .5rem; }
+.faq-compact h4 { font-size: 16px; margin: 1.1rem 0 .45rem; }
+.faq-compact p, .faq-compact li { font-size: 14.5px; line-height: 1.65; }
+.faq-compact p { margin-bottom: .7rem; }
+.faq-compact ul, .faq-compact ol { margin: .7rem 0; }
+.faq-compact figure { margin: 1.2rem 0; }
