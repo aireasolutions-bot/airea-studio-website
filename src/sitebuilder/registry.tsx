@@ -49,6 +49,18 @@ function useT(k: K, defaults: Record<string, string>) {
   return (field: string) => c(k(field), defaults[field] ?? "");
 }
 
+function frameClassFor(imageKey: string) {
+  return imageKey === "sec.et9sim.image"
+    ? "w-fit max-w-full overflow-hidden rounded-3xl border border-line bg-white p-2 shadow-card"
+    : "overflow-hidden rounded-3xl border border-line bg-white p-2 shadow-card";
+}
+
+function imageClassFor(imageKey: string) {
+  return imageKey === "sec.et9sim.image"
+    ? "block h-auto max-w-full rounded-2xl border border-line/60"
+    : "block aspect-[16/11] w-full rounded-2xl border border-line/60 object-cover object-top";
+}
+
 /* ---------- 1 · Hero — split ---------- */
 const heroSplitDefaults = F({
   eyebrow: "New",
@@ -63,6 +75,7 @@ const heroSplitDefaults = F({
 });
 function HeroSplit({ k }: { k: K }) {
   const t = useT(k, heroSplitDefaults);
+  const imageKey = k("image");
   return (
     <section className="relative overflow-hidden py-20 md:py-28">
       <div className="pointer-events-none absolute inset-0 -z-10 bg-blue-radial" />
@@ -82,8 +95,8 @@ function HeroSplit({ k }: { k: K }) {
         </div>
         <div className="relative mx-auto w-full max-w-[480px]">
           <span className="absolute inset-0 -z-10 scale-110 rounded-[3rem] blur-3xl" style={{ background: "radial-gradient(circle at 50% 40%, rgb(var(--c-blue)/0.18), transparent 65%)" }} />
-          <div className="overflow-hidden rounded-3xl border border-line bg-white p-2 shadow-card" {...editable(k("image"), "image")}>
-            <img src={resolveAsset(t("image"))} alt="" loading="lazy" className="block aspect-[16/11] w-full rounded-2xl border border-line/60 object-cover object-top" />
+          <div className={frameClassFor(imageKey)} {...editable(imageKey, "image")}>
+            <img src={resolveAsset(t("image"))} alt="" loading="lazy" className={imageClassFor(imageKey)} />
           </div>
           <div className="absolute -bottom-4 left-6 rounded-full border border-line bg-white/95 px-3.5 py-2 text-[12px] font-semibold text-ink shadow-card backdrop-blur" {...editable(k("badge"))}>
             {t("badge")}
@@ -179,11 +192,12 @@ const splitFeatureDefaults = F({
 });
 function SplitFeature({ k }: { k: K }) {
   const t = useT(k, splitFeatureDefaults);
+  const imageKey = k("image");
   return (
     <section className="border-y border-line bg-paper py-20 md:py-28">
       <div className="wrap-wide grid items-center gap-12 lg:grid-cols-2">
-        <div className="overflow-hidden rounded-3xl border border-line bg-white p-2 shadow-card" {...editable(k("image"), "image")}>
-          <img src={resolveAsset(t("image"))} alt="" loading="lazy" className="block aspect-[16/11] w-full rounded-2xl border border-line/60 object-cover object-top" />
+        <div className={frameClassFor(imageKey)} {...editable(imageKey, "image")}>
+          <img src={resolveAsset(t("image"))} alt="" loading="lazy" className={imageClassFor(imageKey)} />
         </div>
         <div className="max-w-xl">
           <Tag className="mb-5 text-ink-3"><span {...editable(k("tag"))}>{t("tag")}</span></Tag>
