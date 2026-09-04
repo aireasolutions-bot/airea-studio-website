@@ -208,7 +208,7 @@ function SplitFeature({ k }: { k: K }) {
           </h2>
           <p className="mt-4 text-[15.5px] text-ink-2" {...editable(k("sub"), "richtext")}>{t("sub")}</p>
           <ul className="mt-6 space-y-3">
-            {[0, 1, 2].map((i) => (
+            {[0, 1, 2].filter((i) => k(`check${i}`) !== "sec.et9sim.check2").map((i) => (
               <li key={i} className="flex items-start gap-2.5 text-[15px] text-ink-2">
                 {k(`check${i}`) !== "sec.et9sim.check2" && <Check className="mt-0.5 h-4.5 w-4.5 shrink-0 text-blue" />}
                 <span {...editable(k(`check${i}`))}>{t(`check${i}`)}</span>
