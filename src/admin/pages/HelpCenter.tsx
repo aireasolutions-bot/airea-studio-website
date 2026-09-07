@@ -407,7 +407,7 @@ function QuestionEditor({
             </span>
           </button>
 
-          <Field label="Answer" hint="Markdown — headings, lists, bold, links. Insert photos & videos from the Asset hub.">
+          <Field label="Answer" hint="Markdown — headings (## ), lists (1. or 1)), bold, links. Insert photos & videos from the Asset hub, or paste a YouTube / Vimeo / Loom link on its own line to embed the player.">
             <div className="overflow-hidden rounded-xl border border-line-2 bg-white">
               <div className="flex items-center gap-1 border-b border-line bg-canvas px-2 py-1.5">
                 {(["write", "preview"] as const).map((v) => (

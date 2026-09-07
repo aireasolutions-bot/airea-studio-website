@@ -4,15 +4,62 @@ import { type ReactNode } from "react";
 // pasted-in). Supports #/##/### headings, paragraphs, unordered + ordered lists,
 // blockquotes, fenced code, --- rules, images/videos `![caption](url)` (video
 // files — .mp4/.webm/.mov — become players), and inline **bold**, *italic*,
-// `code`, and [links](url). Renders real React nodes (never
+// `code`, and [links](url). YouTube/Vimeo/Loom links render as players.
+// Renders real React nodes (never
 // dangerouslySetInnerHTML) so it's injection-safe.
 
 const VIDEO_URL = /\.(mp4|webm|mov|m4v)(\?|#|$)/i;
 
+/* Hosted-video links become real players.
+ * Uploading a big file to our own storage makes the page heavy; a YouTube,
+ * Vimeo or Loom link stays light and streams adaptively. Returns the privacy-
+ * preserving embed URL (youtube-nocookie) or null when it isn't a known host. */
+export function embedUrl(src: string): string | null {
+  try {
+    const u = new URL(src, "https://aireastudio.ai");
+    const host = u.hostname.replace(/^www\./, "");
+    if (host === "youtu.be") {
+      const id = u.pathname.slice(1);
+      return id ? `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}` : null;
+    }
+    if (host === "youtube.com" || host === "m.youtube.com" || host === "youtube-nocookie.com") {
+      const id = u.searchParams.get("v") || u.pathname.match(/^\/(?:embed|shorts|live)\/([^/]+)/)?.[1];
+      if (!id) return null;
+      const t = u.searchParams.get("t") || u.searchParams.get("start");
+      const start = t ? `?start=${parseInt(t, 10) || 0}` : "";
+      return `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}${start}`;
+    }
+    if (host === "vimeo.com") {
+      const id = u.pathname.split("/").filter(Boolean)[0];
+      return /^\d+$/.test(id || "") ? `https://player.vimeo.com/video/${id}` : null;
+    }
+    if (host === "player.vimeo.com") return u.href;
+    if (host === "loom.com") {
+      const id = u.pathname.match(/\/(?:share|embed)\/([0-9a-f]{8,})/i)?.[1];
+      return id ? `https://www.loom.com/embed/${id}` : null;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
 function Media({ src, caption, k }: { src: string; caption?: string; k: string }) {
+  const embed = embedUrl(src);
   return (
     <figure key={k} className="my-8">
-      {VIDEO_URL.test(src) ? (
+      {embed ? (
+        <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-line shadow-soft">
+          <iframe
+            src={embed}
+            title={caption || "Video"}
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+            className="absolute inset-0 h-full w-full"
+          />
+        </div>
+      ) : VIDEO_URL.test(src) ? (
         <video src={src} controls playsInline preload="metadata" className="w-full rounded-2xl border border-line shadow-soft" />
       ) : (
         <img src={src} alt={caption || ""} loading="lazy" className="w-full rounded-2xl border border-line shadow-soft" />
@@ -117,6 +164,15 @@ export function Markdown({ content }: { content: string }) {
     const media = MEDIA_BLOCK.exec(line.trim());
     if (media) {
       blocks.push(<Media key={key} k={`m${key++}`} src={media[2]} caption={media[1] || undefined} />);
+      i++;
+      continue;
+    }
+
+    // A bare YouTube/Vimeo/Loom link alone on a line becomes the player —
+    // pasting the link is what people actually do, so make that the happy path.
+    const bare = line.trim();
+    if (/^https?:\/\/\S+$/.test(bare) && embedUrl(bare)) {
+      blocks.push(<Media key={key} k={`m${key++}`} src={bare} />);
       i++;
       continue;
     }

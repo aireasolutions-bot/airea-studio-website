@@ -74,6 +74,10 @@ function mdHtml(md: string): string {
       if (/^#\s/.test(t)) return `<h2>${inlined(t.replace(/^#\s+/, ""))}</h2>`;
       if (/^[-*]\s/m.test(t))
         return `<ul>${t.split(/\n/).filter((l) => /^[-*]\s/.test(l.trim())).map((l) => `<li>${inlined(l.trim().replace(/^[-*]\s+/, ""))}</li>`).join("")}</ul>`;
+      // a hosted-video link on its own line: bots get a real link, humans get
+      // the embedded player from the React renderer
+      if (/^https?:\/\/\S+$/.test(t) && /(youtube\.com|youtu\.be|vimeo\.com|loom\.com)/i.test(t))
+        return `<p><a href="${esc(t)}">${esc(t)}</a></p>`;
       if (/^\d+[.)]\s/m.test(t))
         return `<ol>${t.split(/\n/).filter((l) => /^\d+[.)]\s/.test(l.trim())).map((l) => `<li>${inlined(l.trim().replace(/^\d+[.)]\s+/, ""))}</li>`).join("")}</ol>`;
       return `<p>${inlined(t.replace(/\n/g, " "))}</p>`;
