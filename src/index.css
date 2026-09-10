@@ -279,3 +279,16 @@
 .faq-compact p { margin-bottom: .7rem; }
 .faq-compact ul, .faq-compact ol { margin: .7rem 0; }
 .faq-compact figure { margin: 1.2rem 0; }
+
+/* Checkerboard behind asset thumbnails — white and transparent artwork needs
+   something to read against, and it signals "image canvas" rather than "empty". */
+.bg-checker {
+  background-color: #fff;
+  background-image:
+    linear-gradient(45deg, rgba(16, 24, 40, 0.055) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(16, 24, 40, 0.055) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(16, 24, 40, 0.055) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(16, 24, 40, 0.055) 75%);
+  background-size: 14px 14px;
+  background-position: 0 0, 0 7px, 7px -7px, -7px 0;
+}

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, Check, Copy, Download, Film, FolderPlus, Loader2, RefreshCw, Search, UploadCloud, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/cn";
+import { AssetThumb } from "../AssetThumb";
 import { DIRECT_THRESHOLD, readDimensions, uploadOne } from "../lib/upload";
 
 type UploadItem = {
@@ -196,23 +197,8 @@ export function Assets() {
             onClick={() => setSel(a)}
             className="group overflow-hidden rounded-2xl border border-line bg-white text-left shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-card"
           >
-            <div className="relative aspect-square overflow-hidden bg-paper">
-              {a.type === "video" ? (
-                <>
-                  <video src={a.url} muted playsInline preload="metadata" className="h-full w-full object-cover" />
-                  <span className="absolute bottom-2 left-2 grid h-6 w-6 place-items-center rounded-full bg-ink/70 text-white">
-                    <Film className="h-3.5 w-3.5" />
-                  </span>
-                </>
-              ) : (
-                <img
-                  src={a.url}
-                  alt={a.filename}
-                  loading="lazy"
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-              )}
-            </div>
+            {/* Same rule as the picker: show the whole asset, not a crop of it. */}
+            <AssetThumb src={a.url} filename={a.filename} kind={a.type} className="aspect-square w-full" />
             <div className="px-3 py-2.5">
               <div className="truncate text-[12.5px] font-medium text-ink">{a.filename}</div>
               <div className="mt-0.5 flex items-center justify-between text-[11px] text-ink-3">

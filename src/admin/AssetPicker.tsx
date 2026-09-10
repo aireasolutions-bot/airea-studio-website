@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Film, Loader2, Search, UploadCloud, X } from "lucide-react";
+import { Expand, Loader2, Search, UploadCloud, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { AssetThumb } from "./AssetThumb";
 import { uploadOne } from "./lib/upload";
 import { resolveAsset } from "@/content/ContentProvider";
 
@@ -21,6 +22,9 @@ export function AssetPicker({
   const [q, setQ] = useState("");
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  // Expanded preview — the grid answers "which one is it?", this answers
+  // "is this the right one?" before committing.
+  const [zoom, setZoom] = useState<Asset | null>(null);
   const [err, setErr] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -35,6 +39,18 @@ export function AssetPicker({
   useEffect(() => {
     if (open) load();
   }, [open, kind]);
+
+  // Esc closes the expanded preview first, then the picker — otherwise Esc
+  // dumps you out of the whole modal when you only wanted to stop zooming.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (zoom) { e.stopPropagation(); setZoom(null); } else onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, zoom, onClose]);
 
   const upload = async (file: File) => {
     setErr("");
@@ -110,29 +126,61 @@ export function AssetPicker({
         </div>
         <div className="grid grid-cols-3 gap-2.5 overflow-y-auto p-5 sm:grid-cols-4 md:grid-cols-5">
           {filtered.map((a) => (
-            <button
+            <div
               key={a.id}
-              onClick={() => {
-                onSelect(a.key);
-                onClose();
-              }}
-              className="group relative overflow-hidden rounded-xl border border-line bg-paper transition-all hover:-translate-y-0.5 hover:border-blue/40 hover:shadow-card"
+              className="group relative overflow-hidden rounded-xl border border-line bg-white transition-all hover:-translate-y-0.5 hover:border-blue/40 hover:shadow-card"
             >
-              {a.type === "video" ? (
-                <>
-                  <video src={resolveAsset(a.key)} muted playsInline preload="metadata" className="aspect-square w-full object-cover" />
-                  <span className="absolute bottom-2 left-2 grid h-5 w-5 place-items-center rounded-full bg-ink/70 text-white">
-                    <Film className="h-3 w-3" />
-                  </span>
-                </>
-              ) : (
-                <img src={resolveAsset(a.key)} alt={a.filename} loading="lazy" className="aspect-square w-full object-cover" />
-              )}
-              <div className="truncate px-2 py-1.5 text-[10.5px] text-ink-2">{a.filename}</div>
-            </button>
+              <button
+                onClick={() => {
+                  onSelect(a.key);
+                  onClose();
+                }}
+                title={`Use ${a.filename}`}
+                className="block w-full text-left"
+              >
+                <AssetThumb src={resolveAsset(a.key)} filename={a.filename} kind={a.type} className="aspect-square w-full" />
+                <div className="truncate px-2 py-1.5 text-[10.5px] text-ink-2">{a.filename}</div>
+              </button>
+              {/* Expand is deliberately separate from select: looking closer at an
+                  asset shouldn't drop it into the page. */}
+              <button
+                onClick={(e) => { e.stopPropagation(); setZoom(a); }}
+                title="Expand"
+                className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-lg bg-white/90 text-ink-2 opacity-0 shadow-soft backdrop-blur transition-opacity hover:text-ink focus:opacity-100 group-hover:opacity-100"
+              >
+                <Expand className="h-3.5 w-3.5" />
+              </button>
+            </div>
           ))}
         </div>
       </div>
+
+      {zoom && (
+        <div
+          className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-ink/80 p-6 backdrop-blur-sm"
+          onClick={(e) => { e.stopPropagation(); setZoom(null); }}
+        >
+          <div className="flex max-h-[70vh] max-w-[90vw] items-center justify-center overflow-hidden rounded-2xl bg-checker p-2" onClick={(e) => e.stopPropagation()}>
+            {zoom.type === "video" ? (
+              <video src={resolveAsset(zoom.key)} controls playsInline className="max-h-[66vh] max-w-full rounded-xl" />
+            ) : (
+              <img src={resolveAsset(zoom.key)} alt={zoom.filename} className="max-h-[66vh] max-w-full rounded-xl object-contain" />
+            )}
+          </div>
+          <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+            <span className="max-w-[46ch] truncate text-[13px] font-medium text-white/90">{zoom.filename}</span>
+            <button
+              onClick={() => { onSelect(zoom.key); setZoom(null); onClose(); }}
+              className="rounded-full bg-blue px-4 py-2 text-[13px] font-semibold text-white hover:bg-blue-ink"
+            >
+              Use this {zoom.type === "video" ? "video" : "image"}
+            </button>
+            <button onClick={() => setZoom(null)} className="rounded-full bg-white/15 px-4 py-2 text-[13px] font-semibold text-white hover:bg-white/25">
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
