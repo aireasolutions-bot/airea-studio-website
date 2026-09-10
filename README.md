@@ -76,6 +76,10 @@ build.
 
 ## Docs
 
+- [Platform Blueprint](docs/PLATFORM-BLUEPRINT.md) — full specification of the site +
+  admin portal architecture, written to be handed to another project that wants to
+  rebuild this system for a different brand.
+
 - [Meta Pixel — app.aireastudio.ai integration](docs/meta-pixel-app-integration.md)
   — hand-off spec for the app team: closes the attribution loop between the
   marketing site (`Lead`) and the app (`CompleteRegistration`, `Purchase`).
