@@ -57,7 +57,7 @@ export function Ecommerce() {
                 {...editable("ec.hero.image", "image")}
               />
             </div>
-            <div className="absolute -right-5 top-8 rounded-2xl border border-line bg-white/95 px-3.5 py-2 font-mono text-[11px] font-semibold text-blue-ink shadow-card backdrop-blur" {...editable("ec.hero.badge")}>
+            <div className="absolute -right-5 top-6 rounded-2xl border border-line bg-white/95 px-3.5 py-2 font-mono text-[11px] font-semibold text-blue-ink shadow-card backdrop-blur" {...editable("ec.hero.badge")}>
               {c("ec.hero.badge", "4:5 · 9:16 · 1:1 · 16:9")}
             </div>
           </div>
