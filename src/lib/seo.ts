@@ -48,6 +48,13 @@ export const PAGE_SEO: Record<string, PageSeo> = {
     priority: 0.8,
     changefreq: "monthly",
   },
+  "/about": {
+    title: "About us — AIREA Studio | AI Marketing for Small Teams",
+    description:
+      "Learn about AIREA Studio, the AI marketing platform helping small businesses plan, create, and launch on-brand campaigns across every channel.",
+    priority: 0.7,
+    changefreq: "monthly",
+  },
   "/how-it-works": {
     title: "How AIREA Studio Works — From One Brief to a Full Campaign",
     description:

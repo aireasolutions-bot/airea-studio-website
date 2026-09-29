@@ -61,6 +61,13 @@ export const SECTION_MANIFESTS: Record<string, SectionDef[]> = {
     { id: "testimonials", label: "Testimonials" },
     { id: "cta", label: "Final CTA" },
   ],
+  about: [
+    { id: "hero", label: "Hero" },
+    { id: "mission", label: "Mission" },
+    { id: "principles", label: "Principles" },
+    { id: "story", label: "Story" },
+    { id: "cta", label: "Final CTA" },
+  ],
   "how-it-works": [
     { id: "hero", label: "Hero" },
     { id: "workflow", label: "Step-by-step workflow" },

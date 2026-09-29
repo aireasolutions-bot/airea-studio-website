@@ -5,6 +5,7 @@ import { Home } from "@/pages/Home";
 import { Pricing } from "@/pages/Pricing";
 import { SmallBusiness } from "@/pages/SmallBusiness";
 import { Ecommerce } from "@/pages/Ecommerce";
+import { About } from "@/pages/About";
 import { HowItWorksPage } from "@/pages/HowItWorksPage";
 import { FaqPage } from "@/pages/FaqPage";
 import { FaqChildPage } from "@/pages/FaqChildPage";
@@ -36,6 +37,7 @@ const PAGE_COMPONENTS: Record<string, ComponentType> = {
   pricing: Pricing,
   "small-business": SmallBusiness,
   ecommerce: Ecommerce,
+  about: About,
   "how-it-works": HowItWorksPage,
   faq: FaqPage,
   "privacy-policy": PrivacyPolicy,
