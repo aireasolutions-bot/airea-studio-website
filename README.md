@@ -76,6 +76,10 @@ build.
 
 ## Docs
 
+- [Admin Portal Module Kit](docs/modules/README.md) — productized, brand-neutral build specs
+  (Foundation · Website Builder · File Storage · Asset Hub · SEO · Branding) to hand to
+  Claude when building this platform for another brand.
+
 - [Platform Blueprint](docs/PLATFORM-BLUEPRINT.md) — full specification of the site +
   admin portal architecture, written to be handed to another project that wants to
   rebuild this system for a different brand.

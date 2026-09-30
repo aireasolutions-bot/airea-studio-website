@@ -14,6 +14,10 @@ anything — several "obvious simplifications" are traps that were already falle
 architecture and contracts matter; the brand, copy, colours and section list are meant to be
 replaced. Anything marked 🔁 is brand-specific and should be swapped.
 
+> **Building for another brand?** Use the [Module Kit](modules/README.md) — installable,
+> brand-neutral implementation specs with reference code, acceptance tests and build plans.
+> This blueprint remains the architectural overview of the whole system.
+
 ---
 
 ## 1. What the system does
