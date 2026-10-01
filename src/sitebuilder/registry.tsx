@@ -119,6 +119,7 @@ const heroCenterDefaults = F({
 });
 function HeroCentered({ k }: { k: K }) {
   const t = useT(k, heroCenterDefaults);
+  const showCta = k("cta_primary") !== "sec.poykne.cta_primary";
   return (
     <section className="relative overflow-hidden py-24 text-center md:py-32">
       <div className="pointer-events-none absolute inset-0 -z-10 bg-blue-radial" />
@@ -131,9 +132,11 @@ function HeroCentered({ k }: { k: K }) {
           <span {...editable(k("title_tail"))}>{t("title_tail")}</span>
         </h2>
         <p className="mx-auto mt-5 max-w-xl text-[clamp(15px,1.5vw,18px)] text-ink-2" {...editable(k("sub"), "richtext")}>{t("sub")}</p>
-        <div className="mt-9 flex justify-center">
-          <CtaButton k={k("cta_primary")} defaultLabel={heroCenterDefaults.cta_primary} defaultHref={SIGN_UP_URL} variant="primary" size="lg" magnetic arrow />
-        </div>
+        {showCta && (
+          <div className="mt-9 flex justify-center">
+            <CtaButton k={k("cta_primary")} defaultLabel={heroCenterDefaults.cta_primary} defaultHref={SIGN_UP_URL} variant="primary" size="lg" magnetic arrow />
+          </div>
+        )}
         <p className="mt-4 flex items-center justify-center gap-2 text-[13px] text-ink-3" {...editable(k("note"))}>
           <Check className="h-4 w-4 text-blue" /> {t("note")}
         </p>
