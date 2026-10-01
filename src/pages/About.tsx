@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import { PageSections } from "@/components/PageSections";
 import { Seo } from "@/components/Seo";
 import { breadcrumbSchema } from "@/lib/seo";
 
@@ -54,8 +53,8 @@ const TEAM = [
   },
 ];
 
-export function About() {
-  const hero = (
+function AboutHero() {
+  return (
     <section className="relative overflow-hidden pb-14 pt-32 md:pb-20 md:pt-40">
       <div className="pointer-events-none absolute inset-0 -z-10 bg-blue-radial" />
       <div className="pointer-events-none absolute inset-0 -z-10 bg-grid opacity-[0.3] [mask-image:radial-gradient(ellipse_at_top,black,transparent_72%)]" />
@@ -77,11 +76,13 @@ export function About() {
       </div>
     </section>
   );
+}
 
-  const mission = (
+function FounderStory() {
+  return (
     <section className="py-12 md:py-20">
       <div className="wrap-wide">
-        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.36fr_0.64fr] lg:items-start">
+        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.34fr_0.66fr] lg:items-start">
           <aside className="lg:sticky lg:top-28">
             <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-ink-3">Founder story</p>
             <h2 className="mt-4 font-display text-[clamp(32px,4vw,54px)] leading-[1.03] tracking-[-0.015em] text-ink">
@@ -105,8 +106,10 @@ export function About() {
       </div>
     </section>
   );
+}
 
-  const principles = (
+function TeamBios() {
+  return (
     <section className="border-t border-line bg-paper py-20 md:py-28">
       <div className="wrap-wide">
         <div className="mx-auto max-w-3xl text-center">
@@ -126,9 +129,9 @@ export function About() {
               viewport={{ once: true, margin: "-80px" }}
               transition={{ duration: 0.55, ease: EASE, delay: Math.min(index * 0.04, 0.2) }}
             >
-              <div className="flex items-baseline justify-between gap-4 border-b border-line pb-4">
+              <div className="flex flex-col gap-2 border-b border-line pb-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
                 <h3 className="text-[22px] font-semibold tracking-tight text-ink">{member.name}</h3>
-                <p className="shrink-0 font-mono text-[12px] uppercase tracking-[0.16em] text-blue">{member.role}</p>
+                <p className="font-mono text-[12px] uppercase tracking-[0.16em] text-blue">{member.role}</p>
               </div>
               <p className="mt-5 text-[15.5px] leading-7 text-ink-2">{member.bio}</p>
             </motion.article>
@@ -137,7 +140,9 @@ export function About() {
       </div>
     </section>
   );
+}
 
+export function About() {
   return (
     <>
       <Seo
@@ -146,7 +151,9 @@ export function About() {
         description="Read the founder story behind AIREA Studio and meet the team building AI-powered campaign tools for small businesses."
         jsonLd={[breadcrumbSchema([{ name: "Home", path: "/" }, { name: "About us", path: "/about" }])]}
       />
-      <PageSections page="about" sections={{ hero, mission, principles }} />
+      <AboutHero />
+      <FounderStory />
+      <TeamBios />
     </>
   );
 }
