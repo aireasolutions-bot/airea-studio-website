@@ -1,229 +1,138 @@
-import { Bot, Compass, Layers3, Rocket, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
-import { EditableEyebrow, SectionHeading, CtaButton } from "@/components/ui";
 import { PageSections } from "@/components/PageSections";
-import { Reveal } from "@/components/Reveal";
-import { RobotHead } from "@/components/RobotHead";
 import { Seo } from "@/components/Seo";
-import { useC, resolveAsset, editable } from "@/content/ContentProvider";
-import { SIGN_UP_URL } from "@/lib/site";
 import { breadcrumbSchema } from "@/lib/seo";
 
 const EASE = [0.22, 0.61, 0.36, 1] as const;
 
-const PRINCIPLES = [
-  {
-    icon: Sparkles,
-    title: "Make great marketing feel easy",
-    body: "The best tools remove the hard parts without flattening the taste, craft, or strategy that make a brand memorable.",
-  },
-  {
-    icon: Layers3,
-    title: "One source, every channel",
-    body: "A business should not have to rebuild the same idea ten times just because every platform asks for a different format.",
-  },
-  {
-    icon: Compass,
-    title: "Brand comes first",
-    body: "AI should learn your voice, visuals, offers, and point of view — then protect them everywhere your campaign appears.",
-  },
+const STORY_PARAGRAPHS = [
+  "I’ve led marketing at large companies and worked with much smaller ones. No matter the size of the business, the need for content never stops. Customers are on Facebook and Instagram, searching on Google, reading email, and visiting your website. You need to show up in those places, but a small business rarely has the creative team or time that a large company does.",
+  "I’m a performance marketer at heart. I want to test different messages, learn what works, and make changes quickly. But often the bottleneck was getting the creative assets made. The team had more requests than it could handle, so an A/B test or a timely social post could take longer than the opportunity allowed.",
+  "I saw the scale of that problem at Banana Republic. We needed to remove a single word—“the”—from a campaign. It sounded simple. But that word appeared across hundreds of assets for different markets, stores, loyalty programs, and credit cards. The change needed to happen immediately, and it took a lot of people to make it happen. I remember thinking: there has to be an easier way.",
+  "A short time later, Nick and I were working together at Anatomie, a women’s travel fashion company. The very first version of ChatGPT had just come out, and Nick kept telling me I needed to see what it could do. I was focused on the latest campaign’s results and didn’t make time for it—until he used it to write product page copy in about three hours. We had been quoted a month and thousands of dollars for that work. That got my attention.",
+  "We started by building a tool that could take one campaign brief and create copy for different channels, with each version written to fit the platform. That idea grew into AIREA Studio.",
+  "At large companies, we thought in campaigns: one idea carried through every place a customer might see it. Small business owners often have to work one asset at a time—an Instagram post today, an email next week, a website image when they can get to it. I wanted to make it possible to start with one idea and create the assets for the whole campaign.",
+  "AIREA is the tool I wish I’d had at the companies where I worked. It puts that campaign approach and the marketing expertise behind it within reach of small business owners. It helps you create work that feels like your business, fits each channel, and gets out into the world without the usual bottlenecks.",
+  "The moment we’re working toward is simple: you see what AIREA created, say “That’s exactly what I meant,” and feel ready to use it.",
 ];
 
-const STORY_POINTS = [
-  "AIREA Studio was built for operators who need the output of a modern marketing team without the overhead of building one.",
-  "We believe small teams deserve systems that think across strategy, creative, production, and publishing — not another blank canvas.",
-  "Our platform turns a brief, product photo, or business goal into polished, on-brand campaigns ready for every channel.",
+const TEAM = [
+  {
+    name: "Brian Tsung",
+    role: "CEO",
+    bio: "Brian has led marketing and digital commerce at Banana Republic, Gap Inc., and Frontgate, and worked on brands including West Elm and Pottery Barn Kids at Williams-Sonoma, Inc. His experience also includes a startup within Hallmark and advising growth strategy at Anatomie. A performance marketer at heart, he founded AIREA Studio to bring enterprise marketing expertise to small business owners and make it easier to turn one idea into a full campaign.",
+  },
+  {
+    name: "Nicholas Santos",
+    role: "CMO",
+    bio: "Nick is a digital agency founder and small business owner with experience in advertising operations and customer acquisition. He and Brian began building AIREA after working together at Anatomie. Nick draws on that firsthand experience to shape new features using the latest large language models, focused on what small businesses need to create and improve their marketing.",
+  },
+  {
+    name: "Annie Deihl",
+    role: "Product and Growth",
+    bio: "Annie has spent more than 20 years building digital products and experiences for ecommerce, fintech and enterprise software at companies like Cash App, Block, Snapfish, RedEnvelope, HP, and Oracle. At AIREA, she focuses on making a sophisticated marketing process feel intuitive and useful for the people doing the work.",
+  },
+  {
+    name: "Akash Anand",
+    role: "CPTO",
+    bio: "Akash brings product leadership and hands-on AI experience from Meta, Prosper Marketplace, and Macy’s.com. At AIREA, he leads the technology and product work behind turning a business owner’s idea into marketing they can review, refine, and use.",
+  },
+  {
+    name: "Matt Thompson",
+    role: "Growth Marketing",
+    bio: "Matt has more than 15 years of experience growing customer acquisition for subscription and direct-to-consumer brands. At AIREA, he brings a performance marketer’s perspective to how we reach customers, test what works, and make the platform more useful to growing businesses.",
+  },
+  {
+    name: "Campbell Tsung",
+    role: "Creative Lead",
+    bio: "Campbell brings a background in media design, brand storytelling, social media, and visual content. At AIREA, Campbell helps shape the creative experience so the work customers make feels true to their brand and ready for the channels where it will appear.",
+  },
+  {
+    name: "David Hsiao",
+    role: "Engineering Intern",
+    bio: "David is pursuing a master’s degree in computer science and helping build the next generation of AIREA Studio. His work focuses on making AI-created marketing easy to refine and put into action, so customers can move quickly while keeping their own judgment and brand at the center.",
+  },
 ];
 
 export function About() {
-  const c = useC();
-
   const hero = (
-    <section className="relative overflow-hidden pb-16 pt-32 md:pb-24 md:pt-40">
+    <section className="relative overflow-hidden pb-14 pt-32 md:pb-20 md:pt-40">
       <div className="pointer-events-none absolute inset-0 -z-10 bg-blue-radial" />
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-grid opacity-[0.35] [mask-image:radial-gradient(ellipse_at_top,black,transparent_72%)]" />
-      <div className="wrap-wide grid items-center gap-12 lg:grid-cols-[1.04fr_0.96fr]">
-        <div className="max-w-2xl">
-          <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: EASE }}
-          >
-            <EditableEyebrow k="about.hero.eyebrow" defaultLabel="About AIREA Studio" />
-          </motion.div>
-          <motion.h1
-            className="mt-6 font-display text-[clamp(42px,7vw,84px)] leading-[0.96] tracking-[-0.025em] text-ink"
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: EASE, delay: 0.08 }}
-          >
-            <span {...editable("about.hero.title_lead")}>{c("about.hero.title_lead", "We’re building the ")}</span>
-            <span className="italic-blue" {...editable("about.hero.title_accent")}>
-              {c("about.hero.title_accent", "AI marketing team")}
-            </span>
-            <span {...editable("about.hero.title_tail")}>{c("about.hero.title_tail", " for small businesses.")}</span>
-          </motion.h1>
-          <motion.p
-            className="mt-6 max-w-xl text-[clamp(16px,1.5vw,19px)] leading-8 text-ink-2"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: EASE, delay: 0.2 }}
-            {...editable("about.hero.sub", "richtext")}
-          >
-            {c(
-              "about.hero.sub",
-              "AIREA Studio helps lean teams plan, create, and launch on-brand campaigns across every channel — without needing an agency, a design department, or a dozen disconnected tools."
-            )}
-          </motion.p>
-          <motion.div
-            className="mt-9 flex flex-wrap items-center gap-3"
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: EASE, delay: 0.32 }}
-          >
-            <CtaButton k="about.hero.cta_primary" defaultLabel="Start your free trial" defaultHref={SIGN_UP_URL} variant="primary" size="lg" magnetic arrow />
-            <CtaButton k="about.hero.cta_secondary" defaultLabel="See how it works" defaultHref="/how-it-works" variant="ghost" size="lg" />
-          </motion.div>
-        </div>
-
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-grid opacity-[0.3] [mask-image:radial-gradient(ellipse_at_top,black,transparent_72%)]" />
+      <div className="wrap-wide">
         <motion.div
-          className="relative mx-auto w-full max-w-[520px]"
-          initial={{ opacity: 0, y: 30, scale: 0.97 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.9, ease: EASE, delay: 0.28 }}
+          className="mx-auto max-w-4xl text-center"
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: EASE }}
         >
-          <span
-            className="absolute inset-8 -z-10 rounded-[4rem] blur-3xl"
-            style={{ background: "radial-gradient(circle at 50% 40%, rgb(var(--c-blue)/0.24), transparent 66%)" }}
-          />
-          <div className="rounded-5xl border border-line bg-white p-4 shadow-card">
-            <div className="overflow-hidden rounded-4xl border border-line bg-paper">
-              <img
-                src={resolveAsset(c("about.hero.image", "assets/product/creative-generate.png"))}
-                alt="AIREA Studio campaign generation workspace"
-                className="aspect-[4/3] w-full object-cover"
-                draggable={false}
-                {...editable("about.hero.image", "image")}
-              />
-            </div>
-            <div className="mt-4 grid grid-cols-3 gap-3">
-              {["Brand DNA", "Campaigns", "Deploy"].map((label, i) => (
-                <div key={label} className="rounded-2xl border border-line bg-canvas px-3 py-3 text-center">
-                  <div className="mx-auto mb-2 grid h-8 w-8 place-items-center rounded-full bg-blue-mist text-blue-ink">
-                    {i === 0 ? <Bot className="h-4 w-4" /> : i === 1 ? <Sparkles className="h-4 w-4" /> : <Rocket className="h-4 w-4" />}
-                  </div>
-                  <p className="text-[12px] font-semibold text-ink">{label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="absolute -right-4 -top-7 hidden md:block">
-            <RobotHead size={104} />
-          </div>
+          <p className="font-mono text-[12px] uppercase tracking-[0.2em] text-blue">About AIREA Studio</p>
+          <h1 className="mt-5 font-display text-[clamp(44px,7vw,86px)] leading-[0.96] tracking-[-0.025em] text-ink">
+            Our founder <span className="italic-blue">story</span>
+          </h1>
+          <p className="mx-auto mt-6 max-w-2xl text-[clamp(17px,1.7vw,21px)] leading-8 text-ink-2">
+            AIREA Studio was built from a simple belief: small businesses should be able to turn one idea into a full campaign without the usual creative bottlenecks.
+          </p>
         </motion.div>
       </div>
     </section>
   );
 
   const mission = (
-    <section className="py-20 md:py-28">
-      <div className="wrap-wide grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
-        <SectionHeading
-          tag={<span {...editable("about.mission.tag")}>{c("about.mission.tag", "Our mission")}</span>}
-          title={<span {...editable("about.mission.title")}>{c("about.mission.title", "Give every business the leverage of a world-class marketing team")}</span>}
-        />
-        <div className="rounded-5xl border border-line bg-white p-7 shadow-soft md:p-10">
-          <p className="text-[clamp(22px,3vw,36px)] leading-tight tracking-[-0.015em] text-ink" {...editable("about.mission.statement", "richtext")}>
-            {c(
-              "about.mission.statement",
-              "Marketing should not be gated behind headcount, budget, or technical skill. We’re making the full campaign workflow — strategy, copy, visuals, formats, review, and publishing — feel as simple as briefing a teammate."
-            )}
-          </p>
-          <div className="mt-8 grid gap-4 sm:grid-cols-3">
-            {[
-              ["Minutes", "from brief to campaign"],
-              ["Every channel", "adapted from one source"],
-              ["Always on-brand", "trained by your Brand DNA"],
-            ].map(([stat, label], i) => (
-              <div key={stat} className="rounded-3xl border border-line bg-canvas p-5">
-                <p className="font-display text-[34px] leading-none text-blue" {...editable(`about.mission.stat${i}.value`)}>{c(`about.mission.stat${i}.value`, stat)}</p>
-                <p className="mt-2 text-[13px] font-medium text-ink-2" {...editable(`about.mission.stat${i}.label`)}>{c(`about.mission.stat${i}.label`, label)}</p>
-              </div>
-            ))}
-          </div>
+    <section className="py-12 md:py-20">
+      <div className="wrap-wide">
+        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.36fr_0.64fr] lg:items-start">
+          <aside className="lg:sticky lg:top-28">
+            <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-ink-3">Founder story</p>
+            <h2 className="mt-4 font-display text-[clamp(32px,4vw,54px)] leading-[1.03] tracking-[-0.015em] text-ink">
+              Why we built AIREA.
+            </h2>
+          </aside>
+
+          <article className="rounded-5xl border border-line bg-white p-6 shadow-soft md:p-10 lg:p-12">
+            <div className="space-y-6 text-[18px] leading-8 text-ink-2 md:text-[19px] md:leading-9">
+              {STORY_PARAGRAPHS.slice(0, -1).map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </div>
+            <blockquote className="mt-10 rounded-4xl border border-line bg-blue-mist p-6 md:p-8">
+              <p className="font-display text-[clamp(28px,3.3vw,42px)] leading-tight tracking-[-0.015em] text-ink">
+                {STORY_PARAGRAPHS[STORY_PARAGRAPHS.length - 1]}
+              </p>
+            </blockquote>
+          </article>
         </div>
       </div>
     </section>
   );
 
   const principles = (
-    <section className="border-y border-line bg-paper py-20 md:py-28">
+    <section className="border-t border-line bg-paper py-20 md:py-28">
       <div className="wrap-wide">
-        <SectionHeading
-          align="center"
-          tag={<span {...editable("about.principles.tag")}>{c("about.principles.tag", "What we believe")}</span>}
-          title={<span {...editable("about.principles.title")}>{c("about.principles.title", "Built for taste, speed, and consistency")}</span>}
-          sub={<span {...editable("about.principles.sub", "richtext")}>{c("about.principles.sub", "AIREA Studio is designed around the realities of modern marketing: more channels, more formats, more pressure — and not enough time.")}</span>}
-        />
-        <div className="mt-12 grid gap-5 md:grid-cols-3">
-          {PRINCIPLES.map((item, i) => {
-            const Icon = item.icon;
-            return (
-              <Reveal key={item.title} delay={i * 0.08}>
-                <div className="h-full rounded-4xl border border-line bg-white p-7 shadow-soft">
-                  <div className="grid h-12 w-12 place-items-center rounded-2xl bg-blue text-white shadow-glow">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <h3 className="mt-6 text-[21px] font-semibold tracking-tight text-ink" {...editable(`about.principle${i}.title`)}>{c(`about.principle${i}.title`, item.title)}</h3>
-                  <p className="mt-3 text-[15px] leading-7 text-ink-2" {...editable(`about.principle${i}.body`, "richtext")}>{c(`about.principle${i}.body`, item.body)}</p>
-                </div>
-              </Reveal>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-
-  const story = (
-    <section className="py-20 md:py-28">
-      <div className="wrap-wide grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-center">
-        <div className="relative rounded-5xl border border-line bg-ink p-7 text-white shadow-lift md:p-10">
-          <div className="absolute right-8 top-8 opacity-90">
-            <RobotHead size={82} />
-          </div>
-          <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-white/55" {...editable("about.story.kicker")}>{c("about.story.kicker", "The idea")}</p>
-          <h2 className="mt-16 max-w-md font-display text-[clamp(34px,5vw,58px)] leading-[1.02] tracking-[-0.02em]" {...editable("about.story.title")}>
-            {c("about.story.title", "Marketing software should feel like a creative partner, not a control panel.")}
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-ink-3">Team bios</p>
+          <h2 className="mt-4 font-display text-[clamp(36px,5vw,64px)] leading-[1.02] tracking-[-0.02em] text-ink">
+            Meet the team behind AIREA.
           </h2>
         </div>
-        <div className="space-y-5">
-          {STORY_POINTS.map((point, i) => (
-            <Reveal key={i} delay={i * 0.08}>
-              <div className="rounded-3xl border border-line bg-white p-6 shadow-soft">
-                <span className="font-mono text-[12px] font-semibold text-blue">0{i + 1}</span>
-                <p className="mt-3 text-[17px] leading-8 text-ink-2" {...editable(`about.story.point${i}`, "richtext")}>{c(`about.story.point${i}`, point)}</p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
 
-  const cta = (
-    <section className="px-4 pb-24 md:pb-32">
-      <div className="wrap-wide overflow-hidden rounded-5xl bg-blue px-6 py-14 text-center shadow-glow md:px-10 md:py-18">
-        <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-white/70" {...editable("about.cta.tag")}>{c("about.cta.tag", "Ready when you are")}</p>
-        <h2 className="mx-auto mt-4 max-w-3xl font-display text-[clamp(34px,5vw,64px)] leading-[1.02] tracking-[-0.02em] text-white">
-          <span {...editable("about.cta.title")}>{c("about.cta.title", "Build your first on-brand campaign today.")}</span>
-        </h2>
-        <p className="mx-auto mt-5 max-w-xl text-[16px] leading-7 text-white/75" {...editable("about.cta.sub", "richtext")}>
-          {c("about.cta.sub", "Train your Brand DNA, brief a goal, and let AIREA Studio turn it into polished creative for every channel.")}
-        </p>
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <CtaButton k="about.cta.primary" defaultLabel="Start 14-day free trial" defaultHref={SIGN_UP_URL} variant="dark" size="lg" arrow />
-          <CtaButton k="about.cta.secondary" defaultLabel="View pricing" defaultHref="/pricing" variant="ghost" size="lg" />
+        <div className="mt-12 grid gap-5 md:grid-cols-2">
+          {TEAM.map((member, index) => (
+            <motion.article
+              key={member.name}
+              className="rounded-4xl border border-line bg-white p-6 shadow-soft md:p-7"
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.55, ease: EASE, delay: Math.min(index * 0.04, 0.2) }}
+            >
+              <div className="flex items-baseline justify-between gap-4 border-b border-line pb-4">
+                <h3 className="text-[22px] font-semibold tracking-tight text-ink">{member.name}</h3>
+                <p className="shrink-0 font-mono text-[12px] uppercase tracking-[0.16em] text-blue">{member.role}</p>
+              </div>
+              <p className="mt-5 text-[15.5px] leading-7 text-ink-2">{member.bio}</p>
+            </motion.article>
+          ))}
         </div>
       </div>
     </section>
@@ -233,9 +142,11 @@ export function About() {
     <>
       <Seo
         path="/about"
+        title="About AIREA Studio | Founder Story & Team"
+        description="Read the founder story behind AIREA Studio and meet the team building AI-powered campaign tools for small businesses."
         jsonLd={[breadcrumbSchema([{ name: "Home", path: "/" }, { name: "About us", path: "/about" }])]}
       />
-      <PageSections page="about" sections={{ hero, mission, principles, story, cta }} />
+      <PageSections page="about" sections={{ hero, mission, principles }} />
     </>
   );
 }

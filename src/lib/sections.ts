@@ -11,7 +11,7 @@
 export type SectionDef = { id: string; label: string };
 
 // One entry in a page's stored layout (the `layout.<page>` content block).
-// Built-in sections carry `id`; template-library instances carry `kind:"lib"`
+// Built-in sections carry `id`; template-library instances carry `kind:"lib"
 // + `template` + `instanceId`; sections adopted from other pages carry
 // `kind:"shared"` + `id` (the shared section's id).
 export type LayoutEntry = {
@@ -63,10 +63,8 @@ export const SECTION_MANIFESTS: Record<string, SectionDef[]> = {
   ],
   about: [
     { id: "hero", label: "Hero" },
-    { id: "mission", label: "Mission" },
-    { id: "principles", label: "Principles" },
-    { id: "story", label: "Story" },
-    { id: "cta", label: "Final CTA" },
+    { id: "mission", label: "Founder story" },
+    { id: "principles", label: "Team bios" },
   ],
   "how-it-works": [
     { id: "hero", label: "Hero" },
