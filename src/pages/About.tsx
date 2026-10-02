@@ -70,7 +70,7 @@ function AboutHero() {
             Our founder <span className="italic-blue">story</span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-[clamp(17px,1.7vw,21px)] leading-8 text-ink-2">
-            AIREA Studio was built from a simple belief: small businesses should be able to turn one idea into a full campaign without the usual creative bottlenecks.
+            AIREA Studio was built from a simple belief: small businesses should be able to easily turn one idea into a full campaign - with the knowledge, speed, and consistency of an experienced marketing team.
           </p>
         </motion.div>
       </div>
