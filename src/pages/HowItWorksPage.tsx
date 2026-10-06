@@ -178,7 +178,7 @@ function StepExplorer() {
       </div>
 
       {/* product screenshot — desktop only; on mobile each step carries its own */}
-      <div className="relative hidden lg:sticky lg:top-24 lg:block">
+      <div className="relative max-lg:hidden lg:sticky lg:top-24">
         <span
           className="absolute inset-0 -z-10 rounded-[3rem] blur-3xl"
           style={{ background: "radial-gradient(circle at 50% 40%, rgb(var(--c-blue)/0.2), transparent 65%)" }}

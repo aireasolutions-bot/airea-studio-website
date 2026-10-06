@@ -160,8 +160,10 @@ export function Nav() {
             <Logo />
           </Link>
 
-          {/* desktop nav */}
-          <nav className="hidden items-center gap-1 lg:flex">
+          {/* desktop nav — `max-lg:hidden`, NOT `hidden lg:flex`: tools that overlay the
+              live site (Meta's Event Setup Tool) inject `.hidden{display:none!important}`,
+              which beats `lg:flex` and wipes the whole menu. */}
+          <nav className="flex items-center gap-1 max-lg:hidden">
             {routeItems.map((it) => item(it))}
             {hashItems.map((it) => item(it))}
             {extraItems.map((it) => item(it))}
@@ -212,7 +214,7 @@ export function Nav() {
             {item(pricingItem)}
           </nav>
 
-          <div className="hidden items-center gap-2 lg:flex">
+          <div className="flex items-center gap-2 max-lg:hidden">
             {parseLink(c("global.nav.login_link"), SIGN_IN_URL).visible && (
               <a
                 href={parseLink(c("global.nav.login_link"), SIGN_IN_URL).href}

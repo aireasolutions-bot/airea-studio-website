@@ -209,7 +209,7 @@ export function Hero() {
             </motion.div>
 
             {/* side image cards — desktop only (room in the 2-col layout) */}
-            <FloatCard className="-left-24 top-8 hidden lg:block" depth={26} delay={0.6}>
+            <FloatCard className="-left-24 top-8 max-lg:hidden" depth={26} delay={0.6}>
               <img
                 src={resolveAsset(c("home.hero.float1.image", "/assets/campaigns/nine-grid.jpg"))}
                 {...editable("home.hero.float1.image", "image")}
@@ -218,7 +218,7 @@ export function Hero() {
               />
               <Caption><span {...editable("home.hero.float1.caption")}>{c("home.hero.float1.caption", "9 ads · 1 source")}</span></Caption>
             </FloatCard>
-            <FloatCard className="-right-20 top-1/3 hidden lg:block" depth={36} delay={0.78}>
+            <FloatCard className="-right-20 top-1/3 max-lg:hidden" depth={36} delay={0.78}>
               <img
                 src={resolveAsset(c("home.hero.float2.image", "/assets/campaigns/ratio-story.jpg"))}
                 {...editable("home.hero.float2.image", "image")}

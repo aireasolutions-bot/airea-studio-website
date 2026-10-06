@@ -1245,6 +1245,12 @@ resolve/reopen, "mine only" filter, and per-page open counts in the page picker.
     make the hero bigger?" silently rewrites the hero.
 15. **Fail fast on expired credentials** with an actionable message (§15.4).
 16. **`git pull --rebase` before every push** — the agent and teammates commit to `main` too.
+17. **Smooth-scroll libraries must not hijack the wheel over third-party overlays.** Lenis
+    swallowed wheel events over Meta's Event Setup Tool dropdown, so it couldn't scroll. Set
+    `allowNestedScroll: true` and `prevent: (node) => node !== document.body && !root.contains(node)`.
+18. **Write responsive visibility as `max-lg:hidden`, never `hidden lg:flex`.** Meta's Event Setup
+    Tool injects `.hidden{display:none!important}`, which beats `lg:flex` — it wiped the entire
+    nav (links, Log in, Start free) while the team was trying to tag those very buttons.
 
 ---
 

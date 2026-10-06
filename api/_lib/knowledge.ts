@@ -154,6 +154,7 @@ Marketing copy, CTA labels, and images are often driven by editable content bloc
 - Whole pages can be switched off via \`page.<slug>.visible\` ("false" hides): the route redirects home and any nav/footer link pointing at it auto-hides. Manifest in \`HIDEABLE_PAGES\` (src/lib/pages.ts). When you CREATE a page, add it to HIDEABLE_PAGES + seed its \`page.<slug>.visible\` row so the team controls it.
 
 # Small content conventions
+- Responsive visibility: write \`max-lg:hidden\` (or \`max-md:hidden\`), NEVER \`hidden lg:flex\` / \`hidden lg:block\`. Third-party tools that overlay the live site (Meta's Event Setup Tool) inject \`.hidden{display:none!important}\`, which beats the breakpoint override and wipes the element — it once hid the entire nav.
 - Hero eyebrows use \`<EditableEyebrow k="…" defaultLabel="…"/>\` — an EMPTY content value hides the pill entirely (team clears the field to hide it).
 - The home hero's "Publishes to" strip is content-managed: \`home.hero.publishto_label\` (empty hides label) + \`home.hero.platforms\` (comma list matched against PLATFORMS in src/lib/site.ts; empty hides the strip).
 - Publishing CONTENT happens in the admin's Publish Center (/admin/publish) or each editor's own Publish button — content publishes are instant (no redeploy). Your code edits publish separately via the Build-with-AI publish flow (GitHub commit → Vercel deploy).

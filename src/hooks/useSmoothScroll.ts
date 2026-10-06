@@ -7,11 +7,20 @@ export function useSmoothScroll() {
   useEffect(() => {
     if (prefersReducedMotion()) return;
 
+    // Lenis takes over the mouse wheel for the whole page. Without these two
+    // options it also swallows wheel events over panels it doesn't own, so a
+    // third-party overlay (Meta's Event Setup Tool dropdown, chat widgets,
+    // cookie banners) can't be scrolled at all.
+    const root = document.getElementById("root");
     const lenis = new Lenis({
       duration: 1.1,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
       touchMultiplier: 1.6,
+      // Any scrollable container that can still scroll scrolls natively.
+      allowNestedScroll: true,
+      // Anything injected outside our app is left entirely to the browser.
+      prevent: (node) => node !== document.body && !!root && !root.contains(node),
     });
 
     (window as unknown as { lenis?: Lenis }).lenis = lenis;

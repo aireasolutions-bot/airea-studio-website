@@ -139,7 +139,7 @@ export function OnePhotoCampaign() {
               </motion.div>
 
               {/* animated connector */}
-              <div className="absolute -right-4 top-1/2 hidden h-px w-8 -translate-y-1/2 overflow-hidden lg:block">
+              <div className="absolute -right-4 top-1/2 h-px w-8 -translate-y-1/2 overflow-hidden max-lg:hidden">
                 <motion.div style={{ width: lineW }} className="h-full bg-blue/50" />
               </div>
 

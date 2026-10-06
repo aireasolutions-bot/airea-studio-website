@@ -44,7 +44,7 @@ export function HowItWorks() {
 
         <div className="mt-16 grid gap-12 lg:grid-cols-2 lg:gap-20">
           {/* sticky media (desktop) */}
-          <div className="hidden lg:block">
+          <div className="max-lg:hidden">
             <div className="sticky top-24 flex h-[78vh] items-center justify-center">
               <div className="relative">
                 <span

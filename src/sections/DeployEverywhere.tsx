@@ -143,7 +143,7 @@ export function DeployEverywhere() {
 
           {/* connectors */}
           <svg
-            className="pointer-events-none absolute left-1/2 top-24 -z-0 hidden h-40 w-[680px] -translate-x-1/2 md:block"
+            className="pointer-events-none absolute left-1/2 top-24 -z-0 h-40 w-[680px] -translate-x-1/2 max-md:hidden"
             viewBox="0 0 680 160"
             fill="none"
             stroke="var(--blue)"
