@@ -27,14 +27,14 @@ const TEAM = [
     bio: "Nick is a digital agency founder and small business owner with experience in advertising operations and customer acquisition. He and Brian began building AIREA after working together at Anatomie. Nick draws on that firsthand experience to shape new features using the latest large language models, focused on what small businesses need to create and improve their marketing.",
   },
   {
-    name: "Annie Deihl",
-    role: "Product and Growth",
-    bio: "Annie has spent more than 20 years building digital products and experiences for ecommerce, fintech and enterprise software at companies like Cash App, Block, Snapfish, RedEnvelope, HP, and Oracle. At AIREA, she focuses on making a sophisticated marketing process feel intuitive and useful for the people doing the work.",
-  },
-  {
     name: "Akash Anand",
     role: "CPTO",
     bio: "Akash brings product leadership and hands-on AI experience from Meta, Prosper Marketplace, and Macy’s.com. At AIREA, he leads the technology and product work behind turning a business owner’s idea into marketing they can review, refine, and use.",
+  },
+  {
+    name: "Annie Deihl",
+    role: "Product and Growth",
+    bio: "Annie has spent more than 20 years building digital products and experiences for ecommerce, fintech and enterprise software at companies like Cash App, Block, Snapfish, RedEnvelope, HP, and Oracle. At AIREA, she focuses on making a sophisticated marketing process feel intuitive and useful for the people doing the work.",
   },
   {
     name: "Matt Thompson",
@@ -119,7 +119,7 @@ function TeamBios() {
           </h2>
         </div>
 
-        <div className="mt-12 grid gap-5 md:grid-cols-2">
+        <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {TEAM.map((member, index) => (
             <motion.article
               key={member.name}
