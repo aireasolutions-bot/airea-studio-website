@@ -143,6 +143,10 @@ function TeamBios() {
                     <a href="https://www.linkedin.com/in/akashanand1/" target="_blank" rel="noreferrer">
                       {member.name}
                     </a>
+                  ) : member.name === "Annie Deihl" ? (
+                    <a href="https://www.linkedin.com/in/anniedeihl/" target="_blank" rel="noreferrer">
+                      {member.name}
+                    </a>
                   ) : (
                     member.name
                   )}
