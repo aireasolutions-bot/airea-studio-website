@@ -130,7 +130,15 @@ function TeamBios() {
               transition={{ duration: 0.55, ease: EASE, delay: Math.min(index * 0.04, 0.2) }}
             >
               <div className="flex flex-col gap-2 border-b border-line pb-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
-                <h3 className="text-[22px] font-semibold tracking-tight text-ink">{member.name}</h3>
+                <h3 className="text-[22px] font-semibold tracking-tight text-ink">
+                  {member.name === "Brian Tsung" ? (
+                    <a href="https://www.linkedin.com/in/brian-tsung/" target="_blank" rel="noreferrer">
+                      {member.name}
+                    </a>
+                  ) : (
+                    member.name
+                  )}
+                </h3>
                 <p className="font-mono text-[12px] uppercase tracking-[0.16em] text-blue">{member.role}</p>
               </div>
               <p className="mt-5 text-[15.5px] leading-7 text-ink-2">{member.bio}</p>
