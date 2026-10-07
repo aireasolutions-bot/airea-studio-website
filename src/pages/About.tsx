@@ -107,7 +107,7 @@ function FounderStory() {
           <article className="rounded-5xl border border-line bg-white p-6 shadow-soft md:p-10 lg:p-12">
             <div className="space-y-6 text-[18px] leading-8 text-ink-2 md:text-[19px] md:leading-9">
               {STORY_PARAGRAPHS.slice(0, -1).map((paragraph) => (
-                <p key={paragraph} className={paragraph === "There had to be an easier way" || paragraph === "The moment that got my attention" || paragraph === "Making it possible for small businesses" ? "font-bold" : undefined}>{paragraph}</p>
+                <p key={paragraph} className={paragraph === "There had to be an easier way" || paragraph === "The moment that got my attention" || paragraph === "From one idea to a complete campaign" || paragraph === "Making it possible for small businesses" ? "font-bold" : undefined}>{paragraph}</p>
               ))}
             </div>
             <blockquote className="mt-10 rounded-4xl border border-line bg-blue-mist p-6 md:p-8">
