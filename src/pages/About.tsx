@@ -24,7 +24,7 @@ const STORY_PARAGRAPHS = [
   "It applied to businesses of every size. The channels and technologies would keep changing, but the core process would remain.",
   "Making it possible for small businesses",
   "That became the foundation for AIREA Studio. We bring together AI models, your business context, and marketing expertise in one guided workflow.",
-  "We handle the complexity of connecting those pieces, so small businesses can focus on their marketing. AIREA gives them more capacity to plan, create, launch, and learn, even when time and expertise are limited.",
+  "We handle the complexity of connecting those pieces, making it easier for small businesses to plan, create, launch, and learn, even when time and expertise are limited. They can spend less time figuring out their marketing and more time running their business.",
   "AIREA is the tool I wish I’d had. My goal is to put that marketing expertise within reach of small businesses, so they can bring their ideas to life and do more with the resources they have.",
 ];
 
