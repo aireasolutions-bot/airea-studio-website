@@ -5,14 +5,28 @@ import { breadcrumbSchema } from "@/lib/seo";
 const EASE = [0.22, 0.61, 0.36, 1] as const;
 
 const STORY_PARAGRAPHS = [
-  "I’ve led marketing at large companies and worked with much smaller ones. No matter the size of the business, the need for content never stops. Customers are on Facebook and Instagram, searching on Google, reading email, and visiting your website. You need to show up in those places, but a small business rarely has the creative team or time that a large company does.",
-  "I’m a performance marketer at heart. I needed to test new messages, explore new channels and partnerships, and try new technologies to learn what drove results. All of that required creative assets. Our creative teams supported every part of the business, and there was always more work than time. I wanted to make it easier to act on those opportunities",
-  "I saw the scale of that problem at Banana Republic. We needed to remove a single word “the” from a campaign. It sounded simple. But that word appeared across hundreds of assets for different markets, stores, loyalty programs, and credit cards. The change needed to happen immediately, and it took a lot of people to make it happen. I remember thinking: there has to be an easier way.",
-  "I was busy reviewing last week’s results, planning next week’s campaigns, and approving creative to keep everything moving. I didn’t make time to see what it could do until he used it to write 30 product copy pages in about three hours.",
-  "We started by building a tool that could take one campaign brief and create copy for different channels, with each version written to fit the platform. That idea grew into AIREA Studio.",
-  "At large companies, we thought in campaigns: one idea carried through every place a customer might see it. Small business owners often have to work one asset at a time—an Instagram post today, an email next week, a website image when they can get to it. I wanted to make it possible to start with one idea and create the assets for the whole campaign.",
-  "AIREA is the tool I wish I’d had at the companies where I worked. It puts that campaign approach and the marketing expertise behind it within reach of small business owners. It helps you create work that feels like your business, fits each channel, and gets out into the world without the usual bottlenecks.",
-  "The moment we’re working toward is simple: you see what AIREA created, say “That’s exactly what I meant,” and feel ready to use it.",
+  "I’ve led marketing at large companies and worked with small businesses. No matter the size, the need to reach customers never stops.",
+  "Your customers are on Facebook and Instagram, searching on Google, reading email, and visiting your website. You need to show up in all those places, but small businesses rarely have the creative team or time that a large company does.",
+  "There had to be an easier way",
+  "I’m a performance marketer at heart. I needed to test new messages, explore new channels and partnerships, and try new technologies to learn what drove results. All of that required creative assets.",
+  "Our creative teams supported every part of the business, and there was always more work than time.",
+  "Even updating existing creative could take a tremendous amount of work. At Banana Republic, we needed to remove a single word, “the,” from a campaign. It sounded simple.",
+  "But that word appeared across hundreds of assets for different markets, stores, loyalty programs, and credit cards. The change needed to happen immediately and required a lot of people.",
+  "I remember thinking: there has to be an easier way.",
+  "The moment that got my attention",
+  "Later, I met my co-founder Nick at Anatomie, a growing travel fashion company where he was the Director of Marketing. ChatGPT had just come out, and Nick kept telling me I needed to see what it could do.",
+  "I was busy reviewing results, planning campaigns, and approving creative.",
+  "Then he used it to write 30 product copy pages in about three hours. We had been quoted a month and thousands of dollars for that work.",
+  "That got my attention.",
+  "From one idea to a complete campaign",
+  "At large companies, we thought in campaigns: one idea carried through every place a customer might see it. Small businesses often work one asset at a time. I wanted to make it possible to start with one idea and create a complete campaign across channels.",
+  "We started with a tool that turned one campaign brief into copy for different channels, tailored to each platform, consistent with the brand’s voice, and relevant to the campaign.",
+  "As we defined what the tool needed to do, we kept coming back to the same process: understand your customers, plan, create, launch, and learn.",
+  "It applied to businesses of every size. The channels and technologies would keep changing, but the core process would remain.",
+  "Making it possible for small businesses",
+  "That became the foundation for AIREA Studio. We bring together AI models, your business context, and marketing expertise in one guided workflow.",
+  "We handle the complexity of connecting those pieces, so small businesses can focus on their marketing. AIREA gives them more capacity to plan, create, launch, and learn, even when time and expertise are limited.",
+  "AIREA is the tool I wish I’d had. My goal is to put that marketing expertise within reach of small businesses, so they can bring their ideas to life and do more with the resources they have.",
 ];
 
 const TEAM = [
