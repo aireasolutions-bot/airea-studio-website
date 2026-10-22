@@ -2,6 +2,7 @@ import { useEffect, type ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 import { Nav } from "./Nav";
 import { Footer } from "./Footer";
+import { SaleBanner } from "@/components/SaleBanner";
 import { useSmoothScroll } from "@/hooks/useSmoothScroll";
 
 export function Layout({ children }: { children: ReactNode }) {
@@ -18,7 +19,12 @@ export function Layout({ children }: { children: ReactNode }) {
   return (
     <>
       <Nav />
-      <main>{children}</main>
+      <main>
+        <div className="wrap pb-3 pt-[76px] lg:hidden">
+          <SaleBanner surface={pathname === "/pricing" ? "pricing" : "home"} />
+        </div>
+        {children}
+      </main>
       <Footer />
     </>
   );

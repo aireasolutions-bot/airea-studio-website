@@ -8,6 +8,7 @@ import { FinalCTA } from "@/sections/FinalCTA";
 import { PageSections } from "@/components/PageSections";
 import { useC, editable } from "@/content/ContentProvider";
 import { resolvePricing, type CompareCell } from "@/lib/pricing";
+import { salePriceFor } from "@/lib/sale";
 import { Seo } from "@/components/Seo";
 import { productSchema, breadcrumbSchema } from "@/lib/seo";
 import { trackContentView } from "@/lib/analytics";
@@ -48,7 +49,7 @@ export function Pricing() {
   );
 
   const cards = (
-    <section className="pb-8">
+    <section id="pricing-plans" className="scroll-mt-28 pb-8">
       <div className="wrap-wide">
         <PricingCards />
       </div>
@@ -70,18 +71,24 @@ export function Pricing() {
                   <th className="p-4 text-[13px] font-semibold uppercase tracking-wide text-ink-3">
                     <span {...editable("pricing.compare.col_feature")}>{c("pricing.compare.col_feature", "Feature")}</span>
                   </th>
-                  {pricing.plans.map((p, i) => (
+                  {pricing.plans.map((p, i) => {
+                    const sale = salePriceFor(p.price);
+                    return (
                     <th
                       key={p.id}
                       className={`p-4 text-center ${i === featuredCol ? "bg-blue-mist/50" : ""}`}
                     >
                       <div className="text-[15px] font-semibold text-ink">{p.name}</div>
-                      <div className="text-[12px] text-ink-3">
-                        {p.price}
-                        {p.cadence}
+                      <div className="mt-1 flex flex-col items-center gap-0.5 text-[12px] text-ink-3">
+                        {sale && <span className="line-through">{sale.original}{p.cadence}</span>}
+                        <span className="font-semibold text-blue">
+                          {sale?.sale ?? p.price}
+                          {p.cadence}
+                        </span>
                       </div>
                     </th>
-                  ))}
+                    );
+                  })}
                 </tr>
               </thead>
               <tbody>
