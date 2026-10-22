@@ -62,7 +62,7 @@ function Media({ src, caption, k }: { src: string; caption?: string; k: string }
       ) : VIDEO_URL.test(src) ? (
         <video src={src} controls playsInline preload="metadata" className="w-full rounded-2xl border border-line shadow-soft" />
       ) : (
-        <img src={src} alt={caption || ""} loading="lazy" className="w-full rounded-2xl border border-line shadow-soft" />
+        <img src={src} alt={caption || ""} loading="lazy" className="mx-auto max-h-[540px] w-auto max-w-full rounded-2xl border border-line object-contain shadow-soft sm:max-w-[min(100%,448px)]" />
       )}
       {caption && <figcaption className="mt-2.5 text-center text-[13px] text-ink-3">{caption}</figcaption>}
     </figure>
@@ -88,7 +88,7 @@ function inline(text: string, kp: string): ReactNode[] {
         VIDEO_URL.test(m[3]) ? (
           <video key={key} src={m[3]} controls playsInline preload="metadata" className="my-3 inline-block w-full rounded-xl border border-line" />
         ) : (
-          <img key={key} src={m[3]} alt={m[2] || ""} loading="lazy" className="my-3 inline-block max-h-[480px] rounded-xl border border-line" />
+          <img key={key} src={m[3]} alt={m[2] || ""} loading="lazy" className="my-3 inline-block max-h-[340px] w-auto max-w-full rounded-xl border border-line object-contain align-middle sm:max-w-[min(100%,360px)]" />
         )
       );
     } else if (m[4]) {
