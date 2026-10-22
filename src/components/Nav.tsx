@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { Logo } from "./Logo";
 import { CtaButton } from "./ui";
+import { SaleBanner } from "@/components/SaleBanner";
 import { cn } from "@/lib/cn";
 import { SOLUTIONS, SIGN_UP_URL, SIGN_IN_URL } from "@/lib/site";
 import { hrefPageSlug, pageVisibleKey } from "@/lib/pages";
@@ -236,6 +237,10 @@ export function Nav() {
           >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
+        </div>
+
+        <div className="wrap pb-4 max-lg:hidden">
+          <SaleBanner surface={location.pathname === "/pricing" ? "pricing" : "home"} />
         </div>
       </header>
 

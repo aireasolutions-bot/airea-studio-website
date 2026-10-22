@@ -3,6 +3,7 @@ import { Button } from "./ui";
 import { cn } from "@/lib/cn";
 import { useC, editable } from "@/content/ContentProvider";
 import { resolvePricing } from "@/lib/pricing";
+import { SALE_DISCOUNT_PERCENT, salePriceFor } from "@/lib/sale";
 
 /* Plan cards render from the pricing data (Pricing Studio in the admin —
  * `pricing.data` block, with legacy per-key fallback). The grid adapts to
@@ -18,6 +19,7 @@ export function PricingCards() {
       {plans.map((p) => {
         const featured = !!p.featured;
         const internal = p.ctaHref.startsWith("/") || p.ctaHref.startsWith("#");
+        const sale = salePriceFor(p.price);
         return (
           <div
             key={p.id}
@@ -35,9 +37,29 @@ export function PricingCards() {
               </span>
             )}
             <div className={cn("text-[14px] font-semibold", featured ? "text-blue-sky" : "text-blue")}>{p.name}</div>
-            <div className="mt-3 flex items-end gap-1">
-              <span className="font-display text-5xl leading-none">{p.price}</span>
-              <span className={cn("mb-1 text-[14px]", featured ? "text-white/60" : "text-ink-3")}>{p.cadence}</span>
+            <div className="mt-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <span
+                  className={cn(
+                    "rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide",
+                    featured ? "bg-blue text-white" : "bg-blue-mist text-blue-ink"
+                  )}
+                >
+                  {SALE_DISCOUNT_PERCENT}% off
+                </span>
+                {sale && (
+                  <span className={cn("text-[14px] line-through", featured ? "text-white/45" : "text-ink-3")}>
+                    {sale.original}
+                  </span>
+                )}
+              </div>
+              <div className="mt-2 flex items-end gap-1">
+                <span className="font-display text-5xl leading-none">{sale?.sale ?? p.price}</span>
+                <span className={cn("mb-1 text-[14px]", featured ? "text-white/60" : "text-ink-3")}>{p.cadence}</span>
+              </div>
+              <p className={cn("mt-1 text-[12px] font-medium", featured ? "text-blue-sky" : "text-blue")}>
+                Sale pricing for a limited time
+              </p>
             </div>
             <p className={cn("mt-3 text-[14px]", featured ? "text-white/70" : "text-ink-2")}>{p.blurb}</p>
             <ul className="mt-6 flex-1 space-y-3">
