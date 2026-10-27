@@ -229,14 +229,23 @@ export function Nav() {
             <CtaButton k="global.nav.cta" defaultLabel="Start free" defaultHref={SIGN_UP_URL} variant="primary" magnetic arrow />
           </div>
 
-          {/* mobile toggle */}
-          <button
-            className="grid h-10 w-10 place-items-center rounded-xl border border-line-2 bg-white/70 lg:hidden"
-            onClick={() => setOpen((v) => !v)}
-            aria-label="Toggle menu"
-          >
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
+          {/* mobile actions */}
+          <div className="flex items-center gap-2 lg:hidden">
+            <CtaButton
+              k="global.nav.cta"
+              defaultLabel="Start free"
+              defaultHref={SIGN_UP_URL}
+              variant="primary"
+              className="px-4 py-2 text-[13px]"
+            />
+            <button
+              className="grid h-10 w-10 place-items-center rounded-xl border border-line-2 bg-white/70"
+              onClick={() => setOpen((v) => !v)}
+              aria-label="Toggle menu"
+            >
+              {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
 
         <div className="wrap pb-4 max-lg:hidden">
