@@ -1,5 +1,6 @@
 import { motion, type Variants } from "framer-motion";
 import type { ReactNode } from "react";
+import { useMobileStaticMotion } from "@/hooks/useMobileStaticMotion";
 
 const EASE = [0.22, 0.61, 0.36, 1] as const;
 
@@ -19,6 +20,12 @@ export function Reveal({
   y = 26,
   once = true,
 }: RevealProps) {
+  const mobileStatic = useMobileStaticMotion();
+
+  if (mobileStatic) {
+    return <div className={className}>{children}</div>;
+  }
+
   return (
     <motion.div
       className={className}

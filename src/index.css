@@ -252,6 +252,31 @@
   animation: dnaflow 1.1s linear infinite;
 }
 
+@media (max-width: 767px) {
+  .home-mobile-static section {
+    padding-top: 4rem !important;
+    padding-bottom: 4rem !important;
+  }
+  .home-mobile-static section:first-of-type {
+    padding-top: 5rem !important;
+    padding-bottom: 3.5rem !important;
+  }
+  .home-mobile-static *,
+  .home-mobile-static *::before,
+  .home-mobile-static *::after {
+    animation-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+  .home-mobile-static .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

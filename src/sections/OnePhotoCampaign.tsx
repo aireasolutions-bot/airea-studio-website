@@ -5,6 +5,7 @@ import { Button, Tag } from "@/components/ui";
 import { RobotHead } from "@/components/RobotHead";
 import { SIGN_UP_URL } from "@/lib/site";
 import { useC, resolveAsset, editable, isEdit, parseLink } from "@/content/ContentProvider";
+import { useMobileStaticMotion } from "@/hooks/useMobileStaticMotion";
 
 const WORLDS = [
   { src: "/assets/campaigns/worlds/w1.jpg", n: "01", label: "Track" },
@@ -35,6 +36,7 @@ function WorldCard({
 }) {
   const c = useC();
   const editing = isEdit();
+  const mobileStatic = useMobileStaticMotion();
   const visibilityKey = `home.onephoto.world${index}.visible`;
   const visible = parseLink(c(`${visibilityKey}_link`, '{"href":"","visible":true}'), "").visible;
   const start = 0.12 + index * 0.062;
@@ -43,22 +45,24 @@ function WorldCard({
   const y = useTransform(progress, [start, end], [42, 0]);
   const scale = useTransform(progress, [start, end], [0.7, 1]);
   const rotate = useTransform(progress, [start, end], [ROT[index], 0]);
+  const imageHiddenOnDesktop = index === 4 || index === 5 || index === 6 || index === 7 || index === 8;
 
   if (!visible && !editing) return null;
 
   return (
     <motion.div
-      style={editing && !visible ? { opacity: 0.4, y, scale, rotate } : { opacity, y, scale, rotate }}
+      style={mobileStatic ? undefined : editing && !visible ? { opacity: 0.4, y, scale, rotate } : { opacity, y, scale, rotate }}
       className="group relative overflow-hidden rounded-xl border border-line bg-white shadow-card md:rounded-2xl"
     >
-      {index !== 4 && index !== 5 && index !== 6 && index !== 7 && index !== 8 && (
+      {(!imageHiddenOnDesktop || mobileStatic) && (
         <img
           src={resolveAsset(c(`home.onephoto.world${index}.image`, src))}
           {...editable(`home.onephoto.world${index}.image`, "image")}
-          alt={`Sneaker — ${label}`}
+          alt={`Campaign scene — ${label}`}
           className="aspect-square w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
           draggable={false}
           decoding="async"
+          loading="lazy"
         />
       )}
       <div className="absolute bottom-1.5 left-1.5 flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 backdrop-blur">
@@ -83,6 +87,7 @@ function WorldCard({
 export function OnePhotoCampaign() {
   const c = useC();
   const ref = useRef<HTMLElement>(null);
+  const mobileStatic = useMobileStaticMotion();
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end end"],
@@ -100,13 +105,13 @@ export function OnePhotoCampaign() {
   const payoffY = useTransform(scrollYProgress, [0.66, 0.85], [24, 0]);
 
   return (
-    <section ref={ref} id="campaign" className="relative h-[260vh] bg-paper">
-      <div className="sticky top-0 flex min-h-screen items-center overflow-hidden py-20">
+    <section ref={ref} id="campaign" className="relative bg-paper md:h-[260vh]">
+      <div className="relative flex items-center overflow-hidden py-20 md:sticky md:top-0 md:min-h-screen">
         <div className="bg-blue-radial pointer-events-none absolute inset-0" />
         <div className="wrap-wide relative grid items-center gap-10 lg:grid-cols-[0.88fr_1.12fr]">
           {/* left: source */}
           <div>
-            <motion.div style={{ opacity: titleO, y: titleY }}>
+            <motion.div style={mobileStatic ? undefined : { opacity: titleO, y: titleY }}>
               <Tag className="mb-5 text-ink-3">
                 <span {...editable("home.onephoto.tag")}>{c("home.onephoto.tag")}</span>
               </Tag>
@@ -118,9 +123,15 @@ export function OnePhotoCampaign() {
               <p className="mt-5 max-w-md text-[clamp(15px,1.5vw,18px)] text-ink-2" {...editable("home.onephoto.sub", "richtext")}>{c("home.onephoto.sub")}</p>
             </motion.div>
 
+            <div className="mt-8 grid grid-cols-2 gap-2.5 md:hidden">
+              {displayedWorlds.map((w) => (
+                <WorldCard key={`mobile-${w.n}`} progress={scrollYProgress} index={w.originalIndex} src={w.src} n={w.n} label={w.label} />
+              ))}
+            </div>
+
             {/* source card */}
             <div className="relative mt-9 w-fit">
-              <motion.div style={{ scale: sourceScale }} className="overflow-hidden rounded-3xl border border-line bg-white p-2 shadow-card">
+              <motion.div style={mobileStatic ? undefined : { scale: sourceScale }} className="overflow-hidden rounded-3xl border border-line bg-white p-2 shadow-card">
                 <img
                   src={resolveAsset(c("home.onephoto.source_image", "/assets/campaigns/shoe-source.jpg"))}
                   {...editable("home.onephoto.source_image", "image")}
@@ -148,7 +159,7 @@ export function OnePhotoCampaign() {
               </div>
             </div>
 
-            <motion.div style={{ opacity: payoffO, y: payoffY }} className="mt-8 flex flex-wrap items-center gap-4">
+            <motion.div style={mobileStatic ? undefined : { opacity: payoffO, y: payoffY }} className="mt-8 flex flex-wrap items-center gap-4">
               <Button href={SIGN_UP_URL} variant="primary" magnetic arrow>
                 <span {...editable("home.onephoto.cta")}>{c("home.onephoto.cta", "Turn a photo into a campaign")}</span>
               </Button>
@@ -157,7 +168,7 @@ export function OnePhotoCampaign() {
           </div>
 
           {/* right: worlds grid */}
-          <div>
+          <div className="max-md:hidden">
             <div className="grid grid-cols-3 gap-2.5 md:gap-3.5">
               {displayedWorlds.map((w) => (
                 <WorldCard key={w.n} progress={scrollYProgress} index={w.originalIndex} src={w.src} n={w.n} label={w.label} />

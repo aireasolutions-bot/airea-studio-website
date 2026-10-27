@@ -1,15 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { prefersReducedMotion } from "@/lib/gsap";
+import { useMobileStaticMotion } from "@/hooks/useMobileStaticMotion";
 
 export function useCountUp(end: number, duration = 1.6, startFrom = 0) {
-  const [val, setVal] = useState(startFrom);
+  const mobileStatic = useMobileStaticMotion();
+  const [val, setVal] = useState(mobileStatic ? end : startFrom);
   const ref = useRef<HTMLDivElement>(null);
   const fired = useRef(false);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (prefersReducedMotion()) {
+    if (prefersReducedMotion() || mobileStatic) {
       setVal(end);
       return;
     }
@@ -31,7 +33,7 @@ export function useCountUp(end: number, duration = 1.6, startFrom = 0) {
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [end, duration, startFrom]);
+  }, [end, duration, startFrom, mobileStatic]);
 
   return { ref, val };
 }

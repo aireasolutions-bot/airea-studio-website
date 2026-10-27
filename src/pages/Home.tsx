@@ -21,25 +21,27 @@ export function Home() {
   return (
     <>
       <Seo path="/" jsonLd={[faqSchema(FAQ)]} />
-      <PageSections
-        page="home"
-        sections={{
-          hero: <Hero />,
-          stats: <StatStrip />,
-          agent: <TellTheAgent />,
-          onephoto: <OnePhotoCampaign />,
-          film: <ProductFilm />,
-          howitworks: <HowItWorks />,
-          branddna: <BrandDNA />,
-          channels: <Channels />,
-          deploy: <DeployEverywhere />,
-          wall: <TheWall />,
-          usecases: <UseCases />,
-          testimonials: <Testimonials />,
-          pricing: <PricingPreview />,
-          cta: <FinalCTA />,
-        }}
-      />
+      <div className="home-mobile-static">
+        <PageSections
+          page="home"
+          sections={{
+            hero: <Hero />,
+            stats: <StatStrip />,
+            agent: <TellTheAgent />,
+            onephoto: <OnePhotoCampaign />,
+            film: <ProductFilm />,
+            howitworks: <HowItWorks />,
+            branddna: <BrandDNA />,
+            channels: <Channels />,
+            deploy: <DeployEverywhere />,
+            wall: <TheWall />,
+            usecases: <UseCases />,
+            testimonials: <Testimonials />,
+            pricing: <PricingPreview />,
+            cta: <FinalCTA />,
+          }}
+        />
+      </div>
     </>
   );
 }

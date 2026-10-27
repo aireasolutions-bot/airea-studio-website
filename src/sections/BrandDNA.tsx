@@ -1,8 +1,9 @@
 import { Check, Globe, Mail, Megaphone, Share2 } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
-import { SectionHeading } from "@/components/ui";
+import { CtaButton, SectionHeading } from "@/components/ui";
 import { RobotHead } from "@/components/RobotHead";
 import { useC, editable } from "@/content/ContentProvider";
+import { SIGN_UP_URL } from "@/lib/site";
 
 const LEARNS = [
   "Voice, tone & phrasing",
@@ -55,41 +56,54 @@ export function BrandDNA() {
         </div>
 
         {/* hub */}
-        <Reveal className="relative mx-auto aspect-square w-full max-w-[440px]" delay={0.05}>
-          <svg
-            viewBox="0 0 100 100"
-            className="absolute inset-0 h-full w-full"
-            fill="none"
-            stroke="var(--blue)"
-            strokeWidth="0.5"
-          >
-            <line className="dna-flow" x1="50" y1="50" x2="50" y2="9" />
-            <line className="dna-flow" x1="50" y1="50" x2="91" y2="50" />
-            <line className="dna-flow" x1="50" y1="50" x2="50" y2="91" />
-            <line className="dna-flow" x1="50" y1="50" x2="9" y2="50" />
-          </svg>
+        <div className="mx-auto w-full max-w-[440px]">
+          <Reveal className="relative aspect-square w-full" delay={0.05}>
+            <svg
+              viewBox="0 0 100 100"
+              className="absolute inset-0 h-full w-full"
+              fill="none"
+              stroke="var(--blue)"
+              strokeWidth="0.5"
+            >
+              <line className="dna-flow" x1="50" y1="50" x2="50" y2="9" />
+              <line className="dna-flow" x1="50" y1="50" x2="91" y2="50" />
+              <line className="dna-flow" x1="50" y1="50" x2="50" y2="91" />
+              <line className="dna-flow" x1="50" y1="50" x2="9" y2="50" />
+            </svg>
 
-          {/* center */}
-          <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
-            <div className="relative grid h-32 w-32 place-items-center rounded-full border border-line bg-canvas shadow-card md:h-36 md:w-36">
-              <span className="absolute inset-0 animate-pulse-ring rounded-full" />
-              <RobotHead size={92} float={false} />
-            </div>
-            <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink px-3 py-1 text-[11px] font-semibold text-white" {...editable("home.branddna.center_label")}>
-              {c("home.branddna.center_label", "Brand DNA")}
-            </div>
-          </div>
-
-          {/* nodes */}
-          {NODES.map((n, i) => (
-            <div key={n.label} className={`absolute ${n.pos} z-10`}>
-              <div className="flex items-center gap-1.5 rounded-full border border-line bg-white px-2.5 py-1.5 shadow-soft sm:gap-2 sm:px-3 sm:py-2">
-                <n.icon className="h-3.5 w-3.5 text-blue sm:h-4 sm:w-4" />
-                <span className="whitespace-nowrap text-[11.5px] font-semibold text-ink sm:text-[12.5px]" {...editable(`home.branddna.node${i}.label`)}>{c(`home.branddna.node${i}.label`, n.label)}</span>
+            {/* center */}
+            <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
+              <div className="relative grid h-32 w-32 place-items-center rounded-full border border-line bg-canvas shadow-card md:h-36 md:w-36">
+                <span className="absolute inset-0 animate-pulse-ring rounded-full" />
+                <RobotHead size={92} float={false} />
+              </div>
+              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink px-3 py-1 text-[11px] font-semibold text-white" {...editable("home.branddna.center_label")}>
+                {c("home.branddna.center_label", "Brand DNA")}
               </div>
             </div>
-          ))}
-        </Reveal>
+
+            {/* nodes */}
+            {NODES.map((n, i) => (
+              <div key={n.label} className={`absolute ${n.pos} z-10`}>
+                <div className="flex items-center gap-1.5 rounded-full border border-line bg-white px-2.5 py-1.5 shadow-soft sm:gap-2 sm:px-3 sm:py-2">
+                  <n.icon className="h-3.5 w-3.5 text-blue sm:h-4 sm:w-4" />
+                  <span className="whitespace-nowrap text-[11.5px] font-semibold text-ink sm:text-[12.5px]" {...editable(`home.branddna.node${i}.label`)}>{c(`home.branddna.node${i}.label`, n.label)}</span>
+                </div>
+              </div>
+            ))}
+          </Reveal>
+
+          <Reveal className="mt-8 flex justify-center" delay={0.12}>
+            <CtaButton
+              k="home.branddna.cta"
+              defaultLabel="Get started with your website"
+              defaultHref={SIGN_UP_URL}
+              variant="primary"
+              magnetic
+              arrow
+            />
+          </Reveal>
+        </div>
       </div>
     </section>
   );

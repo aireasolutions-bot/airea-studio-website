@@ -152,7 +152,7 @@ export function Hero() {
         {/* visual — anchored to the phone so it scales cleanly on every screen */}
         <div
           ref={visualRef}
-          className="relative z-10 mx-auto mt-10 w-fit [perspective:1200px] lg:mt-0"
+          className="relative z-10 mx-auto mt-10 w-fit [perspective:1200px] max-md:hidden lg:mt-0"
         >
           <span
             className="pointer-events-none absolute inset-0 -z-10 scale-[1.6] rounded-full"
