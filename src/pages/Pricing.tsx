@@ -13,10 +13,11 @@ import { Seo } from "@/components/Seo";
 import { productSchema, breadcrumbSchema } from "@/lib/seo";
 import { trackContentView } from "@/lib/analytics";
 
-function Cell({ cell }: { cell: CompareCell }) {
-  if (cell.t === "check") return <Check className="mx-auto h-4.5 w-4.5 text-blue" />;
-  if (cell.t === "dash") return <Minus className="mx-auto h-4 w-4 text-ink-3/50" />;
-  return <span className="text-[13.5px] text-ink">{cell.v}</span>;
+function Cell({ cell, align = "center" }: { cell: CompareCell; align?: "center" | "end" }) {
+  const iconClass = align === "end" ? "ml-auto" : "mx-auto";
+  if (cell.t === "check") return <Check className={`${iconClass} h-4.5 w-4.5 text-blue`} />;
+  if (cell.t === "dash") return <Minus className={`${iconClass} h-4 w-4 text-ink-3/50`} />;
+  return <span className={`text-[13.5px] text-ink ${align === "end" ? "block text-right" : ""}`}>{cell.v}</span>;
 }
 
 export function Pricing() {
@@ -64,7 +65,7 @@ export function Pricing() {
             tag={<span {...editable("pricing.compare.tag")}>{c("pricing.compare.tag", "Compare")}</span>}
             title={<span {...editable("pricing.compare.title")}>{c("pricing.compare.title", "Everything in every plan")}</span>}
           />
-          <Reveal className="mt-12 overflow-hidden rounded-3xl border border-line">
+          <Reveal className="mt-12 overflow-hidden rounded-3xl border border-line max-md:hidden">
             <table className="w-full border-collapse bg-white text-left">
               <thead>
                 <tr className="border-b border-line">
@@ -115,6 +116,47 @@ export function Pricing() {
                 )}
               </tbody>
             </table>
+          </Reveal>
+
+          <Reveal className="mt-8 overflow-hidden rounded-3xl border border-line bg-white md:hidden">
+            <div className="divide-y divide-line">
+              {pricing.compare.rows.map((row, r) =>
+                row.kind === "divider" ? (
+                  <div key={r} className="bg-paper/70 px-4 pb-3 pt-5">
+                    <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-blue">{row.label}</span>
+                  </div>
+                ) : (
+                  <div key={r} className="p-4">
+                    <div className="text-[15px] font-semibold leading-snug text-ink">{row.label}</div>
+                    <div className="mt-3 overflow-hidden rounded-2xl border border-line">
+                      {pricing.plans.map((p, i) => {
+                        const sale = salePriceFor(p.price);
+                        return (
+                          <div
+                            key={p.id}
+                            className={`flex items-center justify-between gap-4 border-b border-line px-3.5 py-3 last:border-0 ${i === featuredCol ? "bg-blue-mist/45" : "bg-white"}`}
+                          >
+                            <div className="min-w-0">
+                              <div className="truncate text-[13.5px] font-semibold text-ink">{p.name}</div>
+                              <div className="mt-0.5 flex items-center gap-1.5 text-[11.5px] text-ink-3">
+                                {sale && <span className="line-through">{sale.original}{p.cadence}</span>}
+                                <span className="font-semibold text-blue">
+                                  {sale?.sale ?? p.price}
+                                  {p.cadence}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="shrink-0 text-right">
+                              <Cell cell={row.values[i] ?? { t: "dash" }} align="end" />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
           </Reveal>
         </div>
       </section>
